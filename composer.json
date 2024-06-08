@@ -6,6 +6,7 @@
   },
   "require": {
     "ramsey/uuid": "^4.2",
-    "ext-json": "*"
+    "ext-json": "*",
+    "guzzlehttp/guzzle": "^7.8"
   }
 }
