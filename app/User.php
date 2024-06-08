@@ -18,12 +18,12 @@ class User implements JsonSerializable
         $this->id = $id ?: Uuid::uuid4()->toString();
     }
 
-    public function jsonSerialize()
+    public function jsonSerialize(): array
     {
         return [
             "name" => $this->name,
             "cash" => $this->cash,
             "id" => $this->id
-        ]
+        ];
     }
 }
