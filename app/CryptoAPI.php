@@ -5,6 +5,7 @@ namespace App;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\GuzzleException;
+use stdClass;
 
 class CryptoAPI
 {
@@ -15,11 +16,12 @@ class CryptoAPI
         $this->key = $key;
     }
 
-    public function run(){
+    public function getTop(int $range): stdClass
+    {
         $url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest';
         $parameters = [
             "start" => "1",
-            "limit" => "10",
+            "limit" => $range,
             "convert" => "EUR"
         ];
 
@@ -41,7 +43,7 @@ class CryptoAPI
             exit($responseBodyAsString);
         }
 
-        print_r(json_decode($response->getBody(), false, JSON_THROW_ON_ERROR));
+        return json_decode($response->getBody(), false, 512, JSON_THROW_ON_ERROR);
     }
 
 }
