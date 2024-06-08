@@ -2,9 +2,10 @@
 
 namespace App;
 
+use JsonSerializable;
 use Ramsey\Uuid\Uuid;
 
-class User
+class User implements JsonSerializable
 {
     private string $name;
     private int $cash;
@@ -15,5 +16,14 @@ class User
         $this->name = $name;
         $this->cash = $cash;
         $this->id = $id ?: Uuid::uuid4()->toString();
+    }
+
+    public function jsonSerialize()
+    {
+        return [
+            "name" => $this->name,
+            "cash" => $this->cash,
+            "id" => $this->id
+        ]
     }
 }
