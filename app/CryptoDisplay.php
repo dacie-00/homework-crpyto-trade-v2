@@ -5,7 +5,7 @@ namespace App;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class Display
+class CryptoDisplay
 {
     private OutputInterface $output;
 
