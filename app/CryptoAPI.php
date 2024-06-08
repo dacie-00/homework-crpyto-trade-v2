@@ -8,12 +8,19 @@ use GuzzleHttp\Exception\GuzzleException;
 
 class CryptoAPI
 {
+    private string $key;
+
+    public function __construct(string $key)
+    {
+        $this->key = $key;
+    }
+
     public function run(){
-        $url = 'https://sandbox-api.coinmarketcap.com/v1/cryptocurrency/listings/latest';
+        $url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest';
         $parameters = [
             "start" => "1",
-            "limit" => "5000",
-            "convert" => "USD"
+            "limit" => "10",
+            "convert" => "EUR"
         ];
 
         $qs = http_build_query($parameters);
@@ -25,7 +32,7 @@ class CryptoAPI
             $response = $guzzle->request("GET", $request, [
                 "headers" => [
                     "Accepts" => "application/json",
-                    "X-CMC_PRO_API_KEY" => "b54bcf4d-1bca-4e8e-9a24-22ff2c3d462c",
+                    "X-CMC_PRO_API_KEY" => $this->key,
                 ],
             ]);
         } catch (ClientException $e) {
