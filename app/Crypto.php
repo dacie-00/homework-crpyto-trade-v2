@@ -16,4 +16,24 @@ class Crypto
         $this->symbol = $symbol;
         $this->price = $price;
     }
+
+    public function id(): int
+    {
+        return $this->id;
+    }
+
+    public function name(): string
+    {
+        return $this->name;
+    }
+
+    public function symbol(): string
+    {
+        return $this->symbol;
+    }
+
+    public function price(): int
+    {
+        return $this->price;
+    }
 }
