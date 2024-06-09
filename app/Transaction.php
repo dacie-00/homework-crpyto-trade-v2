@@ -21,7 +21,7 @@ class Transaction implements JsonSerializable
         string $type,
         int $amountOut,
         string $currencyOut,
-        ?string $createdAt
+        ?string $createdAt = null
     ) {
         $this->amountIn = $amountIn;
         $this->currencyIn = $currencyIn;
