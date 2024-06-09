@@ -11,7 +11,7 @@ class Transaction
     private string $type;
     private int $amountOut;
     private string $currencyOut;
-    private ?Carbon $createdAt;
+    private Carbon $createdAt;
 
     public function __construct(
         int $amountIn,
@@ -19,7 +19,7 @@ class Transaction
         string $type,
         int $amountOut,
         string $currencyOut,
-        ?Carbon $createdAt
+        ?string $createdAt
     ) {
         $this->amountIn = $amountIn;
         $this->currencyIn = $currencyIn;
@@ -50,13 +50,11 @@ class Transaction
     }
 
     public function type(): string
-
-    public function type(): string
     {
         return $this->type;
     }
 
-    public function createdAt(): ?Carbon
+    public function createdAt(): Carbon
     {
         return $this->createdAt;
     }
