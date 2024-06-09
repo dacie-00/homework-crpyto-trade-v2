@@ -39,6 +39,9 @@ class Wallet
             );
         }
         $this->contents[$currency->ticker()] -= $amount;
+        if ($this->contents[$currency->ticker()] <= 0) {
+            unset($this->contents[$currency->ticker()]);
+        }
     }
 
     public function id(): string
