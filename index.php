@@ -4,8 +4,9 @@ declare(strict_types=1);
 use App\Ask;
 use App\Crypto\CryptoAPI;
 use App\Crypto\CryptoDisplay;
-use App\Crypto\CryptoRepository;
+use App\CurrencyRepository;
 use App\Currency;
+use App\ExchangeService;
 use App\Transaction;
 use App\Wallet;
 use Symfony\Component\Console\Input\ArrayInput;
@@ -24,9 +25,10 @@ $consoleOutput = new ConsoleOutput();
 $ask = new Ask($consoleInput, $consoleOutput);
 
 $crypto = new CryptoAPI($_ENV["API_KEY"]);
-$list = $crypto->getTop(15);
+$list = $crypto->getTop(5);
 
-$currencies = new CryptoRepository();
+$currencies = new CurrencyRepository();
+$currencies->add($euro);
 foreach ($list->data as $currency) {
     $currencies->add(new Currency(
         $currency->id,
@@ -37,7 +39,9 @@ foreach ($list->data as $currency) {
 }
 
 $transactions = [];
+$exchangeService = new ExchangeService();
 $wallet = new Wallet();
+$wallet->add($euro, 1000);
 
 while(true) {
     $display = new CryptoDisplay($consoleOutput);
@@ -46,16 +50,15 @@ while(true) {
     switch ($mainAction) {
         case Ask::ACTION_BUY:
             $currencyName = $ask->crypto($currencies->getAll());
-            $quantity = $ask->quantity(1);
             $currency = $currencies->getCurrencyByName($currencyName);
-            $wallet->add($currency, $quantity);
-            $transactions[] = new Transaction(
-                $quantity,
-                $currency->ticker(),
-                "BUY",
-                $quantity * $currency->exchangeRate(),
-                $euro->ticker(),
-            );
+            $canAfford = (int)($wallet->getCurrencyAmount($euro->ticker()) / $currency->exchangeRate());
+            if ($canAfford <= 1) {
+                echo "You cannot afford any of this currency\n";
+                break;
+            }
+            $amount = $ask->quantity(1, $canAfford);
+
+            $transactions[] = $exchangeService->exchange($wallet, $amount * $currency->exchangeRate(), $euro, $currency);
             break;
         case Ask::ACTION_SELL:
             $ownedCurrencies = [];
@@ -64,16 +67,9 @@ while(true) {
             }
             $currencyName = $ask->crypto($ownedCurrencies);
             $currency = $currencies->getCurrencyByName($currencyName);
-            $wallet->getCurrencyAmount($currency->ticker());
-            $quantity = $ask->quantity();
-            $wallet->subtract($currency, $quantity);
-            $transactions[] = new Transaction(
-                $quantity,
-                $currency->ticker(),
-                "SELL",
-                $quantity * $currency->exchangeRate(),
-                $euro->ticker(),
-            );
+            $totalAmount = $wallet->getCurrencyAmount($currency->ticker());
+            $amount = $ask->quantity(1, $totalAmount);
+            $transactions[] = $exchangeService->exchange($wallet, $amount, $currency, $euro);
             break;
         case Ask::ACTION_WALLET:
             foreach ($wallet->contents() as $currency => $amount) {
@@ -83,8 +79,7 @@ while(true) {
         case Ask::ACTION_HISTORY:
             /** @var Transaction $transaction */
             foreach ($transactions as $transaction) {
-                $verb = $transaction->type() === "BUY" ? "bought" : "sold";
-                echo "{$transaction->amountIn()} {$transaction->currencyIn()} $verb for {$transaction->amountOut()} {$transaction->currencyOut()}\n";
+                echo "{$transaction->amountIn()} {$transaction->currencyIn()} -> {$transaction->amountOut()} {$transaction->currencyOut()}\n";
             }
     }
 }
