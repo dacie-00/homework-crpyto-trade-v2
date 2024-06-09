@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Crypto;
 
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Output\OutputInterface;

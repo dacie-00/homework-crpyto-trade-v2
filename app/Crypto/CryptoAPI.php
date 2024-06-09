@@ -1,10 +1,9 @@
 <?php
 
-namespace App;
+namespace App\Crypto;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
-use GuzzleHttp\Exception\GuzzleException;
 use stdClass;
 
 class CryptoAPI
