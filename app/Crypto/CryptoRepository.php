@@ -39,4 +39,14 @@ class CryptoRepository
         }
         throw new OutOfBoundsException("Currency not found");
     }
+
+    public function getCurrencyByTicker(string $ticker): Currency
+    {
+        foreach ($this->currencies as $currency) {
+            if ($currency->ticker() === $ticker) {
+                return $currency;
+            }
+        }
+        throw new OutOfBoundsException("Currency not found");
+    }
 }
