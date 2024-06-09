@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Crypto;
 
@@ -21,7 +22,7 @@ class CryptoAPI
         $parameters = [
             "start" => "1",
             "limit" => $range,
-            "convert" => "EUR"
+            "convert" => "EUR",
         ];
 
         $qs = http_build_query($parameters);

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App;
 
@@ -23,7 +24,7 @@ class User implements JsonSerializable
         return [
             "name" => $this->name,
             "cash" => $this->cash,
-            "id" => $this->id
+            "id" => $this->id,
         ];
     }
 }

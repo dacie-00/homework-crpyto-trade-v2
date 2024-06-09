@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Crypto;
 
@@ -24,7 +25,7 @@ class CryptoDisplay
             ->setHeaders([
                 "Name",
                 "Symbol",
-                "Price (EUR)"
+                "Price (EUR)",
             ]);
 
         foreach ($currencies as $currency) {
