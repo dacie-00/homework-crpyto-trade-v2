@@ -19,14 +19,12 @@ class Transaction implements JsonSerializable
     public function __construct(
         int $amountIn,
         string $currencyIn,
-        string $type,
         int $amountOut,
         string $currencyOut,
         ?string $createdAt = null
     ) {
         $this->amountIn = $amountIn;
         $this->currencyIn = $currencyIn;
-        $this->type = $type;
         $this->amountOut = $amountOut;
         $this->currencyOut = $currencyOut;
         $this->createdAt = $createdAt ? Carbon::parse($createdAt) : Carbon::now("UTC");
@@ -52,11 +50,6 @@ class Transaction implements JsonSerializable
         return $this->currencyOut;
     }
 
-    public function type(): string
-    {
-        return $this->type;
-    }
-
     public function createdAt(): Carbon
     {
         return $this->createdAt;
@@ -67,7 +60,6 @@ class Transaction implements JsonSerializable
         return [
             "amountIn" => $this->amountIn,
             "currencyIn" => $this->currencyIn,
-            "type" => $this->type,
             "amountOut" => $this->amountOut,
             "currencyOut" => $this->currencyOut,
             "createdAt" => $this->createdAt->timezone("UTC")->format(DateTimeInterface::ATOM),
