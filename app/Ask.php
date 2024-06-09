@@ -53,7 +53,7 @@ class Ask
 
     public function quantity(int $min = 1, int $max = 9999): int
     {
-        $question = (new Question("Enter the quantity - "))
+        $question = (new Question("Enter the quantity ($min-$max) - "))
             ->setValidator(function ($value) use ($min, $max): string {
                 if (!is_numeric($value)) {
                     throw new RuntimeException("Quantity must be a number");
