@@ -43,7 +43,7 @@ class CryptoAPI
             exit($responseBodyAsString);
         }
 
-        return json_decode($response->getBody(), false, 512, JSON_THROW_ON_ERROR);
+        return json_decode($response->getBody()->getContents(), false, 512, JSON_THROW_ON_ERROR);
     }
 
 }
