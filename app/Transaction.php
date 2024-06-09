@@ -3,8 +3,10 @@
 namespace App;
 
 use Carbon\Carbon;
+use DateTimeInterface;
+use JsonSerializable;
 
-class Transaction
+class Transaction implements JsonSerializable
 {
     private int $amountIn;
     private string $currencyIn;
@@ -59,4 +61,15 @@ class Transaction
         return $this->createdAt;
     }
 
+    public function jsonSerialize(): array
+    {
+        return [
+            "amountIn" => $this->amountIn,
+            "currencyIn" => $this->currencyIn,
+            "type" => $this->type,
+            "amountOut" => $this->amountOut,
+            "currencyOut" => $this->currencyOut,
+            "createdAt" => $this->createdAt->timezone("UTC")->format(DateTimeInterface::ATOM),
+        ];
+    }
 }
