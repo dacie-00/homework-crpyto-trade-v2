@@ -1,11 +1,10 @@
 <?php
 
-namespace App\Crypto;
+namespace App;
 
-use App\Currency;
 use OutOfBoundsException;
 
-class CryptoRepository
+class CurrencyRepository
 {
     /**
      * @var Currency[]
