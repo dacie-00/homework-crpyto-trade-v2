@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace App;
 
-use App\Crypto\Crypto;
 use RuntimeException;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
@@ -40,7 +39,7 @@ class Ask
     }
 
     /**
-     * @param Crypto[] $currencies
+     * @param Currency[] $currencies
      */
     public function crypto(array $currencies): string
     {

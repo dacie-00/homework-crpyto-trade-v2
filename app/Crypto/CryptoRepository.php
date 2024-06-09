@@ -2,21 +2,22 @@
 
 namespace App\Crypto;
 
+use App\Currency;
 use OutOfBoundsException;
 
 class CryptoRepository
 {
     /**
-     * @var Crypto[]
+     * @var Currency[]
      */
     private array $currencies = [];
 
-    public function add(Crypto $currency): void
+    public function add(Currency $currency): void
     {
         $this->currencies[$currency->id()] = $currency;
     }
 
-    public function getCurrencyById(int $id): Crypto
+    public function getCurrencyById(int $id): Currency
     {
         if (!isset($this->currencies[$id])) {
             throw new OutOfBoundsException("Currency not found");
@@ -29,7 +30,7 @@ class CryptoRepository
         return $this->currencies;
     }
 
-    public function getCurrencyByName(string $name): Crypto
+    public function getCurrencyByName(string $name): Currency
     {
         foreach ($this->currencies as $currency) {
             if ($currency->name() === $name) {

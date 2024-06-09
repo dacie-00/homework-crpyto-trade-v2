@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace App;
 
-use App\Crypto\Crypto;
 use OutOfBoundsException;
 use Ramsey\Uuid\Uuid;
 use RuntimeException;
@@ -19,7 +18,7 @@ class Wallet
         $this->contents = $contents ?: [];
     }
 
-    public function add(Crypto $currency, int $amount): void
+    public function add(Currency $currency, int $amount): void
     {
         if (!isset($this->contents[$currency->ticker()])) {
             $this->contents[$currency->ticker()] = $amount;
@@ -28,7 +27,7 @@ class Wallet
         $this->contents[$currency->ticker()] += $amount;
     }
 
-    public function subtract(Crypto $currency, int $amount): void
+    public function subtract(Currency $currency, int $amount): void
     {
         if (!isset($this->contents[$currency->ticker()])) {
             throw new OutOfBoundsException("Currency {$currency->ticker()} does not exist in wallet");

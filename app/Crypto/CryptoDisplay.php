@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Crypto;
 
+use App\Currency;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -16,7 +17,7 @@ class CryptoDisplay
     }
 
     /**
-     * @param Crypto[] $currencies
+     * @param Currency[] $currencies
      */
     public function display(array $currencies): void
     {
@@ -32,7 +33,7 @@ class CryptoDisplay
             $table->addRow([
                 $currency->name(),
                 $currency->ticker(),
-                $currency->price(),
+                $currency->exchangeRate(),
             ]);
         }
         $table->render();
