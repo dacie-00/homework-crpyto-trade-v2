@@ -4,14 +4,20 @@ declare(strict_types=1);
 namespace App;
 
 use App\Crypto\Crypto;
-use LogicException;
 use OutOfBoundsException;
+use Ramsey\Uuid\Uuid;
 use RuntimeException;
 
 class Wallet
 {
     private array $contents;
-    private int $id;
+    private string $id;
+
+    public function __construct(?string $id = null, ?array $contents = null)
+    {
+        $this->id = $id ?: Uuid::uuid4()->toString();
+        $this->contents = $contents ?: [];
+    }
 
     public function add(Crypto $currency, int $amount): void
     {
@@ -34,6 +40,11 @@ class Wallet
             );
         }
         $this->contents[$currency->symbol()] -= $amount;
+    }
+
+    public function id(): string
+    {
+        return $this->id;
     }
 
     public function contents(): array
