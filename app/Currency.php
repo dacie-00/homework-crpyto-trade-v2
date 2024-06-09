@@ -1,21 +1,21 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Crypto;
+namespace App;
 
-class Crypto
+class Currency
 {
     private int $id;
     private string $name;
     private string $ticker;
-    private int $price;
+    private int $exchangeRate;
 
-    public function __construct(int $id, string $name, string $ticker, int $price)
+    public function __construct(int $id, string $name, string $ticker, int $exchangeRate)
     {
         $this->id = $id;
         $this->name = $name;
         $this->ticker = $ticker;
-        $this->price = $price;
+        $this->exchangeRate = $exchangeRate;
     }
 
     public function id(): int
@@ -33,8 +33,8 @@ class Crypto
         return $this->ticker;
     }
 
-    public function price(): int
+    public function exchangeRate(): int
     {
-        return $this->price;
+        return $this->exchangeRate;
     }
 }
