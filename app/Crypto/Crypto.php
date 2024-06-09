@@ -8,9 +8,9 @@ class Crypto
     private int $id;
     private string $name;
     private string $symbol;
-    private string $price;
+    private int $price;
 
-    public function __construct(int $id, string $name, string $symbol, string $price)
+    public function __construct(int $id, string $name, string $symbol, int $price)
     {
         $this->id = $id;
         $this->name = $name;
