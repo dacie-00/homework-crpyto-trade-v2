@@ -21,25 +21,25 @@ class Wallet
 
     public function add(Crypto $currency, int $amount): void
     {
-        if (!isset($this->contents[$currency->symbol()])) {
-            $this->contents[$currency->symbol()] = $amount;
+        if (!isset($this->contents[$currency->ticker()])) {
+            $this->contents[$currency->ticker()] = $amount;
             return;
         }
-        $this->contents[$currency->symbol()] += $amount;
+        $this->contents[$currency->ticker()] += $amount;
     }
 
     public function subtract(Crypto $currency, int $amount): void
     {
-        if (!isset($this->contents[$currency->symbol()])) {
-            throw new OutOfBoundsException("Currency {$currency->symbol()} does not exist in wallet");
+        if (!isset($this->contents[$currency->ticker()])) {
+            throw new OutOfBoundsException("Currency {$currency->ticker()} does not exist in wallet");
         }
-        if ($this->contents[$currency->symbol()] - $amount < 0) {
+        if ($this->contents[$currency->ticker()] - $amount < 0) {
             throw new RuntimeException(
-                "Not enough {$currency->symbol()} in wallet. 
-                Requested - $amount, In wallet - {$this->contents[$currency->symbol()]}"
+                "Not enough {$currency->ticker()} in wallet. 
+                Requested - $amount, In wallet - {$this->contents[$currency->ticker()]}"
             );
         }
-        $this->contents[$currency->symbol()] -= $amount;
+        $this->contents[$currency->ticker()] -= $amount;
     }
 
     public function id(): string
