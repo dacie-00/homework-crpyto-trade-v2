@@ -51,4 +51,12 @@ class Wallet
     {
         return $this->contents;
     }
+
+    public function getCurrencyAmount(string $ticker)
+    {
+        if (!isset($this->contents[$ticker])) {
+            throw new OutOfBoundsException("Currency {$ticker} does not exist");
+        }
+        return $this->contents[$ticker];
+    }
 }
