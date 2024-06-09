@@ -24,14 +24,14 @@ class CryptoDisplay
             ->setHeaderTitle("Cryptocurrencies")
             ->setHeaders([
                 "Name",
-                "Symbol",
+                "Ticker",
                 "Price (EUR)",
             ]);
 
         foreach ($currencies as $currency) {
             $table->addRow([
                 $currency->name(),
-                $currency->symbol(),
+                $currency->ticker(),
                 $currency->price(),
             ]);
         }

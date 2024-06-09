@@ -7,14 +7,14 @@ class Crypto
 {
     private int $id;
     private string $name;
-    private string $symbol;
+    private string $ticker;
     private int $price;
 
-    public function __construct(int $id, string $name, string $symbol, int $price)
+    public function __construct(int $id, string $name, string $ticker, int $price)
     {
         $this->id = $id;
         $this->name = $name;
-        $this->symbol = $symbol;
+        $this->ticker = $ticker;
         $this->price = $price;
     }
 
@@ -28,9 +28,9 @@ class Crypto
         return $this->name;
     }
 
-    public function symbol(): string
+    public function ticker(): string
     {
-        return $this->symbol;
+        return $this->ticker;
     }
 
     public function price(): int
