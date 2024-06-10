@@ -25,18 +25,25 @@ $consoleOutput = new ConsoleOutput();
 $ask = new Ask($consoleInput, $consoleOutput);
 
 $crypto = new CryptoAPI($_ENV["API_KEY"]);
-$list = $crypto->getTop(5);
 
-$currencies = new CurrencyRepository();
-$currencies->add($euro);
-foreach ($list->data as $currency) {
-    $currencies->add(new Currency(
-        $currency->id,
-        $currency->name,
-        $currency->symbol,
-        (int)($currency->quote->EUR->price),
-    ));
+if (!file_exists("storage/cryptoCache.json")) {
+    $list = $crypto->getTop(5);
+    $currencies = new CurrencyRepository();
+    $currencies->add($euro);
+    foreach ($list->data as $currency) {
+        $currencies->add(new Currency(
+            $currency->id,
+            $currency->name,
+            $currency->symbol,
+            (int)($currency->quote->EUR->price),
+        ));
+    }
+    file_put_contents("storage/cryptoCache.json", json_encode($currencies, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR));
+} else {
+    $currenciesJson = json_decode(file_get_contents("storage/cryptoCache.json"), false, 512, JSON_THROW_ON_ERROR);
+    $currencies = new CurrencyRepository($currenciesJson);
 }
+
 
 $transactions = [];
 $exchangeService = new ExchangeService();

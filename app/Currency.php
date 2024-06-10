@@ -3,7 +3,9 @@ declare(strict_types=1);
 
 namespace App;
 
-class Currency
+use JsonSerializable;
+
+class Currency implements JsonSerializable
 {
     private int $id;
     private string $name;
@@ -36,5 +38,15 @@ class Currency
     public function exchangeRate(): int
     {
         return $this->exchangeRate;
+    }
+
+    public function jsonSerialize(): array
+    {
+        return [
+            "id" => $this->id,
+            "name" => $this->name,
+            "ticker" => $this->ticker,
+            "exchangeRate" => $this->exchangeRate,
+        ];
     }
 }
