@@ -3,11 +3,12 @@ declare(strict_types=1);
 
 namespace App;
 
+use JsonSerializable;
 use OutOfBoundsException;
 use Ramsey\Uuid\Uuid;
 use RuntimeException;
 
-class Wallet
+class Wallet implements JsonSerializable
 {
     private array $contents;
     private string $id;
@@ -60,5 +61,13 @@ class Wallet
             throw new OutOfBoundsException("Currency {$ticker} does not exist");
         }
         return $this->contents[$ticker];
+    }
+
+    public function jsonSerialize(): array
+    {
+        return [
+            $this->id,
+            $this->contents
+        ];
     }
 }
