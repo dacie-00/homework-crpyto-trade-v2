@@ -20,6 +20,18 @@ $dotenv->load();
 $euro = new Currency(-1, "Euro", "EUR", 1);
 
 
+function save(array $transactions, Wallet $wallet): void {
+    file_put_contents("storage/transactions.json", json_encode($transactions, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR));
+    file_put_contents("storage/wallet.json", json_encode($wallet, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR));
+}
+
+function load(string $fileName, bool $associative = false) {
+    if (!file_exists("storage/$fileName.json")) {
+        return null;
+    }
+    return json_decode(file_get_contents("storage/$fileName.json"), $associative, 512, JSON_THROW_ON_ERROR);
+}
+
 $consoleInput = new ArrayInput([]);
 $consoleOutput = new ConsoleOutput();
 $ask = new Ask($consoleInput, $consoleOutput);
@@ -46,9 +58,27 @@ if (!file_exists("storage/cryptoCache.json")) {
 
 
 $transactions = [];
+if ($transactionData = load("transactions")) {
+    foreach ($transactionData as $transaction) {
+        $transactions[] = new Transaction(
+            $transaction->amountIn,
+            $transaction->currencyIn,
+            $transaction->amountOut,
+            $transaction->currencyOut,
+            $transaction->createdAt
+        );
+    }
+}
 $exchangeService = new ExchangeService();
-$wallet = new Wallet();
-$wallet->add($euro, 1000);
+
+$walletInfo = load("wallet", true);
+$wallet = null;
+if ($walletInfo) {
+    $wallet = new Wallet($walletInfo[0], $walletInfo[1]);
+} else {
+    $wallet = new Wallet();
+    $wallet->add($euro, 1000);
+}
 
 while(true) {
     $display = new CryptoDisplay($consoleOutput);
@@ -66,6 +96,7 @@ while(true) {
             $amount = $ask->quantity(1, $canAfford);
 
             $transactions[] = $exchangeService->exchange($wallet, $amount * $currency->exchangeRate(), $euro, $currency);
+            save($transactions, $wallet);
             break;
         case Ask::ACTION_SELL:
             $ownedCurrencies = [];
@@ -77,6 +108,7 @@ while(true) {
             $totalAmount = $wallet->getCurrencyAmount($currency->ticker());
             $amount = $ask->quantity(1, $totalAmount);
             $transactions[] = $exchangeService->exchange($wallet, $amount, $currency, $euro);
+            save($transactions, $wallet);
             break;
         case Ask::ACTION_WALLET:
             foreach ($wallet->contents() as $currency => $amount) {
