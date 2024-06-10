@@ -107,6 +107,7 @@ while(true) {
             $currency = $currencies->getCurrencyByName($currencyName);
             $totalAmount = $wallet->getCurrencyAmount($currency->ticker());
             $amount = $ask->quantity(1, $totalAmount);
+
             $transactions[] = $exchangeService->exchange($wallet, $amount, $currency, $euro);
             save($transactions, $wallet);
             break;
@@ -118,7 +119,7 @@ while(true) {
         case Ask::ACTION_HISTORY:
             /** @var Transaction $transaction */
             foreach ($transactions as $transaction) {
-                echo "{$transaction->amountIn()} {$transaction->currencyIn()} -> {$transaction->amountOut()} {$transaction->currencyOut()}\n";
+                echo "{$transaction->amountIn()} {$transaction->currencyIn()} exchanged for {$transaction->amountOut()} {$transaction->currencyOut()}\n";
             }
     }
 }
