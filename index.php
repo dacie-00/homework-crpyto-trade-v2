@@ -2,9 +2,9 @@
 declare(strict_types=1);
 
 use App\Ask;
-use App\Crypto\CryptoAPI;
-use App\Display;
+use App\CoinMarketCapAPI;
 use App\CurrencyRepository;
+use App\Display;
 use App\Transaction;
 use App\Wallet;
 use Brick\Math\BigDecimal;
@@ -39,13 +39,13 @@ $consoleInput = new ArrayInput([]);
 $consoleOutput = new ConsoleOutput();
 $ask = new Ask($consoleInput, $consoleOutput);
 
-$crypto = new CryptoAPI($_ENV["API_KEY"]);
+$coinMarketCap = new CoinMarketCapAPI($_ENV["API_KEY"]);
 
 $provider = null;
 $exchangeRates = [];
 if (!file_exists("storage/currencyCache.json")) {
     $provider = new ConfigurableProvider();
-    $list = $crypto->getTop(5);
+    $list = $coinMarketCap->getTop(5);
 
     $currencies = new CurrencyRepository();
     $currencies->add(Currency::of("EUR"));

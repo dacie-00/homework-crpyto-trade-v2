@@ -1,13 +1,13 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Crypto;
+namespace App;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use stdClass;
 
-class CryptoAPI
+class CoinMarketCapAPI
 {
     private string $key;
 
