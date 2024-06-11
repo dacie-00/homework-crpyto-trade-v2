@@ -1,9 +1,8 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Crypto;
+namespace App;
 
-use App\Transaction;
 use Brick\Math\RoundingMode;
 use Brick\Money\Currency;
 use Brick\Money\ExchangeRateProvider;
@@ -11,7 +10,7 @@ use Brick\Money\Money;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class CryptoDisplay
+class Display
 {
     private OutputInterface $output;
 
@@ -23,7 +22,7 @@ class CryptoDisplay
     /**
      * @param Currency[] $currencies
      */
-    public function display(array $currencies, ExchangeRateProvider $provider): void
+    public function currencies(array $currencies, ExchangeRateProvider $provider): void
     {
         $table = (new Table($this->output))
             ->setHeaderTitle("Cryptocurrencies")
@@ -46,7 +45,7 @@ class CryptoDisplay
         $table->render();
     }
 
-    public function wallet($wallet)
+    public function wallet($wallet): void
     {
         $table = (new Table($this->output))
             ->setHeaderTitle("Wallet")
@@ -66,7 +65,7 @@ class CryptoDisplay
         $table->render();
     }
 
-    public function transactions($transactions)
+    public function transactions($transactions): void
     {
         $table = (new Table($this->output))
             ->setHeaderTitle("Transactions")

@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 use App\Ask;
 use App\Crypto\CryptoAPI;
-use App\Crypto\CryptoDisplay;
+use App\Display;
 use App\CurrencyRepository;
 use App\Transaction;
 use App\Wallet;
@@ -101,8 +101,8 @@ if ($walletInfo) {
 
 while (true) {
     $provider = new BaseCurrencyProvider($provider, "EUR");
-    $display = new CryptoDisplay($consoleOutput);
-    $display->display($currencies->getAll(), $provider);
+    $display = new Display($consoleOutput);
+    $display->currencies($currencies->getAll(), $provider);
     $mainAction = $ask->mainAction();
     switch ($mainAction) {
         case Ask::ACTION_BUY:
