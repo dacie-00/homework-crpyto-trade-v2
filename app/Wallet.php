@@ -7,6 +7,7 @@ use Brick\Money\Money;
 use JsonSerializable;
 use OutOfBoundsException;
 use Ramsey\Uuid\Uuid;
+use UnexpectedValueException;
 
 class Wallet implements JsonSerializable
 {
@@ -21,6 +22,9 @@ class Wallet implements JsonSerializable
         $this->id = $id ?: Uuid::uuid4()->toString();
         if (!$contents) {
             return;
+        }
+        if (!$currencies) {
+            throw new UnexpectedValueException("If wallet contents is provided then currencies must be provided too");
         }
         foreach ($contents as $currencyCode => $money) {
             $this->contents[$currencyCode] = Money::of($money, $currencies->getCurrencyByCode($currencyCode));
