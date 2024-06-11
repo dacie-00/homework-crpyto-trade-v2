@@ -171,18 +171,10 @@ while(true) {
             save($transactions, $wallet);
             break;
         case Ask::ACTION_WALLET:
-            foreach ($wallet->contents() as $money) {
-                $moneyWithoutZeros = rtrim((string)$money->getAmount(), "0");
-                echo "{$money->getCurrency()} -> $moneyWithoutZeros\n";
-            }
+            $display->wallet($wallet);
             break;
         case Ask::ACTION_HISTORY:
-            /** @var Transaction $transaction */
-            foreach ($transactions as $transaction) {
-                $amountIn = rtrim((string)$transaction->amountIn(), "0");
-                $amountOut = rtrim((string)$transaction->amountOut(), "0");
-                echo "$amountIn {$transaction->currencyIn()} exchanged for $amountOut {$transaction->currencyOut()}\n";
-            }
+            $display->transactions($transactions);
     }
 }
 
