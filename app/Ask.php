@@ -3,6 +3,9 @@ declare(strict_types=1);
 
 namespace App;
 
+use Brick\Math\BigDecimal;
+use Brick\Math\RoundingMode;
+use Brick\Money\Currency;
 use RuntimeException;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
@@ -45,27 +48,30 @@ class Ask
     {
         $names = [];
         foreach ($currencies as $currency) {
-            $names[] = $currency->name();
+            $names[] = $currency->getName();
         }
         $question = new ChoiceQuestion("Select the currency", $names);
         return $this->helper->ask($this->input, $this->output, $question);
     }
 
-    public function quantity(int $min = 1, int $max = 9999): int
+    public function amount(BigDecimal $max): float
     {
+        $min = BigDecimal::of(0.00000001); // TODO: check this...
+        $min->toScale(8, RoundingMode::DOWN);
+        $max->toScale(8, RoundingMode::DOWN);
         $question = (new Question("Enter the quantity ($min-$max) - "))
             ->setValidator(function ($value) use ($min, $max): string {
                 if (!is_numeric($value)) {
                     throw new RuntimeException("Quantity must be a number");
                 }
-                if ($value < $min) {
+                if ($min->isGreaterThan($value)) {
                     throw new RuntimeException("Quantity must be greater than or equal to $min");
                 }
-                if ($value > $max) {
+                if ($max->isLessThan($value)) {
                     throw new RuntimeException("Quantity must be less than or equal to $max");
                 }
                 return $value;
             });
-        return (int)($this->helper->ask($this->input, $this->output, $question));
+        return (float)($this->helper->ask($this->input, $this->output, $question));
     }
 }

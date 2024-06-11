@@ -4,7 +4,7 @@ namespace App;
 
 class ExchangeService
 {
-    public function exchange(Wallet $wallet, int $amount, Currency $fromCurrency, Currency $toCurrency): Transaction
+    public function exchange(Wallet $wallet, int $amount, CryptoCurrency $fromCurrency, CryptoCurrency $toCurrency): Transaction
     {
         $wallet->subtract($fromCurrency, $amount);
         $amountToAdd = (int)($amount * ($fromCurrency->exchangeRate() / $toCurrency->exchangeRate()));

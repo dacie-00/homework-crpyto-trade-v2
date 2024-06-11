@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace App;
 
+use Brick\Money\CurrencyConverter;
+use Brick\Money\Money;
 use JsonSerializable;
 use OutOfBoundsException;
 use Ramsey\Uuid\Uuid;
@@ -10,38 +12,39 @@ use RuntimeException;
 
 class Wallet implements JsonSerializable
 {
+    /**
+     * @var Money[]
+     */
     private array $contents;
     private string $id;
 
-    public function __construct(?string $id = null, ?array $contents = null)
+    public function __construct(?string $id = null, ?array $contents = null, ?CurrencyRepository $currencies = null)
     {
         $this->id = $id ?: Uuid::uuid4()->toString();
-        $this->contents = $contents ?: [];
-    }
-
-    public function add(Currency $currency, int $amount): void
-    {
-        if (!isset($this->contents[$currency->ticker()])) {
-            $this->contents[$currency->ticker()] = $amount;
+        if (!$contents) {
             return;
         }
-        $this->contents[$currency->ticker()] += $amount;
+        foreach ($contents as $currencyCode => $money) {
+            $this->contents[$currencyCode] = Money::of($money, $currencies->getCurrencyByCode($currencyCode));
+        }
     }
 
-    public function subtract(Currency $currency, int $amount): void
+    public function add(Money $money): void
     {
-        if (!isset($this->contents[$currency->ticker()])) {
-            throw new OutOfBoundsException("Currency {$currency->ticker()} does not exist in wallet");
+        if (!isset($this->contents[$money->getcurrency()->getcurrencycode()])) {
+            $this->contents[$money->getcurrency()->getcurrencycode()] = $money;
+            return;
         }
-        if ($this->contents[$currency->ticker()] - $amount < 0) {
-            throw new RuntimeException(
-                "Not enough {$currency->ticker()} in wallet. 
-                Requested - $amount, In wallet - {$this->contents[$currency->ticker()]}"
-            );
-        }
-        $this->contents[$currency->ticker()] -= $amount;
-        if ($this->contents[$currency->ticker()] <= 0) {
-            unset($this->contents[$currency->ticker()]);
+        $currentMoney = $this->contents[$money->getcurrency()->getcurrencycode()];
+        $this->contents[$money->getcurrency()->getcurrencycode()] = $currentMoney->plus($money);
+    }
+
+    public function subtract(Money $money): void
+    {
+        $currentMoney = $this->contents[$money->getcurrency()->getcurrencycode()];
+        $this->contents[$money->getcurrency()->getcurrencycode()] = $currentMoney->minus($money);
+        if ($this->contents[$money->getcurrency()->getcurrencycode()]->isNegativeOrZero()) {
+            unset($this->contents[$money->getcurrency()->getcurrencycode()]);
         }
     }
 
@@ -55,19 +58,23 @@ class Wallet implements JsonSerializable
         return $this->contents;
     }
 
-    public function getCurrencyAmount(string $ticker)
+    public function getMoney(string $currencyCode): Money
     {
-        if (!isset($this->contents[$ticker])) {
-            throw new OutOfBoundsException("Currency {$ticker} does not exist");
+        if (!isset($this->contents[$currencyCode])) {
+            throw new OutOfBoundsException("CryptoCurrency {$currencyCode} does not exist");
         }
-        return $this->contents[$ticker];
+        return $this->contents[$currencyCode];
     }
 
     public function jsonSerialize(): array
     {
+        $serializedContents = [];
+        foreach ($this->contents as $content) {
+            $serializedContents[$content->getCurrency()->getCurrencyCode()] = $content->getAmount();
+        }
         return [
             $this->id,
-            $this->contents
+            $serializedContents
         ];
     }
 }

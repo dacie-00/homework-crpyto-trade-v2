@@ -3,23 +3,23 @@ declare(strict_types=1);
 
 namespace App;
 
+use Brick\Math\BigDecimal;
 use Carbon\Carbon;
 use DateTimeInterface;
 use JsonSerializable;
 
 class Transaction implements JsonSerializable
 {
-    private int $amountIn;
+    private BigDecimal $amountIn;
     private string $currencyIn;
-    private string $type;
-    private int $amountOut;
+    private BigDecimal $amountOut;
     private string $currencyOut;
     private Carbon $createdAt;
 
     public function __construct(
-        int $amountIn,
+        BigDecimal $amountIn,
         string $currencyIn,
-        int $amountOut,
+        BigDecimal $amountOut,
         string $currencyOut,
         ?string $createdAt = null
     ) {
@@ -30,7 +30,7 @@ class Transaction implements JsonSerializable
         $this->createdAt = $createdAt ? Carbon::parse($createdAt) : Carbon::now("UTC");
     }
 
-    public function amountIn(): int
+    public function amountIn(): BigDecimal
     {
         return $this->amountIn;
     }
@@ -40,7 +40,7 @@ class Transaction implements JsonSerializable
         return $this->currencyIn;
     }
 
-    public function amountOut(): int
+    public function amountOut(): BigDecimal
     {
         return $this->amountOut;
     }

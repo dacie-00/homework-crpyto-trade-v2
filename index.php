@@ -5,10 +5,17 @@ use App\Ask;
 use App\Crypto\CryptoAPI;
 use App\Crypto\CryptoDisplay;
 use App\CurrencyRepository;
-use App\Currency;
 use App\ExchangeService;
 use App\Transaction;
 use App\Wallet;
+use Brick\Math\BigDecimal;
+use Brick\Math\BigNumber;
+use Brick\Math\RoundingMode;
+use Brick\Money\Currency;
+use Brick\Money\CurrencyConverter;
+use Brick\Money\ExchangeRateProvider\BaseCurrencyProvider;
+use Brick\Money\ExchangeRateProvider\ConfigurableProvider;
+use Brick\Money\Money;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\ConsoleOutput;
 
@@ -16,9 +23,6 @@ require_once "vendor/autoload.php";
 
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
-
-$euro = new Currency(-1, "Euro", "EUR", 1);
-
 
 function save(array $transactions, Wallet $wallet): void {
     file_put_contents("storage/transactions.json", json_encode($transactions, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR));
@@ -38,32 +42,48 @@ $ask = new Ask($consoleInput, $consoleOutput);
 
 $crypto = new CryptoAPI($_ENV["API_KEY"]);
 
-if (!file_exists("storage/cryptoCache.json")) {
+$provider = null;
+$exchangeRates = [];
+if (!file_exists("storage/currencyCache.json")) {
+    $provider = new ConfigurableProvider();
     $list = $crypto->getTop(5);
-    $currencies = new CurrencyRepository();
-    $currencies->add($euro);
-    foreach ($list->data as $currency) {
-        $currencies->add(new Currency(
-            $currency->id,
-            $currency->name,
-            $currency->symbol,
-            (int)($currency->quote->EUR->price),
-        ));
-    }
-    file_put_contents("storage/cryptoCache.json", json_encode($currencies, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR));
-} else {
-    $currenciesJson = json_decode(file_get_contents("storage/cryptoCache.json"), false, 512, JSON_THROW_ON_ERROR);
-    $currencies = new CurrencyRepository($currenciesJson);
-}
 
+    $currencies = new CurrencyRepository();
+    $currencies->add(Currency::of("EUR"));
+
+    foreach ($list->data as $currency) {
+        $provider->setExchangeRate("EUR", $currency->symbol, 1 / $currency->quote->EUR->price);
+        $exchangeRates[$currency->symbol] = ["sourceCurrencyCode" => "EUR", "targetCurrencyCode" => $currency->symbol, "exchangeRate" => 1 / $currency->quote->EUR->price];
+        $currencies->add(new Currency
+            (
+                $currency->symbol,
+                $currency->id,
+                $currency->name,
+                9
+            ),
+        );
+    }
+    file_put_contents("storage/currencyCache.json", json_encode($currencies, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR));
+    file_put_contents("storage/conversionRateCache.json", json_encode($exchangeRates, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR));
+} else {
+    $currencies = load("currencyCache");
+    $currencies = new CurrencyRepository($currencies);
+
+    $exchangeRates = load("conversionRateCache");
+
+    $provider = new ConfigurableProvider();
+    foreach ($exchangeRates as $exchangeRate) {
+        $provider->setExchangeRate($exchangeRate->sourceCurrencyCode, $exchangeRate->targetCurrencyCode, $exchangeRate->exchangeRate);
+    }
+}
 
 $transactions = [];
 if ($transactionData = load("transactions")) {
     foreach ($transactionData as $transaction) {
         $transactions[] = new Transaction(
-            $transaction->amountIn,
+            BigDecimal::of($transaction->amountIn),
             $transaction->currencyIn,
-            $transaction->amountOut,
+            BigDecimal::of($transaction->amountOut),
             $transaction->currencyOut,
             $transaction->createdAt
         );
@@ -74,52 +94,84 @@ $exchangeService = new ExchangeService();
 $walletInfo = load("wallet", true);
 $wallet = null;
 if ($walletInfo) {
-    $wallet = new Wallet($walletInfo[0], $walletInfo[1]);
+//    var_dump($walletInfo);die;
+//    var_dump($currencies);die;
+    $wallet = new Wallet($walletInfo[0], $walletInfo[1], $currencies);
 } else {
     $wallet = new Wallet();
-    $wallet->add($euro, 1000);
+    $wallet->add(Money::of(1, "EUR"));
 }
 
+
 while(true) {
+    $provider = new BaseCurrencyProvider($provider, "EUR");
     $display = new CryptoDisplay($consoleOutput);
-    $display->display($currencies->getAll());
+    $display->display($currencies->getAll(), $provider);
     $mainAction = $ask->mainAction();
     switch ($mainAction) {
         case Ask::ACTION_BUY:
             $currencyName = $ask->crypto($currencies->getAll());
             $currency = $currencies->getCurrencyByName($currencyName);
-            $canAfford = (int)($wallet->getCurrencyAmount($euro->ticker()) / $currency->exchangeRate());
-            if ($canAfford <= 1) {
+            $euro = $wallet->getMoney("EUR");
+
+            $canAfford = (new CurrencyConverter($provider))->convert($euro, $currency, RoundingMode::DOWN);
+            if ($canAfford->isNegativeOrZero()) {
                 echo "You cannot afford any of this currency\n";
                 break;
             }
-            $amount = $ask->quantity(1, $canAfford);
+            $amount = $ask->amount($canAfford->getAmount());
+            $moneyToGet = Money::of($amount, $currency);
+            $moneyToSpend = (new CurrencyConverter($provider))->convert($moneyToGet, "EUR", RoundingMode::DOWN);
 
-            $transactions[] = $exchangeService->exchange($wallet, $amount * $currency->exchangeRate(), $euro, $currency);
+            $wallet->add($moneyToGet);
+            $wallet->subtract($moneyToSpend);
+            $transactions[] = new Transaction(
+                $moneyToSpend->getAmount(),
+                $moneyToSpend->getCurrency()->getCurrencyCode(),
+                $moneyToGet->getAmount(),
+                $moneyToGet->getCurrency()->getCurrencyCode()
+            )
+
+            ;
             save($transactions, $wallet);
             break;
         case Ask::ACTION_SELL:
             $ownedCurrencies = [];
-            foreach($wallet->contents() as $ticker => $_) {
-                $ownedCurrencies[] = $currencies->getCurrencyByTicker($ticker);
+            foreach($wallet->contents() as $money) {
+                $ownedCurrencies[] = $money->getCurrency();
             }
             $currencyName = $ask->crypto($ownedCurrencies);
             $currency = $currencies->getCurrencyByName($currencyName);
-            $totalAmount = $wallet->getCurrencyAmount($currency->ticker());
-            $amount = $ask->quantity(1, $totalAmount);
 
-            $transactions[] = $exchangeService->exchange($wallet, $amount, $currency, $euro);
+            $money = $wallet->getMoney($currency->getCurrencyCode());
+
+            $amount = $ask->amount($money->getAmount());
+
+            $moneyToSpend = Money::of($amount, $currency);
+            $moneyToGet = (new CurrencyConverter($provider))->convert(Money::of($amount, $money->getCurrency()), "EUR", RoundingMode::DOWN);
+
+            $wallet->add($moneyToGet);
+            $wallet->subtract($moneyToSpend);
+            $transactions[] = new Transaction(
+                $moneyToSpend->getAmount(),
+                $moneyToSpend->getCurrency()->getCurrencyCode(),
+                $moneyToGet->getAmount(),
+                $moneyToGet->getCurrency()->getCurrencyCode()
+            );
             save($transactions, $wallet);
             break;
         case Ask::ACTION_WALLET:
-            foreach ($wallet->contents() as $currency => $amount) {
-                echo "$currency -> $amount\n";
+            foreach ($wallet->contents() as $money) {
+                $moneyWithoutZeros = rtrim((string)$money->getAmount(), "0");
+                echo "{$money->getCurrency()} -> $moneyWithoutZeros\n";
             }
             break;
         case Ask::ACTION_HISTORY:
             /** @var Transaction $transaction */
             foreach ($transactions as $transaction) {
-                echo "{$transaction->amountIn()} {$transaction->currencyIn()} exchanged for {$transaction->amountOut()} {$transaction->currencyOut()}\n";
+                $amountIn = rtrim((string)$transaction->amountIn(), "0");
+                $amountOut = rtrim((string)$transaction->amountOut(), "0");
+                echo "$amountIn {$transaction->currencyIn()} exchanged for $amountOut {$transaction->currencyOut()}\n";
             }
     }
 }

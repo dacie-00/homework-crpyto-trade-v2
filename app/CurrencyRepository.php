@@ -2,6 +2,7 @@
 
 namespace App;
 
+use Brick\Money\Currency;
 use JsonSerializable;
 use OutOfBoundsException;
 use stdClass;
@@ -22,26 +23,18 @@ class CurrencyRepository implements JsonSerializable
             return;
         }
         foreach ($currencies as $currency) {
-            $this->currencies[$currency->id] = new Currency(
-                $currency->id,
+            $this->currencies[] = new Currency(
+                $currency->currencyCode,
+                $currency->numericCode,
                 $currency->name,
-                $currency->ticker,
-                $currency->exchangeRate
+                $currency->defaultFractionDigits
             );
         }
     }
 
     public function add(Currency $currency): void
     {
-        $this->currencies[$currency->id()] = $currency;
-    }
-
-    public function getCurrencyById(int $id): Currency
-    {
-        if (!isset($this->currencies[$id])) {
-            throw new OutOfBoundsException("Currency not found");
-        }
-        return $this->currencies[$id];
+        $this->currencies[$currency->getCurrencyCode()] = $currency;
     }
 
     public function getAll(): array
@@ -52,25 +45,35 @@ class CurrencyRepository implements JsonSerializable
     public function getCurrencyByName(string $name): Currency
     {
         foreach ($this->currencies as $currency) {
-            if ($currency->name() === $name) {
+            if ($currency->getName() === $name) {
                 return $currency;
             }
         }
-        throw new OutOfBoundsException("Currency not found");
+        throw new OutOfBoundsException("Currency not found ($name)");
     }
 
-    public function getCurrencyByTicker(string $ticker): Currency
+    public function getCurrencyByCode(string $currencyCode): Currency
     {
         foreach ($this->currencies as $currency) {
-            if ($currency->ticker() === $ticker) {
+            if ($currency->getCurrencyCode() === $currencyCode) {
                 return $currency;
             }
         }
-        throw new OutOfBoundsException("Currency not found");
+        throw new OutOfBoundsException("Currency not found ($currencyCode)");
     }
 
     public function jsonSerialize(): array
     {
-        return array_values($this->currencies);
+        $serialized = [];
+        foreach ($this->currencies as $currency) {
+            $serialized[] = [
+                "currencyCode" => $currency->getCurrencyCode(),
+                "numericCode" => $currency->getNumericCode(),
+                "name" => $currency->getName(),
+                "defaultFractionDigits" => $currency->getDefaultFractionDigits(),
+            ];
+        }
+        return $serialized;
     }
+
 }
