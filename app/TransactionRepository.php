@@ -38,13 +38,13 @@ class TransactionRepository implements JsonSerializable
         return $this->transactions;
     }
 
-    public function jsonSerialize(): array
-    {
-        return $this->transactions;
-    }
-
     public function add(Transaction $transaction): void
     {
         $this->transactions[] = $transaction;
+    }
+
+    public function jsonSerialize(): array
+    {
+        return $this->transactions;
     }
 }

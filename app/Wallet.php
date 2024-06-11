@@ -3,10 +3,12 @@ declare(strict_types=1);
 
 namespace App;
 
+use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use JsonSerializable;
 use OutOfBoundsException;
 use Ramsey\Uuid\Uuid;
+use stdClass;
 use UnexpectedValueException;
 
 class Wallet implements JsonSerializable
@@ -24,7 +26,7 @@ class Wallet implements JsonSerializable
             return;
         }
         if (!$currencies) {
-            throw new UnexpectedValueException("If wallet contents is provided then currencies must be provided too");
+            throw new UnexpectedValueException("If wallet contents are provided then currencies must be provided too");
         }
         foreach ($contents as $currencyCode => $money) {
             $this->contents[$currencyCode] = Money::of($money, $currencies->getCurrencyByCode($currencyCode));

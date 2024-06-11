@@ -40,7 +40,7 @@ class Ask
             self::ACTION_WALLET,
             self::ACTION_HISTORY,
             self::ACTION_LIST_TOP,
-            self::ACTION_EXIT
+            self::ACTION_EXIT,
         ]);
         return $this->helper->ask($this->input, $this->output, $question);
     }
@@ -60,7 +60,7 @@ class Ask
 
     public function amount(BigDecimal $max): float
     {
-        $min = BigDecimal::of(0.00000001); // TODO: check this...
+        $min = BigDecimal::of(0.00000001);
         $min->toScale(8, RoundingMode::DOWN);
         $max->toScale(8, RoundingMode::DOWN);
         $question = (new Question("Enter the quantity ($min-$max) - "))

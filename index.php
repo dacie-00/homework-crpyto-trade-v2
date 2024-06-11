@@ -8,7 +8,6 @@ use App\Display;
 use App\Transaction;
 use App\TransactionRepository;
 use App\Wallet;
-use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use Brick\Money\Currency;
 use Brick\Money\CurrencyConverter;
@@ -66,7 +65,7 @@ if (!file_exists("storage/currencyCache.json") | !file_exists("storage/exchangeR
         $exchangeRates[$currency->symbol] = [
             "sourceCurrencyCode" => "EUR",
             "targetCurrencyCode" => $currency->symbol,
-            "exchangeRate" => 1 / $currency->quote->EUR->price
+            "exchangeRate" => 1 / $currency->quote->EUR->price,
         ];
         $currencies->add(new Currency(
             $currency->symbol,
@@ -209,7 +208,6 @@ while (true) {
             break;
         case Ask::ACTION_EXIT:
             exit;
-
     }
 }
 

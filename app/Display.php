@@ -39,7 +39,8 @@ class Display
             $table->addRow([
                 $currency->getName(),
                 $currency->getCurrencyCode(),
-                $provider->getExchangeRate($currency->getCurrencyCode(), "EUR")->toScale(8, RoundingMode::DOWN),
+                $provider->getExchangeRate($currency->getCurrencyCode(), "EUR")
+                    ->toScale(8, RoundingMode::DOWN),
             ]);
         }
         $table->render();

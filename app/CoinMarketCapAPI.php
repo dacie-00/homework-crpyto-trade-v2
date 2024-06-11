@@ -18,7 +18,7 @@ class CoinMarketCapAPI
 
     public function getTop(int $range): stdClass
     {
-        $url = 'https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest';
+        $url = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest";
         $parameters = [
             "start" => "1",
             "limit" => $range,
@@ -29,7 +29,7 @@ class CoinMarketCapAPI
         $request = "{$url}?{$qs}";
 
 
-        $guzzle = (new Client());
+        $guzzle = new Client();
         try {
             $response = $guzzle->request("GET", $request, [
                 "headers" => [
@@ -45,5 +45,4 @@ class CoinMarketCapAPI
 
         return json_decode($response->getBody()->getContents(), false, 512, JSON_THROW_ON_ERROR);
     }
-
 }

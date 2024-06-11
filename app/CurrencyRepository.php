@@ -76,7 +76,7 @@ class CurrencyRepository implements JsonSerializable
         return $serialized;
     }
 
-    public function exists($symbol): bool
+    public function exists(string $symbol): bool
     {
         foreach ($this->currencies as $currency) {
             if ($currency->getCurrencyCode() === $symbol) {
