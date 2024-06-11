@@ -89,7 +89,6 @@ if ($transactionData = load("transactions")) {
         );
     }
 }
-$exchangeService = new ExchangeService();
 
 $walletInfo = load("wallet", true);
 $wallet = null;
