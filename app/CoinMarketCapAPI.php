@@ -43,4 +43,32 @@ class CoinMarketCapAPI
 
         return json_decode($response->getBody()->getContents(), false, 512, JSON_THROW_ON_ERROR);
     }
+
+    public function search(string $currencyCode): ?stdClass
+    {
+        $url = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest";
+        $parameters = [
+            "symbol" => $currencyCode,
+            "convert" => "EUR",
+        ];
+
+        $queryString = http_build_query($parameters);
+
+        $guzzle = new Client();
+        try {
+            $response = $guzzle->request("GET", "$url?$queryString", [
+                "headers" => [
+                    "Accepts" => "application/json",
+                    "X-CMC_PRO_API_KEY" => $this->key,
+                ],
+            ]);
+        } catch (ClientException $e) {
+            $response = $e->getResponse();
+            $responseBody = json_decode($response->getBody()->getContents(), false, 512, JSON_THROW_ON_ERROR);
+            exit("CoinMarketCap Error - {$responseBody->status->error_message}\n");
+        }
+
+        $response = json_decode($response->getBody()->getContents(), false, 512, JSON_THROW_ON_ERROR);
+        return $response->data->$currencyCode ?? null;
+    }
 }

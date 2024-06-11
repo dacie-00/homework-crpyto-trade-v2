@@ -47,7 +47,6 @@ $ask = new Ask($consoleInput, $consoleOutput);
 
 $coinMarketCap = new CoinMarketCapAPI($_ENV["API_KEY"]);
 
-
 $provider = null;
 $exchangeRates = [];
 if (!file_exists("storage/currencyCache.json") | !file_exists("storage/exchangeRatesCache.json")) {
@@ -102,13 +101,14 @@ if (!file_exists("storage/currencyCache.json") | !file_exists("storage/exchangeR
         }
     }
 
-    $exchangeRates = load("exchangeRatesCache");
+    $exchangeRates = load("exchangeRatesCache", true);
 
     foreach ($exchangeRates as $exchangeRate) {
         $provider->setExchangeRate(
-            $exchangeRate->sourceCurrencyCode,
-            $exchangeRate->targetCurrencyCode,
-            $exchangeRate->exchangeRate);
+            $exchangeRate["sourceCurrencyCode"],
+            $exchangeRate["targetCurrencyCode"],
+            $exchangeRate["exchangeRate"]
+        );
     }
 }
 
@@ -129,10 +129,10 @@ if ($walletInfo) {
 }
 
 
-$provider = new BaseCurrencyProvider($provider, "EUR");
+$baseProvider = new BaseCurrencyProvider($provider, "EUR");
 $display = new Display($consoleOutput);
-$display->currencies($currencies->getAll(), $provider);
-$currencyConverter = new CurrencyConverter($provider);
+$display->currencies($currencies->getAll(), $baseProvider);
+$currencyConverter = new CurrencyConverter($baseProvider);
 while (true) {
     $mainAction = $ask->mainAction();
     switch ($mainAction) {
@@ -203,8 +203,42 @@ while (true) {
         case Ask::ACTION_HISTORY:
             $display->transactions($transactions);
             break;
-        case Ask::ACTION_LIST_TOP:
-            $display->currencies($currencies->getAll(), $provider);
+        case Ask::ACTION_LIST:
+            $display->currencies($currencies->getAll(), $baseProvider);
+            break;
+        case Ask::ACTION_SEARCH:
+            $query = $ask->query();
+            $currency = $coinMarketCap->search($query);
+            if (!$currency) {
+                echo "No currency found!";
+                break;
+            }
+
+            $newCurrency = new Currency(
+                    $currency->symbol,
+                    $currency->id,
+                    $currency->name,
+                    9
+                );
+            $provider->setExchangeRate(
+                "EUR",
+                $currency->symbol,
+                1 / $currency->quote->EUR->price
+            );
+            $exchangeRates[$currency->symbol] = [
+                "sourceCurrencyCode" => "EUR",
+                "targetCurrencyCode" => $currency->symbol,
+                "exchangeRate" => 1 / $currency->quote->EUR->price
+            ];
+            if (!$currencies->exists($currency->symbol)) {
+                $currencies->add($newCurrency);
+            }
+
+            $display->currencies([$newCurrency], $baseProvider);
+
+            save($currencies, "currencyCache");
+            save($exchangeRates, "exchangeRatesCache");
+            $baseProvider = new BaseCurrencyProvider($provider, "EUR");
             break;
         case Ask::ACTION_EXIT:
             exit;

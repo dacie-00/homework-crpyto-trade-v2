@@ -19,7 +19,8 @@ class Ask
     public const ACTION_SELL = "sell";
     public const ACTION_WALLET = "view your wallet";
     public const ACTION_HISTORY = "display transaction history";
-    public const ACTION_LIST_TOP = "list top currencies";
+    public const ACTION_LIST = "list currencies";
+    public const ACTION_SEARCH = "search for currency";
     public const ACTION_EXIT = "exit";
     private InputInterface $input;
     private OutputInterface $output;
@@ -39,7 +40,8 @@ class Ask
             self::ACTION_SELL,
             self::ACTION_WALLET,
             self::ACTION_HISTORY,
-            self::ACTION_LIST_TOP,
+            self::ACTION_LIST,
+            self::ACTION_SEARCH,
             self::ACTION_EXIT,
         ]);
         return $this->helper->ask($this->input, $this->output, $question);
@@ -77,5 +79,17 @@ class Ask
                 return $value;
             });
         return (float)($this->helper->ask($this->input, $this->output, $question));
+    }
+
+    public function query(): string
+    {
+        $question = (new Question("Enter a currency code to search for - "))
+            ->setValidator(function ($currencyCode): string {
+                if (empty($currencyCode)) {
+                    throw new RuntimeException("Currency code cannot be empty");
+                }
+                return $currencyCode;
+            });
+        return (string)($this->helper->ask($this->input, $this->output, $question));
     }
 }
