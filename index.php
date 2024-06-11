@@ -110,7 +110,14 @@ while(true) {
     $mainAction = $ask->mainAction();
     switch ($mainAction) {
         case Ask::ACTION_BUY:
-            $currencyName = $ask->crypto($currencies->getAll());
+            $availableCurrencies = $currencies->getAll();
+            foreach ($availableCurrencies as $index => $currency) {
+                if ($currency->getCurrencyCode() === "EUR") {
+                    unset($availableCurrencies[$index]);
+                    $availableCurrencies = array_values($availableCurrencies);
+                }
+            }
+            $currencyName = $ask->crypto($availableCurrencies);
             $currency = $currencies->getCurrencyByName($currencyName);
             $euro = $wallet->getMoney("EUR");
 
@@ -138,6 +145,9 @@ while(true) {
         case Ask::ACTION_SELL:
             $ownedCurrencies = [];
             foreach($wallet->contents() as $money) {
+                if ($money->getCurrency()->getCurrencyCode() === "EUR") {
+                    continue;
+                }
                 $ownedCurrencies[] = $money->getCurrency();
             }
             $currencyName = $ask->crypto($ownedCurrencies);
