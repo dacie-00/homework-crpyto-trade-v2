@@ -22,10 +22,9 @@ require_once "vendor/autoload.php";
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
 
-function save(array $transactions, Wallet $wallet): void
+function save($content, string $fileName): void
 {
-    file_put_contents("storage/transactions.json", json_encode($transactions, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR));
-    file_put_contents("storage/wallet.json", json_encode($wallet, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR));
+    file_put_contents("storage/$fileName.json", json_encode($content, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR));
 }
 
 function load(string $fileName, bool $associative = false)
@@ -135,7 +134,8 @@ while (true) {
                 $moneyToGet->getAmount(),
                 $moneyToGet->getCurrency()->getCurrencyCode()
             );
-            save($transactions, $wallet);
+            save($transactions, "transactions");
+            save($wallet, "wallet");
             break;
         case Ask::ACTION_SELL:
             $ownedCurrencies = [];
@@ -163,7 +163,8 @@ while (true) {
                 $moneyToGet->getAmount(),
                 $moneyToGet->getCurrency()->getCurrencyCode()
             );
-            save($transactions, $wallet);
+            save($transactions, "transactions");
+            save($wallet, "wallet");
             break;
         case Ask::ACTION_WALLET:
             $display->wallet($wallet);
