@@ -52,12 +52,12 @@ $provider = null;
 $exchangeRates = [];
 if (!file_exists("storage/currencyCache.json") | !file_exists("storage/exchangeRatesCache.json")) {
     $provider = new ConfigurableProvider();
-    $list = $coinMarketCap->getTop(10);
+    $top = $coinMarketCap->getTop(10);
 
     $currencies = new CurrencyRepository();
     $currencies->add(Currency::of("EUR"));
 
-    foreach ($list->data as $currency) {
+    foreach ($top->data as $currency) {
         $provider->setExchangeRate(
             "EUR",
             $currency->symbol,
@@ -80,10 +80,10 @@ if (!file_exists("storage/currencyCache.json") | !file_exists("storage/exchangeR
     $currencies = load("currencyCache");
     $currencies = new CurrencyRepository($currencies);
 
-    $list = $coinMarketCap->getTop(10);
+    $top = $coinMarketCap->getTop(10);
     $provider = new ConfigurableProvider();
 
-    foreach ($list->data as $currency) {
+    foreach ($top->data as $currency) {
         $provider->setExchangeRate(
             "EUR",
             $currency->symbol,
