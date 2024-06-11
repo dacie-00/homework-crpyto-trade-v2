@@ -108,10 +108,10 @@ if ($walletInfo) {
 }
 
 
+$provider = new BaseCurrencyProvider($provider, "EUR");
+$display = new Display($consoleOutput);
+$display->currencies($currencies->getAll(), $provider);
 while (true) {
-    $provider = new BaseCurrencyProvider($provider, "EUR");
-    $display = new Display($consoleOutput);
-    $display->currencies($currencies->getAll(), $provider);
     $mainAction = $ask->mainAction();
     switch ($mainAction) {
         case Ask::ACTION_BUY:
@@ -180,6 +180,13 @@ while (true) {
             break;
         case Ask::ACTION_HISTORY:
             $display->transactions($transactions);
+            break;
+        case Ask::ACTION_LIST_TOP:
+            $display->currencies($currencies->getAll(), $provider);
+            break;
+        case Ask::ACTION_EXIT:
+            exit;
+
     }
 }
 

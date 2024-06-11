@@ -19,6 +19,8 @@ class Ask
     public const ACTION_SELL = "sell";
     public const ACTION_WALLET = "view your wallet";
     public const ACTION_HISTORY = "display transaction history";
+    public const ACTION_LIST_TOP = "list top currencies";
+    public const ACTION_EXIT = "exit";
     private InputInterface $input;
     private OutputInterface $output;
     private QuestionHelper $helper;
@@ -37,6 +39,8 @@ class Ask
             self::ACTION_SELL,
             self::ACTION_WALLET,
             self::ACTION_HISTORY,
+            self::ACTION_LIST_TOP,
+            self::ACTION_EXIT
         ]);
         return $this->helper->ask($this->input, $this->output, $question);
     }

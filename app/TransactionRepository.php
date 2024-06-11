@@ -19,6 +19,7 @@ class TransactionRepository implements JsonSerializable
     public function __construct(?array $transactions = null)
     {
         if (!$transactions) {
+            $this->transactions = [];
             return;
         }
         foreach ($transactions as $transaction) {
