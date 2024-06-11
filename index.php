@@ -126,7 +126,7 @@ if ($walletInfo) {
     $wallet = new Wallet($walletInfo[0], $walletInfo[1], $currencies);
 } else {
     $wallet = new Wallet();
-    $wallet->add(Money::of(1, "EUR"));
+    $wallet->add(Money::of(1000, "EUR"));
 }
 
 
