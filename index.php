@@ -51,7 +51,7 @@ $provider = null;
 $exchangeRates = [];
 if (!file_exists("storage/currencyCache.json") | !file_exists("storage/exchangeRatesCache.json")) {
     $provider = new ConfigurableProvider();
-    $top = $coinMarketCap->getTop(10);
+    $top = $coinMarketCap->getTop(5);
 
     $currencies = new CurrencyRepository();
     $currencies->add(Currency::of("EUR"));
@@ -79,7 +79,7 @@ if (!file_exists("storage/currencyCache.json") | !file_exists("storage/exchangeR
     $currencies = load("currencyCache");
     $currencies = new CurrencyRepository($currencies);
 
-    $top = $coinMarketCap->getTop(10);
+    $top = $coinMarketCap->getTop(5);
     $provider = new ConfigurableProvider();
 
     foreach ($top->data as $currency) {
