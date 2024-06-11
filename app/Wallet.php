@@ -3,12 +3,10 @@ declare(strict_types=1);
 
 namespace App;
 
-use Brick\Money\Exception\UnknownCurrencyException;
 use Brick\Money\Money;
 use JsonSerializable;
 use OutOfBoundsException;
 use Ramsey\Uuid\Uuid;
-use stdClass;
 use UnexpectedValueException;
 
 class Wallet implements JsonSerializable
