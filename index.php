@@ -90,7 +90,8 @@ if (!file_exists("storage/currencyCache.json") | !file_exists("storage/exchangeR
         $exchangeRates[$currency->symbol] = [
             "sourceCurrencyCode" => "EUR",
             "targetCurrencyCode" => $currency->symbol,
-            "exchangeRate" => 1 / $currency->quote->EUR->price];
+            "exchangeRate" => 1 / $currency->quote->EUR->price,
+        ];
         if (!$currencies->exists($currency->symbol)) {
             $currencies->add(new Currency(
                 $currency->symbol,
@@ -215,11 +216,11 @@ while (true) {
             }
 
             $newCurrency = new Currency(
-                    $currency->symbol,
-                    $currency->id,
-                    $currency->name,
-                    9
-                );
+                $currency->symbol,
+                $currency->id,
+                $currency->name,
+                9
+            );
             $provider->setExchangeRate(
                 "EUR",
                 $currency->symbol,
@@ -228,7 +229,7 @@ while (true) {
             $exchangeRates[$currency->symbol] = [
                 "sourceCurrencyCode" => "EUR",
                 "targetCurrencyCode" => $currency->symbol,
-                "exchangeRate" => 1 / $currency->quote->EUR->price
+                "exchangeRate" => 1 / $currency->quote->EUR->price,
             ];
             if (!$currencies->exists($currency->symbol)) {
                 $currencies->add($newCurrency);
