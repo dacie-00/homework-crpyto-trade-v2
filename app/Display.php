@@ -65,7 +65,7 @@ class Display
         $table->render();
     }
 
-    public function transactions($transactions): void
+    public function transactions(TransactionRepository $transactions): void
     {
         $table = (new Table($this->output))
             ->setHeaderTitle("Transactions")
@@ -79,7 +79,7 @@ class Display
             ]);
 
         /** @var Transaction $transaction */
-        foreach ($transactions as $transaction) {
+        foreach ($transactions->getAll() as $transaction) {
             $amountIn = rtrim((string)$transaction->amountIn(), "0");
             $amountOut = rtrim((string)$transaction->amountOut(), "0");
             $table->addRow([

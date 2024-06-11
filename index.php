@@ -45,9 +45,9 @@ $coinMarketCap = new CoinMarketCapAPI($_ENV["API_KEY"]);
 
 $provider = null;
 $exchangeRates = [];
-if (!file_exists("storage/currencyCache.json")) {
+if (!file_exists("storage/currencyCache.json") | !file_exists("storage/exchangeRatesCache.json")) {
     $provider = new ConfigurableProvider();
-    $list = $coinMarketCap->getTop(5);
+    $list = $coinMarketCap->getTop(10);
 
     $currencies = new CurrencyRepository();
     $currencies->add(Currency::of("EUR"));
@@ -63,14 +63,29 @@ if (!file_exists("storage/currencyCache.json")) {
         ));
     }
     save($currencies, "currencyCache");
-    save($exchangeRates, "conversionRateCache");
+    save($exchangeRates, "exchangeRatesCache");
 } else {
     $currencies = load("currencyCache");
     $currencies = new CurrencyRepository($currencies);
 
-    $exchangeRates = load("conversionRateCache");
-
+    $list = $coinMarketCap->getTop(10);
     $provider = new ConfigurableProvider();
+
+    foreach ($list->data as $currency) {
+        $provider->setExchangeRate("EUR", $currency->symbol, 1 / $currency->quote->EUR->price);
+        $exchangeRates[$currency->symbol] = ["sourceCurrencyCode" => "EUR", "targetCurrencyCode" => $currency->symbol, "exchangeRate" => 1 / $currency->quote->EUR->price];
+        if (!$currencies->exists($currency->symbol)) {
+            $currencies->add(new Currency(
+                $currency->symbol,
+                $currency->id,
+                $currency->name,
+                9
+            ));
+        }
+    }
+
+    $exchangeRates = load("exchangeRatesCache");
+
     foreach ($exchangeRates as $exchangeRate) {
         $provider->setExchangeRate($exchangeRate->sourceCurrencyCode, $exchangeRate->targetCurrencyCode, $exchangeRate->exchangeRate);
     }
