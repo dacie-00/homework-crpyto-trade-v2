@@ -25,7 +25,9 @@ $dotenv->load();
 
 function save($content, string $fileName): void
 {
-    file_put_contents("storage/$fileName.json", json_encode($content, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR));
+    file_put_contents(
+        "storage/$fileName.json",
+        json_encode($content, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR));
 }
 
 function load(string $fileName, bool $associative = false)
@@ -33,7 +35,11 @@ function load(string $fileName, bool $associative = false)
     if (!file_exists("storage/$fileName.json")) {
         return null;
     }
-    return json_decode(file_get_contents("storage/$fileName.json"), $associative, 512, JSON_THROW_ON_ERROR);
+    return json_decode(
+        file_get_contents("storage/$fileName.json"),
+        $associative,
+        512,
+        JSON_THROW_ON_ERROR);
 }
 
 $consoleInput = new ArrayInput([]);
@@ -53,8 +59,15 @@ if (!file_exists("storage/currencyCache.json") | !file_exists("storage/exchangeR
     $currencies->add(Currency::of("EUR"));
 
     foreach ($list->data as $currency) {
-        $provider->setExchangeRate("EUR", $currency->symbol, 1 / $currency->quote->EUR->price);
-        $exchangeRates[$currency->symbol] = ["sourceCurrencyCode" => "EUR", "targetCurrencyCode" => $currency->symbol, "exchangeRate" => 1 / $currency->quote->EUR->price];
+        $provider->setExchangeRate(
+            "EUR",
+            $currency->symbol,
+            1 / $currency->quote->EUR->price);
+        $exchangeRates[$currency->symbol] = [
+            "sourceCurrencyCode" => "EUR",
+            "targetCurrencyCode" => $currency->symbol,
+            "exchangeRate" => 1 / $currency->quote->EUR->price
+        ];
         $currencies->add(new Currency(
             $currency->symbol,
             $currency->id,
@@ -72,8 +85,14 @@ if (!file_exists("storage/currencyCache.json") | !file_exists("storage/exchangeR
     $provider = new ConfigurableProvider();
 
     foreach ($list->data as $currency) {
-        $provider->setExchangeRate("EUR", $currency->symbol, 1 / $currency->quote->EUR->price);
-        $exchangeRates[$currency->symbol] = ["sourceCurrencyCode" => "EUR", "targetCurrencyCode" => $currency->symbol, "exchangeRate" => 1 / $currency->quote->EUR->price];
+        $provider->setExchangeRate(
+            "EUR",
+            $currency->symbol,
+            1 / $currency->quote->EUR->price);
+        $exchangeRates[$currency->symbol] = [
+            "sourceCurrencyCode" => "EUR",
+            "targetCurrencyCode" => $currency->symbol,
+            "exchangeRate" => 1 / $currency->quote->EUR->price];
         if (!$currencies->exists($currency->symbol)) {
             $currencies->add(new Currency(
                 $currency->symbol,
@@ -87,7 +106,10 @@ if (!file_exists("storage/currencyCache.json") | !file_exists("storage/exchangeR
     $exchangeRates = load("exchangeRatesCache");
 
     foreach ($exchangeRates as $exchangeRate) {
-        $provider->setExchangeRate($exchangeRate->sourceCurrencyCode, $exchangeRate->targetCurrencyCode, $exchangeRate->exchangeRate);
+        $provider->setExchangeRate(
+            $exchangeRate->sourceCurrencyCode,
+            $exchangeRate->targetCurrencyCode,
+            $exchangeRate->exchangeRate);
     }
 }
 
@@ -111,6 +133,7 @@ if ($walletInfo) {
 $provider = new BaseCurrencyProvider($provider, "EUR");
 $display = new Display($consoleOutput);
 $display->currencies($currencies->getAll(), $provider);
+$currencyConverter = new CurrencyConverter($provider);
 while (true) {
     $mainAction = $ask->mainAction();
     switch ($mainAction) {
@@ -126,14 +149,14 @@ while (true) {
             $currency = $currencies->getCurrencyByName($currencyName);
             $euro = $wallet->getMoney("EUR");
 
-            $canAfford = (new CurrencyConverter($provider))->convert($euro, $currency, RoundingMode::DOWN);
+            $canAfford = $currencyConverter->convert($euro, $currency, RoundingMode::DOWN);
             if ($canAfford->isNegativeOrZero()) {
                 echo "You cannot afford any of this currency\n";
                 break;
             }
             $amount = $ask->amount($canAfford->getAmount());
             $moneyToGet = Money::of($amount, $currency);
-            $moneyToSpend = (new CurrencyConverter($provider))->convert($moneyToGet, "EUR", RoundingMode::DOWN);
+            $moneyToSpend = $currencyConverter->convert($moneyToGet, "EUR", RoundingMode::DOWN);
 
             $wallet->add($moneyToGet);
             $wallet->subtract($moneyToSpend);
@@ -162,7 +185,7 @@ while (true) {
             $amount = $ask->amount($money->getAmount());
 
             $moneyToSpend = Money::of($amount, $currency);
-            $moneyToGet = (new CurrencyConverter($provider))->convert(Money::of($amount, $money->getCurrency()), "EUR", RoundingMode::DOWN);
+            $moneyToGet = $currencyConverter->convert(Money::of($amount, $money->getCurrency()), "EUR", RoundingMode::DOWN);
 
             $wallet->add($moneyToGet);
             $wallet->subtract($moneyToSpend);
