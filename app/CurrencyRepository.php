@@ -75,5 +75,4 @@ class CurrencyRepository implements JsonSerializable
         }
         return $serialized;
     }
-
 }
