@@ -25,13 +25,11 @@ class CoinMarketCapAPI
             "convert" => "EUR",
         ];
 
-        $qs = http_build_query($parameters);
-        $request = "{$url}?{$qs}";
-
+        $queryString = http_build_query($parameters);
 
         $guzzle = new Client();
         try {
-            $response = $guzzle->request("GET", $request, [
+            $response = $guzzle->request("GET", "$url?$queryString", [
                 "headers" => [
                     "Accepts" => "application/json",
                     "X-CMC_PRO_API_KEY" => $this->key,
@@ -39,8 +37,8 @@ class CoinMarketCapAPI
             ]);
         } catch (ClientException $e) {
             $response = $e->getResponse();
-            $responseBodyAsString = $response->getBody()->getContents();
-            exit($responseBodyAsString);
+            $responseBody = json_decode($response->getBody()->getContents(), false, 512, JSON_THROW_ON_ERROR);
+            exit("CoinMarketCap Error - {$responseBody->status->error_message}\n");
         }
 
         return json_decode($response->getBody()->getContents(), false, 512, JSON_THROW_ON_ERROR);
