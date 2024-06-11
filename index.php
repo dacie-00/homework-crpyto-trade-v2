@@ -6,6 +6,7 @@ use App\CoinMarketCapAPI;
 use App\CurrencyRepository;
 use App\Display;
 use App\Transaction;
+use App\TransactionRepository;
 use App\Wallet;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
@@ -75,17 +76,11 @@ if (!file_exists("storage/currencyCache.json")) {
     }
 }
 
-$transactions = [];
+$transactions = new TransactionRepository();
 if ($transactionData = load("transactions")) {
-    foreach ($transactionData as $transaction) {
-        $transactions[] = new Transaction(
-            BigDecimal::of($transaction->amountIn),
-            $transaction->currencyIn,
-            BigDecimal::of($transaction->amountOut),
-            $transaction->currencyOut,
-            $transaction->createdAt
-        );
-    }
+    $transactions = new TransactionRepository($transactionData);
+} else {
+    $transactions = new TransactionRepository();
 }
 
 $walletInfo = load("wallet", true);
@@ -127,12 +122,12 @@ while (true) {
 
             $wallet->add($moneyToGet);
             $wallet->subtract($moneyToSpend);
-            $transactions[] = new Transaction(
+            $transactions->add(new Transaction(
                 $moneyToSpend->getAmount(),
                 $moneyToSpend->getCurrency()->getCurrencyCode(),
                 $moneyToGet->getAmount(),
                 $moneyToGet->getCurrency()->getCurrencyCode()
-            );
+            ));
             save($transactions, "transactions");
             save($wallet, "wallet");
             break;
@@ -156,12 +151,12 @@ while (true) {
 
             $wallet->add($moneyToGet);
             $wallet->subtract($moneyToSpend);
-            $transactions[] = new Transaction(
+            $transactions->add(new Transaction(
                 $moneyToSpend->getAmount(),
                 $moneyToSpend->getCurrency()->getCurrencyCode(),
                 $moneyToGet->getAmount(),
                 $moneyToGet->getCurrency()->getCurrencyCode()
-            );
+            ));
             save($transactions, "transactions");
             save($wallet, "wallet");
             break;
