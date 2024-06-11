@@ -4,9 +4,9 @@ declare(strict_types=1);
 namespace App\Crypto;
 
 use App\Transaction;
+use Brick\Math\RoundingMode;
 use Brick\Money\Currency;
 use Brick\Money\ExchangeRateProvider;
-use Brick\Math\RoundingMode;
 use Brick\Money\Money;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -40,7 +40,7 @@ class CryptoDisplay
             $table->addRow([
                 $currency->getName(),
                 $currency->getCurrencyCode(),
-                $provider->getExchangeRate($currency->getCurrencyCode(), "EUR")->toScale(8, RoundingMode::DOWN)
+                $provider->getExchangeRate($currency->getCurrencyCode(), "EUR")->toScale(8, RoundingMode::DOWN),
             ]);
         }
         $table->render();
@@ -60,7 +60,7 @@ class CryptoDisplay
             $moneyWithoutZeros = rtrim((string)$money->getAmount(), "0");
             $table->addRow([
                 $money->getCurrency(),
-                $moneyWithoutZeros
+                $moneyWithoutZeros,
             ]);
         }
         $table->render();
@@ -76,7 +76,7 @@ class CryptoDisplay
                 "-->",
                 "Amount out",
                 "Currency out",
-                "Date"
+                "Date",
             ]);
 
         /** @var Transaction $transaction */
@@ -89,7 +89,7 @@ class CryptoDisplay
                 "-->",
                 $amountOut,
                 $transaction->currencyOut(),
-                $transaction->createdAt()->timezone("Europe/Riga")->format("Y-m-d H:i:s")
+                $transaction->createdAt()->timezone("Europe/Riga")->format("Y-m-d H:i:s"),
             ]);
         }
         $table->render();

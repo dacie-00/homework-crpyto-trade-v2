@@ -3,12 +3,10 @@ declare(strict_types=1);
 
 namespace App;
 
-use Brick\Money\CurrencyConverter;
 use Brick\Money\Money;
 use JsonSerializable;
 use OutOfBoundsException;
 use Ramsey\Uuid\Uuid;
-use RuntimeException;
 
 class Wallet implements JsonSerializable
 {
@@ -74,7 +72,7 @@ class Wallet implements JsonSerializable
         }
         return [
             $this->id,
-            $serializedContents
+            $serializedContents,
         ];
     }
 }

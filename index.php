@@ -5,11 +5,9 @@ use App\Ask;
 use App\Crypto\CryptoAPI;
 use App\Crypto\CryptoDisplay;
 use App\CurrencyRepository;
-use App\ExchangeService;
 use App\Transaction;
 use App\Wallet;
 use Brick\Math\BigDecimal;
-use Brick\Math\BigNumber;
 use Brick\Math\RoundingMode;
 use Brick\Money\Currency;
 use Brick\Money\CurrencyConverter;
@@ -24,12 +22,14 @@ require_once "vendor/autoload.php";
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
 
-function save(array $transactions, Wallet $wallet): void {
+function save(array $transactions, Wallet $wallet): void
+{
     file_put_contents("storage/transactions.json", json_encode($transactions, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR));
     file_put_contents("storage/wallet.json", json_encode($wallet, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR));
 }
 
-function load(string $fileName, bool $associative = false) {
+function load(string $fileName, bool $associative = false)
+{
     if (!file_exists("storage/$fileName.json")) {
         return null;
     }
@@ -55,12 +55,12 @@ if (!file_exists("storage/currencyCache.json")) {
         $provider->setExchangeRate("EUR", $currency->symbol, 1 / $currency->quote->EUR->price);
         $exchangeRates[$currency->symbol] = ["sourceCurrencyCode" => "EUR", "targetCurrencyCode" => $currency->symbol, "exchangeRate" => 1 / $currency->quote->EUR->price];
         $currencies->add(new Currency
-            (
-                $currency->symbol,
-                $currency->id,
-                $currency->name,
-                9
-            ),
+        (
+            $currency->symbol,
+            $currency->id,
+            $currency->name,
+            9
+        ),
         );
     }
     file_put_contents("storage/currencyCache.json", json_encode($currencies, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR));
@@ -93,8 +93,6 @@ if ($transactionData = load("transactions")) {
 $walletInfo = load("wallet", true);
 $wallet = null;
 if ($walletInfo) {
-//    var_dump($walletInfo);die;
-//    var_dump($currencies);die;
     $wallet = new Wallet($walletInfo[0], $walletInfo[1], $currencies);
 } else {
     $wallet = new Wallet();
@@ -102,7 +100,7 @@ if ($walletInfo) {
 }
 
 
-while(true) {
+while (true) {
     $provider = new BaseCurrencyProvider($provider, "EUR");
     $display = new CryptoDisplay($consoleOutput);
     $display->display($currencies->getAll(), $provider);
@@ -136,14 +134,12 @@ while(true) {
                 $moneyToSpend->getCurrency()->getCurrencyCode(),
                 $moneyToGet->getAmount(),
                 $moneyToGet->getCurrency()->getCurrencyCode()
-            )
-
-            ;
+            );
             save($transactions, $wallet);
             break;
         case Ask::ACTION_SELL:
             $ownedCurrencies = [];
-            foreach($wallet->contents() as $money) {
+            foreach ($wallet->contents() as $money) {
                 if ($money->getCurrency()->getCurrencyCode() === "EUR") {
                     continue;
                 }
