@@ -41,6 +41,7 @@ $ask = new Ask($consoleInput, $consoleOutput);
 
 $coinMarketCap = new CoinMarketCapAPI($_ENV["API_KEY"]);
 
+
 $provider = null;
 $exchangeRates = [];
 if (!file_exists("storage/currencyCache.json")) {
@@ -53,17 +54,15 @@ if (!file_exists("storage/currencyCache.json")) {
     foreach ($list->data as $currency) {
         $provider->setExchangeRate("EUR", $currency->symbol, 1 / $currency->quote->EUR->price);
         $exchangeRates[$currency->symbol] = ["sourceCurrencyCode" => "EUR", "targetCurrencyCode" => $currency->symbol, "exchangeRate" => 1 / $currency->quote->EUR->price];
-        $currencies->add(new Currency
-        (
+        $currencies->add(new Currency(
             $currency->symbol,
             $currency->id,
             $currency->name,
             9
-        ),
-        );
+        ));
     }
-    file_put_contents("storage/currencyCache.json", json_encode($currencies, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR));
-    file_put_contents("storage/conversionRateCache.json", json_encode($exchangeRates, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR));
+    save($currencies, "currencyCache");
+    save($exchangeRates, "conversionRateCache");
 } else {
     $currencies = load("currencyCache");
     $currencies = new CurrencyRepository($currencies);
