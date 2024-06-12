@@ -46,7 +46,7 @@ $consoleInput = new ArrayInput([]);
 $consoleOutput = new ConsoleOutput();
 $ask = new Ask($consoleInput, $consoleOutput);
 
-$coinMarketCap = new CoinMarketCapAPI($_ENV["API_KEY"]);
+$coinMarketCap = new CoinMarketCapAPI($_ENV["COIN_MARKET_CAP_API_KEY"]);
 
 $provider = null;
 $currencies = null;
