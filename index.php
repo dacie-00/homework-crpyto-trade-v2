@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 use App\Ask;
+use App\CoinGeckoAPI;
 use App\CoinMarketCapAPI;
 use App\CurrencyRepository;
 use App\Display;
@@ -46,13 +47,14 @@ $consoleInput = new ArrayInput([]);
 $consoleOutput = new ConsoleOutput();
 $ask = new Ask($consoleInput, $consoleOutput);
 
-$coinMarketCap = new CoinMarketCapAPI($_ENV["COIN_MARKET_CAP_API_KEY"]);
+//$cryptoApi = new CoinMarketCapAPI($_ENV["COIN_MARKET_CAP_API_KEY"]);
+$cryptoApi = new CoinGeckoAPI($_ENV["COIN_GECKO_API_KEY"]);
 
 $provider = null;
 $currencies = null;
 if (!file_exists("storage/currencies.json")) {
     $provider = new ConfigurableProvider();
-    $top = $coinMarketCap->getTop(5);
+    $top = $cryptoApi->getTop(5);
 
     $currencies = new CurrencyRepository();
     $currencies->add(new \App\Currency(Currency::of("EUR"), BigDecimal::one()));
@@ -75,7 +77,7 @@ if (!file_exists("storage/currencies.json")) {
         $currencyCodes[] = $currency->code;
     }
 
-    $currencies = new CurrencyRepository($coinMarketCap->search($currencyCodes));
+    $currencies = new CurrencyRepository($cryptoApi->search($currencyCodes));
     foreach ($currencies->getAll() as $currency) {
         $provider->setExchangeRate(
             "EUR",
@@ -185,7 +187,7 @@ while (true) {
             $query = $ask->query();
             $codes = explode(",", $query);
             $codes = array_map(static fn($value) => trim($value), $codes);
-            $foundCurrencies = $coinMarketCap->search($codes);
+            $foundCurrencies = $cryptoApi->search($codes);
             if (empty($foundCurrencies)) {
                 echo "No currency found!";
                 break;
