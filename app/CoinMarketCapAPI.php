@@ -21,7 +21,7 @@ class CoinMarketCapAPI implements CryptoApi
     /**
      * @return Currency[]
      */
-    public function getTop(int $range, int $listingCount = 10): array
+    public function getTop(int $page = 1, int $currenciesPerPage = 10): array
     {
         $url = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest";
         $parameters = [

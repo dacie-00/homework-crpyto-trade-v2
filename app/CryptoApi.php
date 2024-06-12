@@ -7,7 +7,7 @@ interface CryptoApi
     /**
      * @return Currency[]
      */
-    public function getTop(int $range, int $listingCount): array;
+    public function getTop(int $page, int $currenciesPerPage): array;
 
     /**
      * @param string[] $currencyCodes
