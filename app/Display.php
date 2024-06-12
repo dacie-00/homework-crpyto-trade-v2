@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App;
 
+use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use Brick\Money\Currency;
 use Brick\Money\ExchangeRateProvider;
@@ -20,9 +21,9 @@ class Display
     }
 
     /**
-     * @param Currency[] $currencies
+     * @param \App\Currency[] $currencies
      */
-    public function currencies(array $currencies, ExchangeRateProvider $provider): void
+    public function currencies(array $currencies): void
     {
         $table = (new Table($this->output))
             ->setHeaderTitle("Cryptocurrencies")
@@ -33,14 +34,13 @@ class Display
             ]);
 
         foreach ($currencies as $currency) {
-            if ($currency->getCurrencyCode() === "EUR") {
+            if ($currency->code() === "EUR") {
                 continue;
             }
             $table->addRow([
-                $currency->getName(),
-                $currency->getCurrencyCode(),
-                $provider->getExchangeRate($currency->getCurrencyCode(), "EUR")
-                    ->toScale(8, RoundingMode::DOWN),
+                $currency->name(),
+                $currency->code(),
+                BigDecimal::one()->dividedBy($currency->exchangeRate(), 9, RoundingMode::DOWN)
             ]);
         }
         $table->render();

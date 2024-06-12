@@ -27,7 +27,7 @@ class Wallet implements JsonSerializable
             throw new UnexpectedValueException("If wallet contents are provided then currencies must be provided too");
         }
         foreach ($contents as $currencyCode => $money) {
-            $this->contents[$currencyCode] = Money::of($money, $currencies->getCurrencyByCode($currencyCode));
+            $this->contents[$currencyCode] = Money::of($money, $currencies->getCurrencyByCode($currencyCode)->definition());
         }
     }
 

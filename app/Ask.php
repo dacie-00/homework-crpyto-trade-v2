@@ -48,13 +48,13 @@ class Ask
     }
 
     /**
-     * @param Currency[] $currencies
+     * @param \App\Currency[] $currencies
      */
     public function crypto(array $currencies): string
     {
         $names = [];
         foreach ($currencies as $currency) {
-            $names[] = $currency->getName();
+            $names[] = $currency->name();
         }
         $question = new ChoiceQuestion("Select the currency", $names);
         return $this->helper->ask($this->input, $this->output, $question);
@@ -83,7 +83,7 @@ class Ask
 
     public function query(): string
     {
-        $question = (new Question("Enter a currency code to search for - "))
+        $question = (new Question("Enter a currency codes to search for (separate by comma) - "))
             ->setValidator(function ($currencyCode): string {
                 if (empty($currencyCode)) {
                     throw new RuntimeException("Currency code cannot be empty");

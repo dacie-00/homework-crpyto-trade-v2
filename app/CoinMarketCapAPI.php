@@ -3,11 +3,13 @@ declare(strict_types=1);
 
 namespace App;
 
+use Brick\Math\BigDecimal;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\GuzzleException;
 use stdClass;
 
-class CoinMarketCapAPI
+class CoinMarketCapAPI implements CryptoApi
 {
     private string $key;
 
@@ -16,7 +18,10 @@ class CoinMarketCapAPI
         $this->key = $key;
     }
 
-    public function getTop(int $range): stdClass
+    /**
+     * @return Currency[]
+     */
+    public function getTop(int $range, int $listingCount = 10): array
     {
         $url = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest";
         $parameters = [
@@ -41,14 +46,28 @@ class CoinMarketCapAPI
             exit("CoinMarketCap Error - {$responseBody->status->error_message}\n");
         }
 
-        return json_decode($response->getBody()->getContents(), false, 512, JSON_THROW_ON_ERROR);
+        $currencyResponse = json_decode($response->getBody()->getContents(), false, 512, JSON_THROW_ON_ERROR);
+
+        $currencies = [];
+        foreach ($currencyResponse->data as $currency) {
+            $currencies[] = new Currency(
+                new \Brick\Money\Currency(
+                    $currency->symbol,
+                    $currency->id,
+                    $currency->name,
+                    9
+                ),
+                BigDecimal::of(1 /$currency->quote->EUR->price)
+            );
+        }
+        return $currencies;
     }
 
-    public function search(string $currencyCode): ?stdClass
+    public function search(array $currencyCodes): array
     {
         $url = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest";
         $parameters = [
-            "symbol" => $currencyCode,
+            "symbol" => implode(",", $currencyCodes),
             "convert" => "EUR",
         ];
 
@@ -69,6 +88,21 @@ class CoinMarketCapAPI
         }
 
         $response = json_decode($response->getBody()->getContents(), false, 512, JSON_THROW_ON_ERROR);
-        return $response->data->$currencyCode ?? null;
+        $currencies = [];
+        foreach ($currencyCodes as $currencyCode) {
+            if (isset($response->data->$currencyCode)) {
+                $currency = $response->data->$currencyCode;
+                $currencies[] = new Currency(
+                    new \Brick\Money\Currency(
+                        $currency->symbol,
+                        $currency->id,
+                        $currency->name,
+                        9
+                    ),
+                    BigDecimal::of(1 / $currency->quote->EUR->price)
+                );
+            }
+        }
+        return $currencies;
     }
 }

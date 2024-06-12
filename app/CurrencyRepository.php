@@ -3,10 +3,8 @@ declare(strict_types=1);
 
 namespace App;
 
-use Brick\Money\Currency;
 use JsonSerializable;
 use OutOfBoundsException;
-use stdClass;
 
 class CurrencyRepository implements JsonSerializable
 {
@@ -16,7 +14,7 @@ class CurrencyRepository implements JsonSerializable
     private array $currencies = [];
 
     /**
-     * @param stdClass[] $currencies
+     * @param Currency[] $currencies
      */
     public function __construct(?array $currencies = null)
     {
@@ -24,18 +22,13 @@ class CurrencyRepository implements JsonSerializable
             return;
         }
         foreach ($currencies as $currency) {
-            $this->currencies[] = new Currency(
-                $currency->currencyCode,
-                $currency->numericCode,
-                $currency->name,
-                $currency->defaultFractionDigits
-            );
+            $this->currencies[] = $currency;
         }
     }
 
     public function add(Currency $currency): void
     {
-        $this->currencies[$currency->getCurrencyCode()] = $currency;
+        $this->currencies[$currency->definition()->getCurrencyCode()] = $currency;
     }
 
     public function getAll(): array
@@ -46,7 +39,7 @@ class CurrencyRepository implements JsonSerializable
     public function getCurrencyByName(string $name): Currency
     {
         foreach ($this->currencies as $currency) {
-            if ($currency->getName() === $name) {
+            if ($currency->definition()->getName() === $name) {
                 return $currency;
             }
         }
@@ -56,7 +49,7 @@ class CurrencyRepository implements JsonSerializable
     public function getCurrencyByCode(string $currencyCode): Currency
     {
         foreach ($this->currencies as $currency) {
-            if ($currency->getCurrencyCode() === $currencyCode) {
+            if ($currency->definition()->getCurrencyCode() === $currencyCode) {
                 return $currency;
             }
         }
@@ -65,16 +58,7 @@ class CurrencyRepository implements JsonSerializable
 
     public function jsonSerialize(): array
     {
-        $serialized = [];
-        foreach ($this->currencies as $currency) {
-            $serialized[] = [
-                "currencyCode" => $currency->getCurrencyCode(),
-                "numericCode" => $currency->getNumericCode(),
-                "name" => $currency->getName(),
-                "defaultFractionDigits" => $currency->getDefaultFractionDigits(),
-            ];
-        }
-        return $serialized;
+        return $this->currencies;
     }
 
     public function exists(string $symbol): bool
