@@ -28,8 +28,8 @@ $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
 
 $connectionParams = [
-    'driver' => 'pdo_sqlite',
-    "path" => $_ENV["SQLITE_URL"],
+    "driver" => "pdo_sqlite",
+    "path" => "storage/database.sqlite"
 ];
 
 $connection = DriverManager::getConnection($connectionParams);
