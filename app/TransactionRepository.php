@@ -38,18 +38,18 @@ class TransactionRepository
         $this->connection->createQueryBuilder()
             ->insert("transactions")
             ->values([
-                'amount_in' => ':amount_in',
-                'currency_in' => ':currency_in',
-                'amount_out' => ':amount_out',
-                'currency_out' => ':currency_out',
-                'created_at' => ':created_at',
+                "amount_in" => ":amount_in",
+                "currency_in" => ":currency_in",
+                "amount_out" => ":amount_out",
+                "currency_out" => ":currency_out",
+                "created_at" => ":created_at",
             ])
             ->setParameters([
-                'amount_in' => $transaction->amountIn(),
-                'currency_in' => $transaction->currencyIn(),
-                'amount_out' => $transaction->amountOut(),
-                'currency_out' => $transaction->currencyOut(),
-                'created_at' => $transaction->createdAt(),
+                "amount_in" => $transaction->amountIn(),
+                "currency_in" => $transaction->currencyIn(),
+                "amount_out" => $transaction->amountOut(),
+                "currency_out" => $transaction->currencyOut(),
+                "created_at" => $transaction->createdAt(),
             ])
             ->executeStatement();
     }

@@ -48,13 +48,13 @@ class Ask
     }
 
     /**
-     * @param \App\Currency[] $currencies
+     * @param Currency[] $currencies
      */
     public function crypto(array $currencies): string
     {
         $names = [];
         foreach ($currencies as $currency) {
-            $names[] = $currency->name();
+            $names[] = $currency->getName();
         }
         $question = new ChoiceQuestion("Select the currency", $names);
         return $this->helper->ask($this->input, $this->output, $question);

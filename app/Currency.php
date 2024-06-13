@@ -16,6 +16,19 @@ class Currency implements JsonSerializable
         $this->exchangeRate = $exchangeRate;
     }
 
+    public static function fromArray(array $currency): Currency
+    {
+        return new self(
+            new \Brick\Money\Currency(
+                $currency["code"],
+                $currency["numeric_code"],
+                $currency["name"],
+                9
+            ),
+            BigDecimal::of($currency["exchange_rate"])
+        );
+    }
+
     public function definition(): \Brick\Money\Currency
     {
         return $this->definition;

@@ -25,8 +25,8 @@ class CoinMarketCapAPI implements CryptoApi
     {
         $url = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest";
         $parameters = [
-            "start" => "1",
-            "limit" => $range,
+            "start" => $page,
+            "limit" => $currenciesPerPage,
             "convert" => "EUR",
         ];
 

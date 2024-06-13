@@ -83,8 +83,8 @@ class Display
             ]);
 
         foreach ($transactions as $transaction) {
-            $amountIn = rtrim((string)$transaction->amountIn(), "0");
-            $amountOut = rtrim((string)$transaction->amountOut(), "0");
+            $amountIn = (string)$transaction->amountIn();
+            $amountOut = (string)$transaction->amountOut();
             $table->addRow([
                 $amountIn,
                 $transaction->currencyIn(),

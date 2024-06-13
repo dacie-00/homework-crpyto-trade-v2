@@ -27,7 +27,6 @@ require_once "vendor/autoload.php";
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
 
-
 $connectionParams = [
     'driver' => 'pdo_sqlite',
     "path" => $_ENV["SQLITE_URL"],
@@ -40,8 +39,8 @@ if (!$schemaManager->tablesExist(["currencies"])) {
     $table = new Table("currencies");
     $table->addColumn("code", "string");
     $table->addColumn("name", "string");
-    $table->addColumn("numericCode", "integer");
-    $table->addColumn("price", "integer");
+    $table->addColumn("numeric_code", "integer");
+    $table->addColumn("exchange_rate", "decimal");
     $schemaManager->createTable($table);
 }
 if (!$schemaManager->tablesExist(["transactions"])) {
@@ -59,7 +58,6 @@ if (!$schemaManager->tablesExist(["wallet"])) {
     $table->addColumn("amount", "decimal");
     $schemaManager->createTable($table);
 }
-
 
 function save($content, string $fileName): void
 {
@@ -88,42 +86,39 @@ $cryptoApi = new CoinMarketCapAPI($_ENV["COIN_MARKET_CAP_API_KEY"]);
 //$cryptoApi = new CoinGeckoAPI($_ENV["COIN_GECKO_API_KEY"]);
 
 $provider = null;
-$currencies = null;
-if (!file_exists("storage/currencies.json")) {
-    $provider = new ConfigurableProvider();
-    $top = $cryptoApi->getTop(5);
+$currencyRepository = new CurrencyRepository($connection);
 
-    $currencies = new CurrencyRepository();
-    $currencies->add(new \App\Currency(Currency::of("EUR"), BigDecimal::one()));
+if ($currencyRepository->isEmpty()) {
+    $provider = new ConfigurableProvider();
+    $currencyRepository->add(new \App\Currency(Currency::of("EUR"), BigDecimal::one()));
+
+    $top = $cryptoApi->getTop(5);
+    $currencyRepository->add($top);
     foreach ($top as $currency) {
-        $currencies->add($currency);
         $provider->setExchangeRate(
             "EUR",
             $currency->code(),
             $currency->exchangeRate()
         );
     }
-    save($currencies, "currencies");
 } else {
     $provider = new ConfigurableProvider();
 
-    $savedCurrencies = load("currencies");
-    $currencyCodes = [];
+    $savedCurrencies = $currencyRepository->getAll();
 
+    $currencyCodes = [];
     foreach ($savedCurrencies as $currency) {
         $currencyCodes[] = $currency->code;
     }
 
-    $currencies = new CurrencyRepository($cryptoApi->search($currencyCodes));
-    foreach ($currencies->getAll() as $currency) {
+    $currencyRepository->add($cryptoApi->search($currencyCodes));
+    foreach ($savedCurrencies as $currency) {
         $provider->setExchangeRate(
             "EUR",
             $currency->code(),
             $currency->exchangeRate()
         );
     }
-    $currencies->add(new \App\Currency(Currency::of("EUR"), BigDecimal::one()));
-    save($currencies, "currencies");
 }
 
 $transactionRepository = new TransactionRepository($connection);
@@ -131,7 +126,7 @@ $transactionRepository = new TransactionRepository($connection);
 $walletInfo = load("wallet", true);
 $wallet = null;
 if ($walletInfo) {
-    $wallet = new Wallet($walletInfo[0], $walletInfo[1], $currencies);
+    $wallet = new Wallet($walletInfo[0], $walletInfo[1], $currencyRepository);
 } else {
     $wallet = new Wallet();
     $wallet->add(Money::of(1000, "EUR"));
@@ -140,21 +135,23 @@ if ($walletInfo) {
 
 $baseProvider = new BaseCurrencyProvider($provider, "EUR");
 $display = new Display($consoleOutput);
-$display->currencies($currencies->getAll());
+$display->currencies($currencyRepository->getAll());
 $currencyConverter = new CurrencyConverter($baseProvider);
 while (true) {
     $mainAction = $ask->mainAction();
     switch ($mainAction) {
         case Ask::ACTION_BUY:
-            $availableCurrencies = $currencies->getAll();
-            foreach ($availableCurrencies as $index => $currency) {
+            $availableCurrencies = [];
+            /** @var \App\Currency $currency */
+            foreach ($currencyRepository->getAll() as $currency) {
                 if ($currency->code() === "EUR") {
-                    unset($availableCurrencies[$index]);
-                    $availableCurrencies = array_values($availableCurrencies);
+                    continue;
                 }
+                $availableCurrencies[] = $currency->definition();
+
             }
             $currencyName = $ask->crypto($availableCurrencies);
-            $currency = $currencies->getCurrencyByName($currencyName);
+            $currency = $currencyRepository->getCurrencyByName($currencyName);
             $euro = $wallet->getMoney("EUR");
 
             $canAfford = $currencyConverter->convert($euro, $currency->definition(), RoundingMode::DOWN);
@@ -188,7 +185,7 @@ while (true) {
                 $ownedCurrencies[] = $money->getCurrency();
             }
             $currencyName = $ask->crypto($ownedCurrencies);
-            $currency = $currencies->getCurrencyByName($currencyName);
+            $currency = $currencyRepository->getCurrencyByName($currencyName);
 
             $money = $wallet->getMoney($currency->code());
 
@@ -216,7 +213,7 @@ while (true) {
             $display->transactions($transactionRepository->getAll());
             break;
         case Ask::ACTION_LIST:
-            $display->currencies($currencies->getAll());
+            $display->currencies($currencyRepository->getAll());
             break;
         case Ask::ACTION_SEARCH:
             $query = $ask->query();
@@ -228,18 +225,17 @@ while (true) {
                 break;
             }
 
+            $currencyRepository->add($foundCurrencies);
             foreach ($foundCurrencies as $currency) {
                 $provider->setExchangeRate(
                     "EUR",
                     $currency->code(),
                     $currency->exchangeRate()
                 );
-                $currencies->add($currency);
             }
 
             $display->currencies($foundCurrencies);
 
-            save($currencies, "currencies");
             $baseProvider = new BaseCurrencyProvider($provider, "EUR");
             break;
         case Ask::ACTION_EXIT:
