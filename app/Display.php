@@ -66,7 +66,10 @@ class Display
         $table->render();
     }
 
-    public function transactions(TransactionRepository $transactions): void
+    /**
+     * @param Transaction[] $transactions
+     */
+    public function transactions(array $transactions): void
     {
         $table = (new Table($this->output))
             ->setHeaderTitle("Transactions")
@@ -79,8 +82,7 @@ class Display
                 "Date",
             ]);
 
-        /** @var Transaction $transaction */
-        foreach ($transactions->getAll() as $transaction) {
+        foreach ($transactions as $transaction) {
             $amountIn = rtrim((string)$transaction->amountIn(), "0");
             $amountOut = rtrim((string)$transaction->amountOut(), "0");
             $table->addRow([

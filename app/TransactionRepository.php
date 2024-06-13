@@ -4,48 +4,53 @@ declare(strict_types=1);
 namespace App;
 
 use Brick\Math\BigDecimal;
+use Doctrine\DBAL\Connection;
 use JsonSerializable;
 use stdClass;
 
-class TransactionRepository implements JsonSerializable
+class TransactionRepository
 {
-    /**
-     * @var Transaction[]
-     */
-    private array $transactions;
+    private Connection $connection;
 
-    /**
-     * @param stdClass[]|null $transactions
-     */
-    public function __construct(?array $transactions = null)
+    public function __construct(Connection $connection)
     {
-        if (!$transactions) {
-            $this->transactions = [];
-            return;
-        }
-        foreach ($transactions as $transaction) {
-            $this->add(new Transaction(
-                BigDecimal::of($transaction->amountIn),
-                $transaction->currencyIn,
-                BigDecimal::of($transaction->amountOut),
-                $transaction->currencyOut,
-                $transaction->createdAt
-            ));
-        }
+        $this->connection = $connection;
     }
 
+    /**
+     * @return Transaction[]
+     */
     public function getAll(): array
     {
-        return $this->transactions;
+        $transactions = [];
+        $transactionData = $this->connection->createQueryBuilder()
+            ->select("*")
+            ->from("transactions")
+            ->executeQuery();
+        foreach ($transactionData->fetchAllAssociative() as $transaction) {
+            $transactions[] = Transaction::fromArray($transaction);
+        }
+        return $transactions;
     }
 
     public function add(Transaction $transaction): void
     {
-        $this->transactions[] = $transaction;
-    }
-
-    public function jsonSerialize(): array
-    {
-        return $this->transactions;
+        $this->connection->createQueryBuilder()
+            ->insert("transactions")
+            ->values([
+                'amount_in' => ':amount_in',
+                'currency_in' => ':currency_in',
+                'amount_out' => ':amount_out',
+                'currency_out' => ':currency_out',
+                'created_at' => ':created_at',
+            ])
+            ->setParameters([
+                'amount_in' => $transaction->amountIn(),
+                'currency_in' => $transaction->currencyIn(),
+                'amount_out' => $transaction->amountOut(),
+                'currency_out' => $transaction->currencyOut(),
+                'created_at' => $transaction->createdAt(),
+            ])
+            ->executeStatement();
     }
 }

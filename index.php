@@ -16,6 +16,9 @@ use Brick\Money\CurrencyConverter;
 use Brick\Money\ExchangeRateProvider\BaseCurrencyProvider;
 use Brick\Money\ExchangeRateProvider\ConfigurableProvider;
 use Brick\Money\Money;
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\DriverManager;
+use Doctrine\DBAL\Schema\Table;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\ConsoleOutput;
 
@@ -23,6 +26,40 @@ require_once "vendor/autoload.php";
 
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
+
+
+$connectionParams = [
+    'driver' => 'pdo_sqlite',
+    "path" => $_ENV["SQLITE_URL"],
+];
+
+$connection = DriverManager::getConnection($connectionParams);
+
+$schemaManager = $connection->createSchemaManager();
+if (!$schemaManager->tablesExist(["currencies"])) {
+    $table = new Table("currencies");
+    $table->addColumn("code", "string");
+    $table->addColumn("name", "string");
+    $table->addColumn("numericCode", "integer");
+    $table->addColumn("price", "integer");
+    $schemaManager->createTable($table);
+}
+if (!$schemaManager->tablesExist(["transactions"])) {
+    $table = new Table("transactions");
+    $table->addColumn("amount_in", "decimal");
+    $table->addColumn("currency_in", "decimal");
+    $table->addColumn("amount_out", "decimal");
+    $table->addColumn("currency_out", "decimal");
+    $table->addColumn("created_at", "string");
+    $schemaManager->createTable($table);
+}
+if (!$schemaManager->tablesExist(["wallet"])) {
+    $table = new Table("wallet");
+    $table->addColumn("currency", "string");
+    $table->addColumn("amount", "decimal");
+    $schemaManager->createTable($table);
+}
+
 
 function save($content, string $fileName): void
 {
@@ -47,8 +84,8 @@ $consoleInput = new ArrayInput([]);
 $consoleOutput = new ConsoleOutput();
 $ask = new Ask($consoleInput, $consoleOutput);
 
-//$cryptoApi = new CoinMarketCapAPI($_ENV["COIN_MARKET_CAP_API_KEY"]);
-$cryptoApi = new CoinGeckoAPI($_ENV["COIN_GECKO_API_KEY"]);
+$cryptoApi = new CoinMarketCapAPI($_ENV["COIN_MARKET_CAP_API_KEY"]);
+//$cryptoApi = new CoinGeckoAPI($_ENV["COIN_GECKO_API_KEY"]);
 
 $provider = null;
 $currencies = null;
@@ -89,12 +126,7 @@ if (!file_exists("storage/currencies.json")) {
     save($currencies, "currencies");
 }
 
-$transactions = new TransactionRepository();
-if ($transactionData = load("transactions")) {
-    $transactions = new TransactionRepository($transactionData);
-} else {
-    $transactions = new TransactionRepository();
-}
+$transactionRepository = new TransactionRepository($connection);
 
 $walletInfo = load("wallet", true);
 $wallet = null;
@@ -136,13 +168,15 @@ while (true) {
 
             $wallet->add($moneyToGet);
             $wallet->subtract($moneyToSpend);
-            $transactions->add(new Transaction(
-                $moneyToSpend->getAmount(),
-                $moneyToSpend->getCurrency()->getCurrencyCode(),
-                $moneyToGet->getAmount(),
-                $moneyToGet->getCurrency()->getCurrencyCode()
-            ));
-            save($transactions, "transactions");
+
+            $transactionRepository->add(new Transaction
+                (
+                    $moneyToSpend->getAmount(),
+                    $moneyToSpend->getCurrency()->getCurrencyCode(),
+                    $moneyToGet->getAmount(),
+                    $moneyToGet->getCurrency()->getCurrencyCode()
+                )
+            );
             save($wallet, "wallet");
             break;
         case Ask::ACTION_SELL:
@@ -165,20 +199,21 @@ while (true) {
 
             $wallet->add($moneyToGet);
             $wallet->subtract($moneyToSpend);
-            $transactions->add(new Transaction(
-                $moneyToSpend->getAmount(),
-                $moneyToSpend->getCurrency()->getCurrencyCode(),
-                $moneyToGet->getAmount(),
-                $moneyToGet->getCurrency()->getCurrencyCode()
-            ));
-            save($transactions, "transactions");
+            $transactionRepository->add(new Transaction
+                (
+                    $moneyToSpend->getAmount(),
+                    $moneyToSpend->getCurrency()->getCurrencyCode(),
+                    $moneyToGet->getAmount(),
+                    $moneyToGet->getCurrency()->getCurrencyCode()
+                )
+            );
             save($wallet, "wallet");
             break;
         case Ask::ACTION_WALLET:
             $display->wallet($wallet);
             break;
         case Ask::ACTION_HISTORY:
-            $display->transactions($transactions);
+            $display->transactions($transactionRepository->getAll());
             break;
         case Ask::ACTION_LIST:
             $display->currencies($currencies->getAll());

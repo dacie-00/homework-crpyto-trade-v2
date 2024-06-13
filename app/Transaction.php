@@ -30,6 +30,17 @@ class Transaction implements JsonSerializable
         $this->createdAt = $createdAt ? Carbon::parse($createdAt) : Carbon::now("UTC");
     }
 
+    public static function fromArray(array $transaction): Transaction
+    {
+        return new self(
+            BigDecimal::of($transaction['amount_in']),
+            $transaction['currency_in'],
+            BigDecimal::of($transaction['amount_out']),
+            $transaction['currency_out'],
+            $transaction['created_at']
+        );
+    }
+
     public function amountIn(): BigDecimal
     {
         return $this->amountIn;
