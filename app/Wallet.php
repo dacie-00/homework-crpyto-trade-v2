@@ -4,79 +4,102 @@ declare(strict_types=1);
 namespace App;
 
 use Brick\Money\Money;
-use JsonSerializable;
+use Doctrine\DBAL\Connection;
 use OutOfBoundsException;
-use Ramsey\Uuid\Uuid;
-use UnexpectedValueException;
 
-class Wallet implements JsonSerializable
+class Wallet
 {
-    /**
-     * @var Money[]
-     */
-    private array $contents;
-    private string $id;
 
-    public function __construct(?string $id = null, ?array $contents = null, ?CurrencyRepository $currencies = null)
+    private Connection $connection;
+    private CurrencyRepository $currencyRepository;
+
+    public function __construct(Connection $connection, CurrencyRepository $currencyRepository)
     {
-        $this->id = $id ?: Uuid::uuid4()->toString();
-        if (!$contents) {
-            return;
-        }
-        if (!$currencies) {
-            throw new UnexpectedValueException("If wallet contents are provided then currencies must be provided too");
-        }
-        foreach ($contents as $currencyCode => $money) {
-            $this->contents[$currencyCode] = Money::of($money, $currencies->getCurrencyByCode($currencyCode)->definition());
-        }
+        $this->connection = $connection;
+        $this->currencyRepository = $currencyRepository;
     }
 
     public function add(Money $money): void
     {
-        if (!isset($this->contents[$money->getcurrency()->getcurrencycode()])) {
-            $this->contents[$money->getcurrency()->getcurrencycode()] = $money;
-            return;
+        $affectedRows = $this->connection->createQueryBuilder()->update("wallet")
+            ->where("currency = :currency")
+            ->set("amount", "amount + :amount")
+            ->setParameter("currency", $money->getCurrency())
+            ->setParameter("amount", $money->getAmount())
+            ->executeQuery()
+            ->rowCount();
+
+        if ($affectedRows === 0) {
+            $this->connection->createQueryBuilder()->insert("wallet")
+                ->values(
+                    [
+                        "currency" => ":currency",
+                        "amount" => ":amount",
+                    ]
+                )
+                ->setParameter("currency", $money->getCurrency())
+                ->setParameter("amount", $money->getAmount())
+                ->executeQuery();
         }
-        $currentMoney = $this->contents[$money->getcurrency()->getcurrencycode()];
-        $this->contents[$money->getcurrency()->getcurrencycode()] = $currentMoney->plus($money);
     }
 
     public function subtract(Money $money): void
     {
-        $currentMoney = $this->contents[$money->getcurrency()->getcurrencycode()];
-        $this->contents[$money->getcurrency()->getcurrencycode()] = $currentMoney->minus($money);
-        if ($this->contents[$money->getcurrency()->getcurrencycode()]->isNegativeOrZero()) {
-            unset($this->contents[$money->getcurrency()->getcurrencycode()]);
-        }
-    }
+        $this->connection->createQueryBuilder()->update("wallet")
+            ->set("amount", "amount - :amount")
+            ->where("currency = :currency")
+            ->setParameter("amount", $money->getAmount())
+            ->setParameter("currency", $money->getCurrency())
+            ->executeQuery();
 
-    public function id(): string
-    {
-        return $this->id;
+        $this->connection->createQueryBuilder()->delete("wallet")
+            ->where("currency = :currency")
+            ->andWhere("amount <= 0")
+            ->setParameter("currency", $money->getCurrency())
+            ->executeQuery();
     }
 
     public function contents(): array
     {
-        return $this->contents;
+        $moneyData = $this->connection->createQueryBuilder()
+            ->select("*")
+            ->from("wallet")
+            ->executeQuery()
+            ->fetchAllAssociative();
+
+        if (!$moneyData) {
+            return [];
+        }
+        return array_map(
+            fn($money) => Money::of(
+                $money["amount"],
+                $this->currencyRepository->getCurrencyByCode($money["currency"])->definition()
+            ),
+            $moneyData
+        );
     }
 
     public function getMoney(string $currencyCode): Money
     {
-        if (!isset($this->contents[$currencyCode])) {
+        $money = $this->connection->createQueryBuilder()
+            ->select("*")
+            ->from("wallet")
+            ->where("currency = :currency")
+            ->setParameter("currency", $currencyCode)
+            ->executeQuery()
+            ->fetchAssociative();
+        if (!$money) {
             throw new OutOfBoundsException("CryptoCurrency {$currencyCode} does not exist");
         }
-        return $this->contents[$currencyCode];
+        return Money::of($money["amount"], $money["currency"]);
     }
 
-    public function jsonSerialize(): array
+    public function isEmpty()
     {
-        $serializedContents = [];
-        foreach ($this->contents as $content) {
-            $serializedContents[$content->getCurrency()->getCurrencyCode()] = $content->getAmount();
-        }
-        return [
-            $this->id,
-            $serializedContents,
-        ];
+        return $this->connection->createQueryBuilder()
+                ->select("*")
+                ->from("wallet")
+                ->executeQuery()
+                ->fetchOne() === false;
     }
 }

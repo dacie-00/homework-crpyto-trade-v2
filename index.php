@@ -59,25 +59,6 @@ if (!$schemaManager->tablesExist(["wallet"])) {
     $schemaManager->createTable($table);
 }
 
-function save($content, string $fileName): void
-{
-    file_put_contents(
-        "storage/$fileName.json",
-        json_encode($content, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR));
-}
-
-function load(string $fileName, bool $associative = false)
-{
-    if (!file_exists("storage/$fileName.json")) {
-        return null;
-    }
-    return json_decode(
-        file_get_contents("storage/$fileName.json"),
-        $associative,
-        512,
-        JSON_THROW_ON_ERROR);
-}
-
 $consoleInput = new ArrayInput([]);
 $consoleOutput = new ConsoleOutput();
 $ask = new Ask($consoleInput, $consoleOutput);
@@ -123,12 +104,8 @@ if ($currencyRepository->isEmpty()) {
 
 $transactionRepository = new TransactionRepository($connection);
 
-$walletInfo = load("wallet", true);
-$wallet = null;
-if ($walletInfo) {
-    $wallet = new Wallet($walletInfo[0], $walletInfo[1], $currencyRepository);
-} else {
-    $wallet = new Wallet();
+$wallet = new Wallet($connection, $currencyRepository);
+if ($wallet->isEmpty()) {
     $wallet->add(Money::of(1000, "EUR"));
 }
 
@@ -174,7 +151,6 @@ while (true) {
                     $moneyToGet->getCurrency()->getCurrencyCode()
                 )
             );
-            save($wallet, "wallet");
             break;
         case Ask::ACTION_SELL:
             $ownedCurrencies = [];
@@ -204,7 +180,6 @@ while (true) {
                     $moneyToGet->getCurrency()->getCurrencyCode()
                 )
             );
-            save($wallet, "wallet");
             break;
         case Ask::ACTION_WALLET:
             $display->wallet($wallet);
