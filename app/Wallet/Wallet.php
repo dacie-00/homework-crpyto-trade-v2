@@ -92,7 +92,7 @@ class Wallet
         if (!$money) {
             throw new OutOfBoundsException("CryptoCurrency {$currencyCode} does not exist");
         }
-        return Money::of($money["amount"], $money["currency"]);
+        return Money::of($money["amount"], $this->currencyRepository->getCurrencyByCode($currencyCode)->definition());
     }
 
     public function isEmpty()

@@ -139,6 +139,6 @@ class CurrencyRepository
             ->select("*")
             ->from("currencies")
             ->executeQuery()
-            ->rowCount() === 0;
+            ->fetchOne() === false;
     }
 }

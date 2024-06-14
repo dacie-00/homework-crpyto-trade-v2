@@ -87,8 +87,9 @@ if ($currencyRepository->isEmpty()) {
     $savedCurrencies = $currencyRepository->getAll();
 
     $currencyCodes = [];
+    /** @var \App\Currency\Currency $currency */
     foreach ($savedCurrencies as $currency) {
-        $currencyCodes[] = $currency->code;
+        $currencyCodes[] = $currency->definition()->getCurrencyCode();
     }
 
     $currencyRepository->add($cryptoApi->search($currencyCodes));
