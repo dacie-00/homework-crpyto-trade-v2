@@ -57,18 +57,21 @@ if (!$schemaManager->tablesExist(["wallet"])) {
     $schemaManager->createTable($table);
 }
 
+$cryptoApi = new CoinMarketCapAPI($_ENV["COIN_MARKET_CAP_API_KEY"]);
+//$cryptoApi = new CoinGeckoAPI($_ENV["COIN_GECKO_API_KEY"]);
+
 $consoleInput = new ArrayInput([]);
 $consoleOutput = new ConsoleOutput();
 $ask = new Ask($consoleInput, $consoleOutput);
 
-$cryptoApi = new CoinMarketCapAPI($_ENV["COIN_MARKET_CAP_API_KEY"]);
-//$cryptoApi = new CoinGeckoAPI($_ENV["COIN_GECKO_API_KEY"]);
 
-$provider = null;
+$provider = new ConfigurableProvider();
 $currencyRepository = new CurrencyRepository($connection);
+$transactionRepository = new TransactionRepository($connection);
+$wallet = new Wallet($connection, $currencyRepository);
+
 
 if ($currencyRepository->isEmpty()) {
-    $provider = new ConfigurableProvider();
     $currencyRepository->add(new \App\Currency\Currency(Currency::of("EUR"), BigDecimal::one()));
 
     $top = $cryptoApi->getTop();
@@ -81,8 +84,6 @@ if ($currencyRepository->isEmpty()) {
         );
     }
 } else {
-    $provider = new ConfigurableProvider();
-
     $savedCurrencies = $currencyRepository->getAll();
 
     $currencyCodes = [];
@@ -100,24 +101,21 @@ if ($currencyRepository->isEmpty()) {
     }
 }
 
-$transactionRepository = new TransactionRepository($connection);
-
-$wallet = new Wallet($connection, $currencyRepository);
 if ($wallet->isEmpty()) {
     $wallet->add(Money::of(1000, "EUR"));
 }
 
 
 $baseProvider = new BaseCurrencyProvider($provider, "EUR");
+$currencyConverter = new CurrencyConverter($baseProvider);
+
 $display = new Display($consoleOutput);
 $display->currencies($currencyRepository->getAll());
-$currencyConverter = new CurrencyConverter($baseProvider);
 while (true) {
     $mainAction = $ask->mainAction();
     switch ($mainAction) {
         case Ask::ACTION_BUY:
             $availableCurrencies = [];
-            /** @var \App\Currency\Currency $currency */
             foreach ($currencyRepository->getAll() as $currency) {
                 if ($currency->code() === "EUR") {
                     continue;
