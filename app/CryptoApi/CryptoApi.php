@@ -1,6 +1,8 @@
 <?php
 
-namespace App;
+namespace App\CryptoApi;
+
+use App\Currency;
 
 interface CryptoApi
 {

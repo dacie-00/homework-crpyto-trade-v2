@@ -1,13 +1,12 @@
 <?php
 declare(strict_types=1);
 
-namespace App;
+namespace App\CryptoApi;
 
+use App\Currency;
 use Brick\Math\BigDecimal;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
-use GuzzleHttp\Exception\GuzzleException;
-use stdClass;
 
 class CoinMarketCapAPI implements CryptoApi
 {

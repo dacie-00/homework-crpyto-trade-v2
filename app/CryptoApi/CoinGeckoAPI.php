@@ -1,7 +1,8 @@
 <?php
 
-namespace App;
+namespace App\CryptoApi;
 
+use App\Currency;
 use Brick\Math\BigDecimal;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;

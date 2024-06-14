@@ -2,8 +2,7 @@
 declare(strict_types=1);
 
 use App\Ask;
-use App\CoinGeckoAPI;
-use App\CoinMarketCapAPI;
+use App\CryptoApi\CoinMarketCapAPI;
 use App\CurrencyRepository;
 use App\Display;
 use App\Transaction;
@@ -16,7 +15,6 @@ use Brick\Money\CurrencyConverter;
 use Brick\Money\ExchangeRateProvider\BaseCurrencyProvider;
 use Brick\Money\ExchangeRateProvider\ConfigurableProvider;
 use Brick\Money\Money;
-use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Schema\Table;
 use Symfony\Component\Console\Input\ArrayInput;
