@@ -93,6 +93,9 @@ class CoinMarketCapAPI implements CryptoApi
         foreach ($currencyCodes as $currencyCode) {
             if (isset($response->data->$currencyCode)) {
                 $currency = $response->data->$currencyCode;
+                if (!$currency->is_active) {
+                    continue;
+                }
                 $currencies[] = new Currency(
                     new \Brick\Money\Currency(
                         $currency->symbol,
