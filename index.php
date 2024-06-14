@@ -195,7 +195,7 @@ while (true) {
             $codes = array_map(static fn($value) => trim($value), $codes);
             $foundCurrencies = $cryptoApi->search($codes);
             if (empty($foundCurrencies)) {
-                echo "No currency found!";
+                echo "No currency found!\n";
                 break;
             }
 
