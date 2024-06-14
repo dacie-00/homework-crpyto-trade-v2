@@ -32,28 +32,27 @@ class CurrencyRepository
                 ->setParameter(0, $currency->code())
                 ->executeQuery()
                 ->fetchOne();
+
             if ($result) {
                 $this->update($currency);
                 continue;
             }
 
-            if(true) {
-                $this->connection->createQueryBuilder()
-                    ->insert("currencies")
-                    ->values([
-                        "name" => ":name",
-                        "code" => ":code",
-                        "numeric_code" => ":numeric_code",
-                        "exchange_rate" => ":exchange_rate",
-                    ])
-                    ->setParameters([
-                        "name" => $currency->name(),
-                        "code" => $currency->code(),
-                        "numeric_code" => $currency->numericCode(),
-                        "exchange_rate" => $currency->exchangeRate(),
-                    ])
-                    ->executeStatement();
-            }
+            $this->connection->createQueryBuilder()
+                ->insert("currencies")
+                ->values([
+                    "name" => ":name",
+                    "code" => ":code",
+                    "numeric_code" => ":numeric_code",
+                    "exchange_rate" => ":exchange_rate",
+                ])
+                ->setParameters([
+                    "name" => $currency->name(),
+                    "code" => $currency->code(),
+                    "numeric_code" => $currency->numericCode(),
+                    "exchange_rate" => $currency->exchangeRate(),
+                ])
+                ->executeStatement();
         }
     }
 
