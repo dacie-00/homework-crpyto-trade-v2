@@ -136,9 +136,9 @@ while (true) {
             $moneyToGet = Money::of($amount, $currency->definition());
             $moneyToSpend = $currencyConverter->convert($moneyToGet, "EUR", RoundingMode::UP);
 
+            $connection->beginTransaction();
             $wallet->add($moneyToGet);
             $wallet->subtract($moneyToSpend);
-
             $transactionRepository->add(new Transaction
                 (
                     $moneyToSpend->getAmount(),
@@ -147,6 +147,7 @@ while (true) {
                     $moneyToGet->getCurrency()->getCurrencyCode()
                 )
             );
+            $connection->commit();
             break;
         case Ask::ACTION_SELL:
             $ownedCurrencies = [];
@@ -166,6 +167,7 @@ while (true) {
             $moneyToSpend = Money::of($amount, $currency->definition());
             $moneyToGet = $currencyConverter->convert(Money::of($amount, $money->getCurrency()), "EUR", RoundingMode::DOWN);
 
+            $connection->beginTransaction();
             $wallet->add($moneyToGet);
             $wallet->subtract($moneyToSpend);
             $transactionRepository->add(new Transaction
@@ -176,6 +178,7 @@ while (true) {
                     $moneyToGet->getCurrency()->getCurrencyCode()
                 )
             );
+            $connection->commit();
             break;
         case Ask::ACTION_WALLET:
             $display->wallet($wallet);
