@@ -2,7 +2,7 @@
 
 namespace App\CryptoApi;
 
-use App\Currency;
+use App\Currency\Currency;
 use Brick\Math\BigDecimal;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;

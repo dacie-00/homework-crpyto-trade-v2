@@ -48,7 +48,7 @@ class Ask
     }
 
     /**
-     * @param Currency[] $currencies
+     * @param \App\Currency\Currency[] $currencies
      */
     public function crypto(array $currencies): string
     {

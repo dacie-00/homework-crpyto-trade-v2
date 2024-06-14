@@ -3,11 +3,11 @@ declare(strict_types=1);
 
 use App\Ask;
 use App\CryptoApi\CoinMarketCapAPI;
-use App\CurrencyRepository;
+use App\Currency\CurrencyRepository;
 use App\Display;
-use App\Transaction;
-use App\TransactionRepository;
-use App\Wallet;
+use App\Transaction\Transaction;
+use App\Transaction\TransactionRepository;
+use App\Wallet\Wallet;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use Brick\Money\Currency;
@@ -69,9 +69,9 @@ $currencyRepository = new CurrencyRepository($connection);
 
 if ($currencyRepository->isEmpty()) {
     $provider = new ConfigurableProvider();
-    $currencyRepository->add(new \App\Currency(Currency::of("EUR"), BigDecimal::one()));
+    $currencyRepository->add(new \App\Currency\Currency(Currency::of("EUR"), BigDecimal::one()));
 
-    $top = $cryptoApi->getTop(5);
+    $top = $cryptoApi->getTop();
     $currencyRepository->add($top);
     foreach ($top as $currency) {
         $provider->setExchangeRate(
@@ -117,7 +117,7 @@ while (true) {
     switch ($mainAction) {
         case Ask::ACTION_BUY:
             $availableCurrencies = [];
-            /** @var \App\Currency $currency */
+            /** @var \App\Currency\Currency $currency */
             foreach ($currencyRepository->getAll() as $currency) {
                 if ($currency->code() === "EUR") {
                     continue;

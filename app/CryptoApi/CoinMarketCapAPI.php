@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\CryptoApi;
 
-use App\Currency;
+use App\Currency\Currency;
 use Brick\Math\BigDecimal;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
@@ -28,7 +28,7 @@ class CoinMarketCapAPI implements CryptoApi
     {
         $url = "cryptocurrency/listings/latest";
         $parameters = [
-            "start" => $page,
+            "start" => 1 + $page * $currenciesPerPage - $currenciesPerPage,
             "limit" => $currenciesPerPage,
             "convert" => "EUR",
         ];

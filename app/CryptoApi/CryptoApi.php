@@ -2,7 +2,7 @@
 
 namespace App\CryptoApi;
 
-use App\Currency;
+use App\Currency\Currency;
 
 interface CryptoApi
 {

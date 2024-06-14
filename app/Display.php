@@ -3,10 +3,9 @@ declare(strict_types=1);
 
 namespace App;
 
+use App\Transaction\Transaction;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
-use Brick\Money\Currency;
-use Brick\Money\ExchangeRateProvider;
 use Brick\Money\Money;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -21,7 +20,7 @@ class Display
     }
 
     /**
-     * @param \App\Currency[] $currencies
+     * @param \App\Currency\Currency[] $currencies
      */
     public function currencies(array $currencies): void
     {
