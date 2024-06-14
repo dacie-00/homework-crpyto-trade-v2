@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App;
 
+use App\Currency\Currency;
 use App\Transaction\Transaction;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
@@ -20,7 +21,7 @@ class Display
     }
 
     /**
-     * @param \App\Currency\Currency[] $currencies
+     * @param Currency[] $currencies
      */
     public function currencies(array $currencies): void
     {
