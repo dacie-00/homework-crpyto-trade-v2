@@ -56,7 +56,7 @@ class CoinGeckoAPI implements CryptoApi
             $currencies[] = new Currency(
                 new \Brick\Money\Currency(
                     $currency->symbol,
-                    -1, // TODO: Is there a way to fix this? Good enough?
+                    -1, // This API doesn't provide numeric codes, but the currency class expects one
                     $currency->name,
                     9
                 ),
