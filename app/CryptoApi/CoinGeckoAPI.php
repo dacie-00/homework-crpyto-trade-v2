@@ -10,10 +10,14 @@ use GuzzleHttp\Exception\ClientException;
 class CoinGeckoAPI implements CryptoApi
 {
     private string $apiKey;
+    private Client $client;
 
     public function __construct(string $apiKey)
     {
         $this->apiKey = $apiKey;
+        $this->client = new Client([
+            "base_uri" => "https://api.coingecko.com/api/v3/",
+        ]);
     }
 
 
@@ -22,7 +26,7 @@ class CoinGeckoAPI implements CryptoApi
      */
     public function getTop(int $page = 1, int $currenciesPerPage = 10): array
     {
-        $url = "https://api.coingecko.com/api/v3/coins/markets";
+        $url = "coins/markets";
 
         $parameters = [
             "page" => $page,
@@ -32,9 +36,8 @@ class CoinGeckoAPI implements CryptoApi
 
         $queryString = http_build_query($parameters);
 
-        $guzzle = new Client();
         try {
-            $response = $guzzle->request("GET", "$url?$queryString", [
+            $response = $this->client->request("GET", "$url?$queryString", [
                 "headers" => [
                     "Accepts" => "application/json",
                     "x-cg-demo-api-key" => $this->apiKey,
@@ -65,7 +68,7 @@ class CoinGeckoAPI implements CryptoApi
 
     private function getIdFromCurrencyCode(string $currencyCode): ?string
     {
-        $url = "https://api.coingecko.com/api/v3/search";
+        $url = "search";
 
         $parameters = [
             "query" => $currencyCode,
@@ -74,9 +77,8 @@ class CoinGeckoAPI implements CryptoApi
 
         $queryString = http_build_query($parameters);
 
-        $guzzle = new Client();
         try {
-            $response = $guzzle->request("GET", "$url?$queryString", [
+            $response = $this->client->request("GET", "$url?$queryString", [
                 "headers" => [
                     "Accepts" => "application/json",
                     "x-cg-demo-api-key" => $this->apiKey,
@@ -97,7 +99,7 @@ class CoinGeckoAPI implements CryptoApi
 
     public function search(array $currencyCodes): array
     {
-        $url = "https://api.coingecko.com/api/v3/coins/markets";
+        $url = "coins/markets";
 
         $names = [];
         foreach($currencyCodes as $currencyCode) {
@@ -114,9 +116,8 @@ class CoinGeckoAPI implements CryptoApi
 
         $queryString = http_build_query($parameters);
 
-        $guzzle = new Client();
         try {
-            $response = $guzzle->request("GET", "$url?$queryString", [
+            $response = $this->client->request("GET", "$url?$queryString", [
                 "headers" => [
                     "Accepts" => "application/json",
                     "x-cg-demo-api-key" => $this->apiKey,

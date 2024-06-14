@@ -11,10 +11,14 @@ use GuzzleHttp\Exception\ClientException;
 class CoinMarketCapAPI implements CryptoApi
 {
     private string $key;
+    private Client $client;
 
     public function __construct(string $key)
     {
         $this->key = $key;
+        $this->client = new Client([
+            "base_uri" => "https://pro-api.coinmarketcap.com/v1/",
+        ]);
     }
 
     /**
@@ -22,7 +26,7 @@ class CoinMarketCapAPI implements CryptoApi
      */
     public function getTop(int $page = 1, int $currenciesPerPage = 10): array
     {
-        $url = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest";
+        $url = "cryptocurrency/listings/latest";
         $parameters = [
             "start" => $page,
             "limit" => $currenciesPerPage,
@@ -31,9 +35,8 @@ class CoinMarketCapAPI implements CryptoApi
 
         $queryString = http_build_query($parameters);
 
-        $guzzle = new Client();
         try {
-            $response = $guzzle->request("GET", "$url?$queryString", [
+            $response = $this->client->request("GET", "$url?$queryString", [
                 "headers" => [
                     "Accepts" => "application/json",
                     "X-CMC_PRO_API_KEY" => $this->key,
@@ -64,7 +67,7 @@ class CoinMarketCapAPI implements CryptoApi
 
     public function search(array $currencyCodes): array
     {
-        $url = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest";
+        $url = "cryptocurrency/quotes/latest";
         $parameters = [
             "symbol" => implode(",", $currencyCodes),
             "convert" => "EUR",
@@ -72,9 +75,8 @@ class CoinMarketCapAPI implements CryptoApi
 
         $queryString = http_build_query($parameters);
 
-        $guzzle = new Client();
         try {
-            $response = $guzzle->request("GET", "$url?$queryString", [
+            $response = $this->client->request("GET", "$url?$queryString", [
                 "headers" => [
                     "Accepts" => "application/json",
                     "X-CMC_PRO_API_KEY" => $this->key,
