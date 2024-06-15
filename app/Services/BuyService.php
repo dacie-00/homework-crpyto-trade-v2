@@ -13,15 +13,15 @@ use Doctrine\DBAL\Connection;
 
 class BuyService
 {
-    private CurrencyConverter $currencyConverter;
-    private TransactionRepository $transactionRepository;
     private Connection $connection;
+    private TransactionRepository $transactionRepository;
+    private CurrencyConverter $currencyConverter;
 
     public function __construct(Connection $connection, TransactionRepository $transactionRepository, CurrencyConverter $currencyConverter)
     {
-        $this->currencyConverter = $currencyConverter;
-        $this->transactionRepository = $transactionRepository;
         $this->connection = $connection;
+        $this->transactionRepository = $transactionRepository;
+        $this->currencyConverter = $currencyConverter;
     }
 
     public function execute(
@@ -31,7 +31,7 @@ class BuyService
     ) {
         $moneyToGet = Money::of(
             $this->currencyConverter->convert(
-                $wallet->getMoney("EUR"),
+                Money::of($amount, "EUR"),
                 $extendedCurrency->definition(),
                 RoundingMode::DOWN
             )->getAmount(),
