@@ -3,13 +3,11 @@ declare(strict_types=1);
 
 use App\Ask;
 use App\Display;
-use App\Models\Transaction;
 use App\Models\Wallet;
 use App\Repositories\TransactionRepository;
 use App\Services\BuyService;
 use App\Services\SellService;
 use App\Services\Cryptocurrency\CoinMarketCapApiService;
-use Brick\Math\RoundingMode;
 use Brick\Money\CurrencyConverter;
 use Brick\Money\ExchangeRateProvider\BaseCurrencyProvider;
 use Brick\Money\ExchangeRateProvider\ConfigurableProvider;
@@ -91,11 +89,11 @@ while (true) {
                 $extendedCurrency->exchangeRate()
             );
             $baseProvider = new BaseCurrencyProvider($provider, "EUR");
-            // TODO: change this to currencyConverter?
 
-            $money = $wallet->getMoney($extendedCurrency->code());
-            (new BuyService($connection, $transactionRepository, $currencyConverter))
+            $transaction =(new BuyService($connection, $transactionRepository, $currencyConverter))
                 ->execute($wallet, $amount, $extendedCurrency);
+
+            echo "{$transaction->amountOut()} {$transaction->currencyOut()} bought for {$transaction->amountIn()} {$transaction->currencyIn()}\n";
             break;
         case Ask::ACTION_SELL:
             $ownedCurrencies = [];
@@ -121,11 +119,11 @@ while (true) {
                 $extendedCurrency->exchangeRate()
             );
             $baseProvider = new BaseCurrencyProvider($provider, "EUR");
-            // TODO: change this to currencyConverter?
 
-            $money = $wallet->getMoney($extendedCurrency->code());
-            (new SellService($connection, $transactionRepository, $currencyConverter))
+            $transaction =
+                (new SellService($connection, $transactionRepository, $currencyConverter))
                 ->execute($wallet, $amount, $extendedCurrency);
+            echo "{$transaction->amountOut()} {$transaction->currencyOut()} sold for {$transaction->amountIn()} {$transaction->currencyIn()}\n";
 
             break;
         case Ask::ACTION_WALLET:

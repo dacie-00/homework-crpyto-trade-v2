@@ -6,7 +6,6 @@ use App\Models\ExtendedCurrency;
 use App\Models\Transaction;
 use App\Models\Wallet;
 use App\Repositories\TransactionRepository;
-use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use Brick\Money\CurrencyConverter;
 use Brick\Money\Money;
@@ -32,7 +31,7 @@ class SellService
         Wallet $wallet,
         float $amount,
         ExtendedCurrency $extendedCurrency
-    ) {
+    ): Transaction {
         $moneyToSpend = Money::of($amount, $extendedCurrency->definition());
         $moneyToGet = $this->currencyConverter->convert(
             Money::of($amount, $extendedCurrency->definition()),
@@ -42,15 +41,17 @@ class SellService
         $this->connection->beginTransaction();
         $wallet->add($moneyToGet);
         $wallet->subtract($moneyToSpend);
-        $this->transactionRepository->add(new Transaction
-            (
-                $moneyToSpend->getAmount(),
-                $moneyToSpend->getCurrency()->getCurrencyCode(),
-                $moneyToGet->getAmount(),
-                $moneyToGet->getCurrency()->getCurrencyCode()
-            )
+        $transaction = new Transaction
+        (
+            $moneyToSpend->getAmount(),
+            $moneyToSpend->getCurrency()->getCurrencyCode(),
+            $moneyToGet->getAmount(),
+            $moneyToGet->getCurrency()->getCurrencyCode()
         );
+        $this->transactionRepository->add($transaction);
         $this->connection->commit();
+
+        return $transaction;
     }
 
 }

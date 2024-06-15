@@ -28,7 +28,7 @@ class BuyService
         Wallet $wallet,
         float $amount,
         ExtendedCurrency $extendedCurrency
-    ) {
+    ): Transaction {
         $moneyToGet = Money::of(
             $this->currencyConverter->convert(
                 Money::of($amount, "EUR"),
@@ -42,14 +42,15 @@ class BuyService
         $this->connection->beginTransaction();
         $wallet->add($moneyToGet);
         $wallet->subtract($moneyToSpend);
-        $this->transactionRepository->add(new Transaction
-            (
-                $moneyToSpend->getAmount(),
-                $moneyToSpend->getCurrency()->getCurrencyCode(),
-                $moneyToGet->getAmount(),
-                $moneyToGet->getCurrency()->getCurrencyCode()
-            )
+        $transaction = new Transaction
+        (
+            $moneyToSpend->getAmount(),
+            $moneyToSpend->getCurrency()->getCurrencyCode(),
+            $moneyToGet->getAmount(),
+            $moneyToGet->getCurrency()->getCurrencyCode()
         );
+        $this->transactionRepository->add($transaction);
         $this->connection->commit();
+        return $transaction;
     }
 }
