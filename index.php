@@ -6,6 +6,7 @@ use App\Display;
 use App\Models\Transaction;
 use App\Models\Wallet;
 use App\Repositories\TransactionRepository;
+use App\Services\BuyService;
 use App\Services\SellService;
 use App\Services\Cryptocurrency\CoinMarketCapApiService;
 use Brick\Math\RoundingMode;
@@ -90,33 +91,14 @@ while (true) {
                 $extendedCurrency->exchangeRate()
             );
             $baseProvider = new BaseCurrencyProvider($provider, "EUR");
+            // TODO: change this to currencyConverter?
 
-            $moneyToGet = Money::of(
-                $currencyConverter->convert(
-                    $wallet->getMoney("EUR"),
-                    $extendedCurrency->definition(),
-                    RoundingMode::DOWN
-                )->getAmount(),
-                $extendedCurrency->definition()
-            );
-            $moneyToSpend = Money::of($amount, "EUR");
-
-            $connection->beginTransaction();
-            $wallet->add($moneyToGet);
-            $wallet->subtract($moneyToSpend);
-            $transactionRepository->add(new Transaction
-                (
-                    $moneyToSpend->getAmount(),
-                    $moneyToSpend->getCurrency()->getCurrencyCode(),
-                    $moneyToGet->getAmount(),
-                    $moneyToGet->getCurrency()->getCurrencyCode()
-                )
-            );
-            $connection->commit();
+            $money = $wallet->getMoney($extendedCurrency->code());
+            (new BuyService($connection, $transactionRepository, $currencyConverter))
+                ->execute($wallet, $amount, $extendedCurrency);
             break;
         case Ask::ACTION_SELL:
             $ownedCurrencies = [];
-            /** @var Money $money */
             foreach ($wallet->contents() as $money) {
                 if ($money->getCurrency()->getCurrencyCode() === "EUR") {
                     continue;
@@ -144,6 +126,7 @@ while (true) {
             $money = $wallet->getMoney($extendedCurrency->code());
             (new SellService($connection, $transactionRepository, $currencyConverter))
                 ->execute($wallet, $amount, $extendedCurrency);
+
             break;
         case Ask::ACTION_WALLET:
             $display->wallet($wallet);
