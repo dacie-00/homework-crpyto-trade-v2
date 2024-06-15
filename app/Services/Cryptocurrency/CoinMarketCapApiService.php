@@ -7,6 +7,7 @@ use App\Models\Currency;
 use Brick\Math\BigDecimal;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\GuzzleException;
 
 class CoinMarketCapApiService implements CryptocurrencyApiServiceInterface
 {
@@ -65,6 +66,9 @@ class CoinMarketCapApiService implements CryptocurrencyApiServiceInterface
         return $currencies;
     }
 
+    /**
+     * @return Currency[]
+     */
     public function search(array $currencyCodes): array
     {
         $url = "cryptocurrency/quotes/latest";

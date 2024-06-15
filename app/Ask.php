@@ -5,6 +5,7 @@ namespace App;
 
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
+use Brick\Money\Currency;
 use RuntimeException;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
@@ -47,16 +48,21 @@ class Ask
     }
 
     /**
-     * @param \App\Models\Currency[] $currencies
+     * @param Currency[] $currencies
      */
-    public function crypto(array $currencies): string
+    public function crypto(array $currencies): Currency
     {
         $names = [];
         foreach ($currencies as $currency) {
             $names[] = $currency->getName();
         }
         $question = new ChoiceQuestion("Select the currency", $names);
-        return $this->helper->ask($this->input, $this->output, $question);
+        $currencyName = $this->helper->ask($this->input, $this->output, $question);
+        foreach ($currencies as $currency) {
+            if ($currency->getName() === $currencyName) {
+                return $currency;
+            }
+        }
     }
 
     public function amount(BigDecimal $max): float
@@ -64,7 +70,7 @@ class Ask
         $min = BigDecimal::of(0.00000001);
         $min->toScale(8, RoundingMode::DOWN);
         $max->toScale(8, RoundingMode::DOWN);
-        $question = (new Question("Enter the quantity ($min-$max) - "))
+        $question = (new Question("Enter the amount of euro you wish to spend ($min-$max) - "))
             ->setValidator(function ($value) use ($min, $max): string {
                 if (!is_numeric($value)) {
                     throw new RuntimeException("Quantity must be a number");

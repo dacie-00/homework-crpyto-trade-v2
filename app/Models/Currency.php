@@ -21,7 +21,7 @@ class Currency implements JsonSerializable
         return new self(
             new \Brick\Money\Currency(
                 $currency["code"],
-                $currency["numeric_code"],
+                0,
                 $currency["name"],
                 9
             ),

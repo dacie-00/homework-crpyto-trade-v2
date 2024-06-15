@@ -3,29 +3,25 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Repositories\CurrencyRepository;
 use Brick\Money\Money;
 use Doctrine\DBAL\Connection;
 use OutOfBoundsException;
 
 class Wallet
 {
-
     private Connection $connection;
-    private CurrencyRepository $currencyRepository;
 
-    public function __construct(Connection $connection, CurrencyRepository $currencyRepository)
+    public function __construct(Connection $connection)
     {
         $this->connection = $connection;
-        $this->currencyRepository = $currencyRepository;
     }
 
     public function add(Money $money): void
     {
         $affectedRows = $this->connection->createQueryBuilder()->update("wallet")
-            ->where("currency = :currency")
+            ->where("ticker = :ticker")
             ->set("amount", "amount + :amount")
-            ->setParameter("currency", $money->getCurrency())
+            ->setParameter("ticker", $money->getCurrency())
             ->setParameter("amount", $money->getAmount())
             ->executeQuery()
             ->rowCount();
@@ -34,11 +30,13 @@ class Wallet
             $this->connection->createQueryBuilder()->insert("wallet")
                 ->values(
                     [
-                        "currency" => ":currency",
+                        "ticker" => ":ticker",
+                        "name" => ":name",
                         "amount" => ":amount",
                     ]
                 )
-                ->setParameter("currency", $money->getCurrency())
+                ->setParameter("ticker", $money->getCurrency()->getCurrencyCode())
+                ->setParameter("name", $money->getCurrency()->getName())
                 ->setParameter("amount", $money->getAmount())
                 ->executeQuery();
         }
@@ -48,15 +46,15 @@ class Wallet
     {
         $this->connection->createQueryBuilder()->update("wallet")
             ->set("amount", "amount - :amount")
-            ->where("currency = :currency")
+            ->where("ticker = :ticker")
             ->setParameter("amount", $money->getAmount())
-            ->setParameter("currency", $money->getCurrency())
+            ->setParameter("ticker", $money->getCurrency())
             ->executeQuery();
 
         $this->connection->createQueryBuilder()->delete("wallet")
-            ->where("currency = :currency")
+            ->where("ticker = :ticker")
             ->andWhere("amount <= 0")
-            ->setParameter("currency", $money->getCurrency())
+            ->setParameter("ticker", $money->getCurrency())
             ->executeQuery();
     }
 
@@ -71,28 +69,41 @@ class Wallet
         if (!$moneyData) {
             return [];
         }
+
         return array_map(
             fn($money) => Money::of(
                 $money["amount"],
-                $this->currencyRepository->getCurrencyByCode($money["currency"])->definition()
+                new \Brick\Money\Currency(
+                    $money["ticker"],
+                    0,
+                    $money["name"],
+                    9
+                )
             ),
             $moneyData
         );
     }
 
-    public function getMoney(string $currencyCode): Money
+    public function getMoney(string $ticker): Money
     {
         $money = $this->connection->createQueryBuilder()
             ->select("*")
             ->from("wallet")
-            ->where("currency = :currency")
-            ->setParameter("currency", $currencyCode)
+            ->where("ticker = :ticker")
+            ->setParameter("ticker", $ticker)
             ->executeQuery()
             ->fetchAssociative();
         if (!$money) {
-            throw new OutOfBoundsException("CryptoCurrency {$currencyCode} does not exist");
+            throw new OutOfBoundsException("CryptoCurrency {$ticker} does not exist");
         }
-        return Money::of($money["amount"], $this->currencyRepository->getCurrencyByCode($currencyCode)->definition());
+        return Money::of($money["amount"],
+            new \Brick\Money\Currency(
+                $money["ticker"],
+                0,
+                $money["name"],
+                9
+            )
+        );
     }
 
     public function isEmpty()
