@@ -6,6 +6,7 @@ use App\Display;
 use App\Models\Transaction;
 use App\Models\Wallet;
 use App\Repositories\TransactionRepository;
+use App\Services\SellService;
 use App\Services\Cryptocurrency\CoinMarketCapApiService;
 use Brick\Math\RoundingMode;
 use Brick\Money\CurrencyConverter;
@@ -138,27 +139,11 @@ while (true) {
                 $extendedCurrency->exchangeRate()
             );
             $baseProvider = new BaseCurrencyProvider($provider, "EUR");
+            // TODO: change this to currencyConverter?
 
             $money = $wallet->getMoney($extendedCurrency->code());
-
-            $moneyToSpend = Money::of($amount, $extendedCurrency->definition());
-            $moneyToGet = $currencyConverter->convert(
-                Money::of($amount, $money->getCurrency()),
-                "EUR",
-                RoundingMode::DOWN);
-
-            $connection->beginTransaction();
-            $wallet->add($moneyToGet);
-            $wallet->subtract($moneyToSpend);
-            $transactionRepository->add(new Transaction
-                (
-                    $moneyToSpend->getAmount(),
-                    $moneyToSpend->getCurrency()->getCurrencyCode(),
-                    $moneyToGet->getAmount(),
-                    $moneyToGet->getCurrency()->getCurrencyCode()
-                )
-            );
-            $connection->commit();
+            (new SellService($connection, $transactionRepository, $currencyConverter))
+                ->execute($wallet, $amount, $extendedCurrency);
             break;
         case Ask::ACTION_WALLET:
             $display->wallet($wallet);
