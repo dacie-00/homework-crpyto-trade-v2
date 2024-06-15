@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Wallet;
+namespace App\Models;
 
-use App\Currency\CurrencyRepository;
+use App\Repositories\CurrencyRepository;
 use Brick\Money\Money;
 use Doctrine\DBAL\Connection;
 use OutOfBoundsException;

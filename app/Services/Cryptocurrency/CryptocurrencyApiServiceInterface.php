@@ -1,10 +1,10 @@
 <?php
 
-namespace App\CryptoApi;
+namespace App\Services\Cryptocurrency;
 
-use App\Currency\Currency;
+use App\Models\Currency;
 
-interface CryptoApiInterface
+interface CryptocurrencyApiServiceInterface
 {
     /**
      * @return Currency[]

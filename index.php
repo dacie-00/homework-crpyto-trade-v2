@@ -2,12 +2,12 @@
 declare(strict_types=1);
 
 use App\Ask;
-use App\CryptoApi\CoinMarketCapAPI;
-use App\Currency\CurrencyRepository;
 use App\Display;
-use App\Transaction\Transaction;
-use App\Transaction\TransactionRepository;
-use App\Wallet\Wallet;
+use App\Models\Transaction;
+use App\Models\Wallet;
+use App\Repositories\CurrencyRepository;
+use App\Repositories\TransactionRepository;
+use App\Services\Cryptocurrency\CoinMarketCapApiService;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use Brick\Money\Currency;
@@ -57,8 +57,8 @@ if (!$schemaManager->tablesExist(["wallet"])) {
     $schemaManager->createTable($table);
 }
 
-$cryptoApi = new CoinMarketCapAPI($_ENV["COIN_MARKET_CAP_API_KEY"]);
-//$cryptoApi = new CoinGeckoAPI($_ENV["COIN_GECKO_API_KEY"]);
+$cryptoApi = new CoinMarketCapApiService($_ENV["COIN_MARKET_CAP_API_KEY"]);
+//$cryptoApi = new CoinGeckoApiService($_ENV["COIN_GECKO_API_KEY"]);
 
 $consoleInput = new ArrayInput([]);
 $consoleOutput = new ConsoleOutput();
@@ -72,7 +72,7 @@ $wallet = new Wallet($connection, $currencyRepository);
 
 
 if ($currencyRepository->isEmpty()) {
-    $currencyRepository->add(new \App\Currency\Currency(Currency::of("EUR"), BigDecimal::one()));
+    $currencyRepository->add(new \App\Models\Currency(Currency::of("EUR"), BigDecimal::one()));
 
     $top = $cryptoApi->getTop();
     $currencyRepository->add($top);
@@ -87,7 +87,7 @@ if ($currencyRepository->isEmpty()) {
     $savedCurrencies = $currencyRepository->getAll();
 
     $currencyCodes = [];
-    /** @var \App\Currency\Currency $currency */
+    /** @var \App\Models\Currency $currency */
     foreach ($savedCurrencies as $currency) {
         $currencyCodes[] = $currency->definition()->getCurrencyCode();
     }

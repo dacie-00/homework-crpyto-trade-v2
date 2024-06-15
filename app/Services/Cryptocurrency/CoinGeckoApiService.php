@@ -1,13 +1,13 @@
 <?php
 
-namespace App\CryptoApi;
+namespace App\Services\Cryptocurrency;
 
-use App\Currency\Currency;
+use App\Models\Currency;
 use Brick\Math\BigDecimal;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 
-class CoinGeckoAPI implements CryptoApiInterface
+class CoinGeckoApiService implements CryptocurrencyApiServiceInterface
 {
     private string $apiKey;
     private Client $client;

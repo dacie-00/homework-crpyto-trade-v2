@@ -1,8 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Transaction;
+namespace App\Repositories;
 
+use App\Models\Transaction;
 use Doctrine\DBAL\Connection;
 
 class TransactionRepository

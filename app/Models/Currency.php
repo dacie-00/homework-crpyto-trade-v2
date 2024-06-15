@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Currency;
+namespace App\Models;
 
 use Brick\Math\BigDecimal;
 use JsonSerializable;

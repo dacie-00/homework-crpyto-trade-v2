@@ -5,7 +5,6 @@ namespace App;
 
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
-use Brick\Money\Currency;
 use RuntimeException;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
@@ -48,7 +47,7 @@ class Ask
     }
 
     /**
-     * @param \App\Currency\Currency[] $currencies
+     * @param \App\Models\Currency[] $currencies
      */
     public function crypto(array $currencies): string
     {

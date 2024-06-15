@@ -1,14 +1,14 @@
 <?php
 declare(strict_types=1);
 
-namespace App\CryptoApi;
+namespace App\Services\Cryptocurrency;
 
-use App\Currency\Currency;
+use App\Models\Currency;
 use Brick\Math\BigDecimal;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 
-class CoinMarketCapAPI implements CryptoApiInterface
+class CoinMarketCapApiService implements CryptocurrencyApiServiceInterface
 {
     private string $key;
     private Client $client;

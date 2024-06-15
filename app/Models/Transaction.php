@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Transaction;
+namespace App\Models;
 
 use Brick\Math\BigDecimal;
 use Carbon\Carbon;

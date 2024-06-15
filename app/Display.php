@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace App;
 
-use App\Currency\Currency;
-use App\Transaction\Transaction;
+use App\Models\Currency;
+use App\Models\Transaction;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use Brick\Money\Money;

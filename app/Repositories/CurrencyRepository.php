@@ -1,8 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Currency;
+namespace App\Repositories;
 
+use App\Models\Currency;
 use Doctrine\DBAL\Connection;
 use OutOfBoundsException;
 
