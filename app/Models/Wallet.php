@@ -3,10 +3,9 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Brick\Money\Exception\UnknownCurrencyException;
+use Brick\Math\BigDecimal;
 use Brick\Money\Money;
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Exception;
 use OutOfBoundsException;
 
 class Wallet
@@ -20,15 +19,15 @@ class Wallet
 
     public function add(Money $money): void
     {
-        $affectedRows = $this->connection->createQueryBuilder()->update("wallet")
+        $currentAmount = $this->connection->createQueryBuilder()
+            ->from("wallet")
+            ->select("amount")
             ->where("ticker = :ticker")
-            ->set("amount", "amount + :amount")
-            ->setParameter("ticker", $money->getCurrency())
-            ->setParameter("amount", $money->getAmount())
+            ->setParameter("ticker", $money->getCurrency()->getCurrencyCode())
             ->executeQuery()
-            ->rowCount();
+            ->fetchOne();
 
-        if ($affectedRows === 0) {
+        if ($currentAmount === false) {
             $this->connection->createQueryBuilder()->insert("wallet")
                 ->values(
                     [
@@ -41,16 +40,33 @@ class Wallet
                 ->setParameter("name", $money->getCurrency()->getName())
                 ->setParameter("amount", $money->getAmount())
                 ->executeQuery();
+            return;
         }
+
+        $this->connection->createQueryBuilder()->update("wallet")
+            ->where("ticker = :ticker")
+            ->set("amount", ":amount")
+            ->setParameter("ticker", $money->getCurrency())
+            ->setParameter("amount", $money->getAmount()->plus($currentAmount))
+            ->executeQuery()
+            ->rowCount();
     }
 
     public function subtract(Money $money): void
     {
-        $this->connection->createQueryBuilder()->update("wallet")
-            ->set("amount", "amount - :amount")
+        $currentAmount = $this->connection->createQueryBuilder()
+            ->from("wallet")
+            ->select("amount")
             ->where("ticker = :ticker")
-            ->setParameter("amount", $money->getAmount())
+            ->setParameter("ticker", $money->getCurrency()->getCurrencyCode())
+            ->executeQuery()
+            ->fetchOne();
+
+        $this->connection->createQueryBuilder()->update("wallet")
+            ->where("ticker = :ticker")
+            ->set("amount", "amount - :amount")
             ->setParameter("ticker", $money->getCurrency())
+            ->setParameter("amount", BigDecimal::of($currentAmount)->plus($money->getAmount()))
             ->executeQuery();
 
         $this->connection->createQueryBuilder()->delete("wallet")
