@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use Brick\Math\BigDecimal;
+use Brick\Money\Currency;
 use Brick\Money\Money;
 use Doctrine\DBAL\Connection;
 use OutOfBoundsException;
@@ -94,7 +95,7 @@ class Wallet
         return array_map(
             fn($money) => Money::of(
                 $money["amount"],
-                new \Brick\Money\Currency(
+                new Currency(
                     $money["ticker"],
                     0,
                     $money["name"],
@@ -118,7 +119,7 @@ class Wallet
             throw new OutOfBoundsException("CryptoCurrency {$ticker} does not exist");
         }
         return Money::of($money["amount"],
-            new \Brick\Money\Currency(
+            new Currency(
                 $money["ticker"],
                 0,
                 $money["name"],
@@ -127,7 +128,7 @@ class Wallet
         );
     }
 
-    public function isEmpty()
+    public function isEmpty(): bool
     {
         return $this->connection->createQueryBuilder()
                 ->select("*")

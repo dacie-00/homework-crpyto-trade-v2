@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Services\Cryptocurrency;
 
@@ -7,6 +8,7 @@ use Brick\Math\BigDecimal;
 use Brick\Money\Currency;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\GuzzleException;
 
 class CoinGeckoApiService implements CryptocurrencyApiServiceInterface
 {
@@ -20,7 +22,6 @@ class CoinGeckoApiService implements CryptocurrencyApiServiceInterface
             "base_uri" => "https://api.coingecko.com/api/v3/",
         ]);
     }
-
 
     /**
      * @return ExtendedCurrency[]
@@ -95,18 +96,21 @@ class CoinGeckoApiService implements CryptocurrencyApiServiceInterface
         if (!isset($response->coins)) {
             return null;
         }
-        return($response->coins[0]->id);
+        return ($response->coins[0]->id);
     }
 
+    /**
+     * @return ExtendedCurrency[]
+     */
     public function search(array $currencyCodes): array
     {
         $url = "coins/markets";
 
         $names = [];
-        foreach($currencyCodes as $currencyCode) {
+        foreach ($currencyCodes as $currencyCode) {
             if ($name = $this->getIdFromCurrencyCode($currencyCode)) {
                 $names[] = $name;
-            };
+            }
         }
 
         $parameters = [
@@ -133,7 +137,7 @@ class CoinGeckoApiService implements CryptocurrencyApiServiceInterface
         $currencyResponse = json_decode($response->getBody()->getContents(), false, 512, JSON_THROW_ON_ERROR);
         $currencies = [];
         foreach ($currencyCodes as $currencyCode) {
-            foreach($currencyResponse as $currency) {
+            foreach ($currencyResponse as $currency) {
                 if (strtoupper($currency->symbol) === $currencyCode) {
                     $currencies[] = new ExtendedCurrency(
                         new Currency(

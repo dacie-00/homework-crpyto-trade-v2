@@ -5,9 +5,9 @@ namespace App\Services\Cryptocurrency;
 
 use App\Models\ExtendedCurrency;
 use Brick\Math\BigDecimal;
+use Brick\Money\Currency;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
-use GuzzleHttp\Exception\GuzzleException;
 
 class CoinMarketCapApiService implements CryptocurrencyApiServiceInterface
 {
@@ -54,13 +54,13 @@ class CoinMarketCapApiService implements CryptocurrencyApiServiceInterface
         $currencies = [];
         foreach ($currencyResponse->data as $currency) {
             $currencies[] = new ExtendedCurrency(
-                new \Brick\Money\Currency(
+                new Currency(
                     $currency->symbol,
                     $currency->id,
                     $currency->name,
                     9
                 ),
-                BigDecimal::of(1 /$currency->quote->EUR->price)
+                BigDecimal::of(1 / $currency->quote->EUR->price)
             );
         }
         return $currencies;
@@ -101,7 +101,7 @@ class CoinMarketCapApiService implements CryptocurrencyApiServiceInterface
                     continue;
                 }
                 $currencies[] = new ExtendedCurrency(
-                    new \Brick\Money\Currency(
+                    new Currency(
                         $currency->symbol,
                         $currency->id,
                         $currency->name,

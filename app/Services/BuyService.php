@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Services;
 
@@ -17,8 +18,11 @@ class BuyService
     private TransactionRepository $transactionRepository;
     private CurrencyConverter $currencyConverter;
 
-    public function __construct(Connection $connection, TransactionRepository $transactionRepository, CurrencyConverter $currencyConverter)
-    {
+    public function __construct(
+        Connection $connection,
+        TransactionRepository $transactionRepository,
+        CurrencyConverter $currencyConverter
+    ) {
         $this->connection = $connection;
         $this->transactionRepository = $transactionRepository;
         $this->currencyConverter = $currencyConverter;

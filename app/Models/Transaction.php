@@ -3,12 +3,9 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Brick\Math\BigDecimal;
 use Brick\Money\Currency;
 use Brick\Money\Money;
 use Carbon\Carbon;
-use DateTimeInterface;
-use JsonSerializable;
 
 class Transaction
 {
