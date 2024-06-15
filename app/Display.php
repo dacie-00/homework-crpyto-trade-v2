@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App;
 
-use App\Models\Currency;
+use App\Models\ExtendedCurrency;
 use App\Models\Transaction;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
@@ -21,7 +21,7 @@ class Display
     }
 
     /**
-     * @param Currency[] $currencies
+     * @param ExtendedCurrency[] $currencies
      */
     public function currencies(array $currencies): void
     {
@@ -29,7 +29,7 @@ class Display
             ->setHeaderTitle("Cryptocurrencies")
             ->setHeaders([
                 "Name",
-                "Currency",
+                "ExtendedCurrency",
                 "Price (EUR)",
             ]);
 
@@ -51,7 +51,7 @@ class Display
         $table = (new Table($this->output))
             ->setHeaderTitle("Wallet")
             ->setHeaders([
-                "Currency",
+                "ExtendedCurrency",
                 "Amount",
             ]);
 
@@ -75,10 +75,10 @@ class Display
             ->setHeaderTitle("Transactions")
             ->setHeaders([
                 "Amount in",
-                "Currency In",
+                "ExtendedCurrency In",
                 "-->",
                 "Amount out",
-                "Currency out",
+                "ExtendedCurrency out",
                 "Date",
             ]);
 

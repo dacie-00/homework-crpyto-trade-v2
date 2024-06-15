@@ -5,7 +5,7 @@ namespace App\Models;
 use Brick\Math\BigDecimal;
 use JsonSerializable;
 
-class Currency implements JsonSerializable
+class ExtendedCurrency implements JsonSerializable
 {
     private \Brick\Money\Currency $definition;
     private BigDecimal $exchangeRate;
@@ -16,7 +16,7 @@ class Currency implements JsonSerializable
         $this->exchangeRate = $exchangeRate;
     }
 
-    public static function fromArray(array $currency): Currency
+    public static function fromArray(array $currency): ExtendedCurrency
     {
         return new self(
             new \Brick\Money\Currency(

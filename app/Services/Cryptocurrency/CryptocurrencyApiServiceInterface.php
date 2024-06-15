@@ -2,18 +2,18 @@
 
 namespace App\Services\Cryptocurrency;
 
-use App\Models\Currency;
+use App\Models\ExtendedCurrency;
 
 interface CryptocurrencyApiServiceInterface
 {
     /**
-     * @return Currency[]
+     * @return ExtendedCurrency[]
      */
     public function getTop(int $page, int $currenciesPerPage): array;
 
     /**
      * @param string[] $currencyCodes
-     * @return Currency[]
+     * @return ExtendedCurrency[]
      */
     public function search(array $currencyCodes): array;
 }

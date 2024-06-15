@@ -2,8 +2,9 @@
 
 namespace App\Services\Cryptocurrency;
 
-use App\Models\Currency;
+use App\Models\ExtendedCurrency;
 use Brick\Math\BigDecimal;
+use Brick\Money\Currency;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 
@@ -22,7 +23,7 @@ class CoinGeckoApiService implements CryptocurrencyApiServiceInterface
 
 
     /**
-     * @return Currency[]
+     * @return ExtendedCurrency[]
      */
     public function getTop(int $page = 1, int $currenciesPerPage = 10): array
     {
@@ -53,8 +54,8 @@ class CoinGeckoApiService implements CryptocurrencyApiServiceInterface
 
         $currencies = [];
         foreach ($currencyResponse as $currency) {
-            $currencies[] = new Currency(
-                new \Brick\Money\Currency(
+            $currencies[] = new ExtendedCurrency(
+                new Currency(
                     $currency->symbol,
                     -1, // This API doesn't provide numeric codes, but the currency class expects one
                     $currency->name,
@@ -134,8 +135,8 @@ class CoinGeckoApiService implements CryptocurrencyApiServiceInterface
         foreach ($currencyCodes as $currencyCode) {
             foreach($currencyResponse as $currency) {
                 if (strtoupper($currency->symbol) === $currencyCode) {
-                    $currencies[] = new Currency(
-                        new \Brick\Money\Currency(
+                    $currencies[] = new ExtendedCurrency(
+                        new Currency(
                             strtoupper($currency->symbol),
                             -1,
                             $currency->name,

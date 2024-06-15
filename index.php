@@ -76,27 +76,27 @@ while (true) {
         case Ask::ACTION_BUY:
             $ticker = readline("Enter the ticker of the cryptocurrency you wish to purchase - ");
             $amount = $ask->amount($wallet->getMoney("EUR")->getAmount());
-            $currency = $cryptoApi->search([$ticker]);
-            if (empty($currency)) {
+            $extendedCurrencies = $cryptoApi->search([$ticker]);
+            if (empty($extendedCurrencies)) {
                 echo "Could not find any currency with ticker {$ticker}\n";
                 break;
             }
-            $currency = $currency[0];
+            $extendedCurrency = $extendedCurrencies[0];
 
             $provider->setExchangeRate(
                 "EUR",
-                $currency->code(),
-                $currency->exchangeRate()
+                $extendedCurrency->code(),
+                $extendedCurrency->exchangeRate()
             );
             $baseProvider = new BaseCurrencyProvider($provider, "EUR");
 
             $moneyToGet = Money::of(
                 $currencyConverter->convert(
                     $wallet->getMoney("EUR"),
-                    $currency->definition(),
+                    $extendedCurrency->definition(),
                     RoundingMode::DOWN
                 )->getAmount(),
-                $currency->definition()
+                $extendedCurrency->definition()
             );
             $moneyToSpend = Money::of($amount, "EUR");
 
@@ -125,23 +125,23 @@ while (true) {
             $currency = $ask->crypto($ownedCurrencies);
             $amount = $ask->amount($money->getAmount());
 
-            $currency = $cryptoApi->search([$currency->getCurrencyCode()]);
-            if (empty($currency)) {
+            $extendedCurrencies = $cryptoApi->search([$currency->getCurrencyCode()]);
+            if (empty($extendedCurrencies)) {
                 echo "Failed to fetch currency price\n";
                 break;
             }
-            $currency = $currency[0];
+            $extendedCurrency = $extendedCurrencies[0];
 
             $provider->setExchangeRate(
                 "EUR",
-                $currency->code(),
-                $currency->exchangeRate()
+                $extendedCurrency->code(),
+                $extendedCurrency->exchangeRate()
             );
             $baseProvider = new BaseCurrencyProvider($provider, "EUR");
 
-            $money = $wallet->getMoney($currency->code());
+            $money = $wallet->getMoney($extendedCurrency->code());
 
-            $moneyToSpend = Money::of($amount, $currency->definition());
+            $moneyToSpend = Money::of($amount, $extendedCurrency->definition());
             $moneyToGet = $currencyConverter->convert(
                 Money::of($amount, $money->getCurrency()),
                 "EUR",

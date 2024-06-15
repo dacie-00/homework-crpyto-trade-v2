@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Services\Cryptocurrency;
 
-use App\Models\Currency;
+use App\Models\ExtendedCurrency;
 use Brick\Math\BigDecimal;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
@@ -23,7 +23,7 @@ class CoinMarketCapApiService implements CryptocurrencyApiServiceInterface
     }
 
     /**
-     * @return Currency[]
+     * @return ExtendedCurrency[]
      */
     public function getTop(int $page = 1, int $currenciesPerPage = 10): array
     {
@@ -53,7 +53,7 @@ class CoinMarketCapApiService implements CryptocurrencyApiServiceInterface
 
         $currencies = [];
         foreach ($currencyResponse->data as $currency) {
-            $currencies[] = new Currency(
+            $currencies[] = new ExtendedCurrency(
                 new \Brick\Money\Currency(
                     $currency->symbol,
                     $currency->id,
@@ -67,7 +67,7 @@ class CoinMarketCapApiService implements CryptocurrencyApiServiceInterface
     }
 
     /**
-     * @return Currency[]
+     * @return ExtendedCurrency[]
      */
     public function search(array $currencyCodes): array
     {
@@ -100,7 +100,7 @@ class CoinMarketCapApiService implements CryptocurrencyApiServiceInterface
                 if (!$currency->is_active) {
                     continue;
                 }
-                $currencies[] = new Currency(
+                $currencies[] = new ExtendedCurrency(
                     new \Brick\Money\Currency(
                         $currency->symbol,
                         $currency->id,

@@ -91,7 +91,7 @@ class Ask
         $question = (new Question("Enter a currency codes to search for (separate by comma) - "))
             ->setValidator(function ($currencyCode): string {
                 if (empty($currencyCode)) {
-                    throw new RuntimeException("Currency code cannot be empty");
+                    throw new RuntimeException("ExtendedCurrency code cannot be empty");
                 }
                 return $currencyCode;
             });
