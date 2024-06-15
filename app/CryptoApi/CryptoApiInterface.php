@@ -4,7 +4,7 @@ namespace App\CryptoApi;
 
 use App\Currency\Currency;
 
-interface CryptoApi
+interface CryptoApiInterface
 {
     /**
      * @return Currency[]

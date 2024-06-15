@@ -8,7 +8,7 @@ use Brick\Math\BigDecimal;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 
-class CoinMarketCapAPI implements CryptoApi
+class CoinMarketCapAPI implements CryptoApiInterface
 {
     private string $key;
     private Client $client;

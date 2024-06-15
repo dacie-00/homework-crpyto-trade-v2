@@ -7,7 +7,7 @@ use Brick\Math\BigDecimal;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 
-class CoinGeckoAPI implements CryptoApi
+class CoinGeckoAPI implements CryptoApiInterface
 {
     private string $apiKey;
     private Client $client;
