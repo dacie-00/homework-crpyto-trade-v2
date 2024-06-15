@@ -4,76 +4,73 @@ declare(strict_types=1);
 namespace App\Models;
 
 use Brick\Math\BigDecimal;
+use Brick\Money\Currency;
+use Brick\Money\Money;
 use Carbon\Carbon;
 use DateTimeInterface;
 use JsonSerializable;
 
-class Transaction implements JsonSerializable
+class Transaction
 {
-    private BigDecimal $amountIn;
-    private string $currencyIn;
-    private BigDecimal $amountOut;
-    private string $currencyOut;
+    public const TYPE_BUY = "buy";
+    public const TYPE_SELL = "sell";
+
+    private Money $sentMoney;
+    private string $type;
+    private Money $receivedMoney;
     private Carbon $createdAt;
 
     public function __construct(
-        BigDecimal $amountIn,
-        string $currencyIn,
-        BigDecimal $amountOut,
-        string $currencyOut,
+        Money $sentMoney,
+        string $type,
+        Money $receivedMoney,
         ?string $createdAt = null
     ) {
-        $this->amountIn = $amountIn;
-        $this->currencyIn = $currencyIn;
-        $this->amountOut = $amountOut;
-        $this->currencyOut = $currencyOut;
+        $this->sentMoney = $sentMoney;
+        $this->type = $type;
+        $this->receivedMoney = $receivedMoney;
         $this->createdAt = $createdAt ? Carbon::parse($createdAt) : Carbon::now("UTC");
     }
 
     public static function fromArray(array $transaction): Transaction
     {
         return new self(
-            BigDecimal::of($transaction['amount_in']),
-            $transaction['currency_in'],
-            BigDecimal::of($transaction['amount_out']),
-            $transaction['currency_out'],
+            Money::of($transaction["sent_amount"], new Currency(
+                    $transaction["sent_currency_code"],
+                    -1,
+                    $transaction["sent_currency_name"],
+                    9
+                )
+            ),
+            $transaction["type"],
+            Money::of($transaction["received_amount"], new Currency(
+                    $transaction["received_currency_code"],
+                    -1,
+                    $transaction["received_currency_name"],
+                    9
+                )
+            ),
             $transaction['created_at']
         );
     }
 
-    public function amountIn(): BigDecimal
+    public function sentMoney(): Money
     {
-        return $this->amountIn;
+        return $this->sentMoney;
     }
 
-    public function currencyIn(): string
+    public function receivedMoney(): Money
     {
-        return $this->currencyIn;
+        return $this->receivedMoney;
     }
 
-    public function amountOut(): BigDecimal
+    public function type(): string
     {
-        return $this->amountOut;
-    }
-
-    public function currencyOut(): string
-    {
-        return $this->currencyOut;
+        return $this->type;
     }
 
     public function createdAt(): Carbon
     {
         return $this->createdAt;
-    }
-
-    public function jsonSerialize(): array
-    {
-        return [
-            "amountIn" => $this->amountIn,
-            "currencyIn" => $this->currencyIn,
-            "amountOut" => $this->amountOut,
-            "currencyOut" => $this->currencyOut,
-            "createdAt" => $this->createdAt->timezone("UTC")->format(DateTimeInterface::ATOM),
-        ];
     }
 }

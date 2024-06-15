@@ -74,23 +74,23 @@ class Display
         $table = (new Table($this->output))
             ->setHeaderTitle("Transactions")
             ->setHeaders([
-                "Amount in",
-                "ExtendedCurrency In",
-                "-->",
-                "Amount out",
-                "ExtendedCurrency out",
+                "Amount sent",
+                "Currency sent",
+                "Transaction",
+                "Amount received",
+                "ExtendedCurrency received",
                 "Date",
             ]);
 
         foreach ($transactions as $transaction) {
-            $amountIn = (string)$transaction->amountIn();
-            $amountOut = (string)$transaction->amountOut();
+            $sentMoney = $transaction->sentMoney();
+            $receivedMoney = $transaction->receivedMoney();
             $table->addRow([
-                $amountIn,
-                $transaction->currencyIn(),
-                "-->",
-                $amountOut,
-                $transaction->currencyOut(),
+                $sentMoney->getAmount(),
+                $sentMoney->getCurrency()->getCurrencyCode(),
+                $transaction->type() === Transaction::TYPE_BUY ? "bought" : "sold",
+                $receivedMoney->getAmount(),
+                $receivedMoney->getCurrency()->getCurrencyCode(),
                 $transaction->createdAt()->timezone("Europe/Riga")->format("Y-m-d H:i:s"),
             ]);
         }

@@ -44,10 +44,9 @@ class BuyService
         $wallet->subtract($moneyToSpend);
         $transaction = new Transaction
         (
-            $moneyToSpend->getAmount(),
-            $moneyToSpend->getCurrency()->getCurrencyCode(),
-            $moneyToGet->getAmount(),
-            $moneyToGet->getCurrency()->getCurrencyCode()
+            $moneyToSpend,
+            Transaction::TYPE_BUY,
+            $moneyToGet
         );
         $this->transactionRepository->add($transaction);
         $this->connection->commit();

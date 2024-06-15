@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Models\Transaction;
+use DateTimeInterface;
 use Doctrine\DBAL\Connection;
 
 class TransactionRepository
@@ -33,21 +34,32 @@ class TransactionRepository
 
     public function add(Transaction $transaction): void
     {
+        $sentMoney = $transaction->sentMoney();
+        $receivedMoney = $transaction->receivedMoney();
         $this->connection->createQueryBuilder()
             ->insert("transactions")
             ->values([
-                "amount_in" => ":amount_in",
-                "currency_in" => ":currency_in",
-                "amount_out" => ":amount_out",
-                "currency_out" => ":currency_out",
+                "sent_amount" => ":sent_amount",
+                "sent_currency_code" => ":sent_currency_code",
+                "sent_currency_name" => ":sent_currency_name",
+                "type" => ":type",
+                "received_amount" => ":received_amount",
+                "received_currency_code" => ":received_currency_code",
+                "received_currency_name" => ":received_currency_name",
                 "created_at" => ":created_at",
             ])
             ->setParameters([
-                "amount_in" => $transaction->amountIn(),
-                "currency_in" => $transaction->currencyIn(),
-                "amount_out" => $transaction->amountOut(),
-                "currency_out" => $transaction->currencyOut(),
-                "created_at" => $transaction->createdAt(),
+                "sent_amount" => $sentMoney->getAmount(),
+                "sent_currency_code" => $sentMoney->getCurrency()->getCurrencyCode(),
+                "sent_currency_name" => $sentMoney->getCurrency()->getName(),
+                "type" => $transaction->type(),
+                "received_amount" => $receivedMoney->getAmount(),
+                "received_currency_code" => $receivedMoney->getCurrency()->getCurrencyCode(),
+                "received_currency_name" => $receivedMoney->getCurrency()->getName(),
+                "created_at" => $transaction
+                    ->createdAt()
+                    ->timezone("UTC")
+                    ->format(DateTimeInterface::ATOM),
             ])
             ->executeStatement();
     }
