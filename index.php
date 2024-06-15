@@ -123,7 +123,7 @@ while (true) {
             $transaction =
                 (new SellService($connection, $transactionRepository, $currencyConverter))
                 ->execute($wallet, $amount, $extendedCurrency);
-            echo "{$transaction->amountOut()} {$transaction->currencyOut()} sold for {$transaction->amountIn()} {$transaction->currencyIn()}\n";
+            echo "{$transaction->amountIn()} {$transaction->currencyIn()} sold for {$transaction->amountOut()} {$transaction->currencyOut()}\n";
 
             break;
         case Ask::ACTION_WALLET:
