@@ -40,22 +40,18 @@ class TransactionRepository
             ->insert("transactions")
             ->values([
                 "sent_amount" => ":sent_amount",
-                "sent_currency_code" => ":sent_currency_code",
-                "sent_currency_name" => ":sent_currency_name",
+                "sent_ticker" => ":sent_ticker",
                 "type" => ":type",
                 "received_amount" => ":received_amount",
-                "received_currency_code" => ":received_currency_code",
-                "received_currency_name" => ":received_currency_name",
+                "received_ticker" => ":received_ticker",
                 "created_at" => ":created_at",
             ])
             ->setParameters([
                 "sent_amount" => $sentMoney->getAmount(),
-                "sent_currency_code" => $sentMoney->getCurrency()->getCurrencyCode(),
-                "sent_currency_name" => $sentMoney->getCurrency()->getName(),
+                "sent_ticker" => $sentMoney->getCurrency()->getCurrencyCode(),
                 "type" => $transaction->type(),
                 "received_amount" => $receivedMoney->getAmount(),
-                "received_currency_code" => $receivedMoney->getCurrency()->getCurrencyCode(),
-                "received_currency_name" => $receivedMoney->getCurrency()->getName(),
+                "received_ticker" => $receivedMoney->getCurrency()->getCurrencyCode(),
                 "created_at" => $transaction
                     ->createdAt()
                     ->timezone("UTC")

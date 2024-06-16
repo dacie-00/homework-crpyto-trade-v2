@@ -34,12 +34,10 @@ $schemaManager = $connection->createSchemaManager();
 if (!$schemaManager->tablesExist(["transactions"])) {
     $table = new Table("transactions");
     $table->addColumn("sent_amount", "decimal");
-    $table->addColumn("sent_currency_code", "string");
-    $table->addColumn("sent_currency_name", "string");
+    $table->addColumn("sent_ticker", "string");
     $table->addColumn("type", "string");
     $table->addColumn("received_amount", "decimal");
-    $table->addColumn("received_currency_code", "string");
-    $table->addColumn("received_currency_name", "string");
+    $table->addColumn("received_ticker", "string");
     $table->addColumn("created_at", "string");
     $schemaManager->createTable($table);
 }
@@ -96,7 +94,7 @@ while (true) {
 
             $provider->setExchangeRate(
                 "EUR",
-                $extendedCurrency->code(),
+                $extendedCurrency->ticker(),
                 $extendedCurrency->exchangeRate()
             );
             $baseProvider = new BaseCurrencyProvider($provider, "EUR");
@@ -107,7 +105,7 @@ while (true) {
             $sentMoney = $transaction->sentMoney();
             $receivedMoney = $transaction->receivedMoney();
             echo "{$receivedMoney->getAmount()} {$receivedMoney->getCurrency()->getCurrencyCode()} bought for " .
-                "{$sentMoney->getAmount()} {$sentMoney->getCurrency()->getCurrencyCode()}";
+                "{$sentMoney->getAmount()} {$sentMoney->getCurrency()->getCurrencyCode()}\n";
             break;
         case Ask::ACTION_SELL:
             $ownedCurrencies = [];
@@ -133,7 +131,7 @@ while (true) {
 
             $provider->setExchangeRate(
                 "EUR",
-                $extendedCurrency->code(),
+                $extendedCurrency->ticker(),
                 $extendedCurrency->exchangeRate()
             );
             $baseProvider = new BaseCurrencyProvider($provider, "EUR");
@@ -145,7 +143,7 @@ while (true) {
             $sentMoney = $transaction->sentMoney();
             $receivedMoney = $transaction->receivedMoney();
             echo "{$sentMoney->getAmount()} {$sentMoney->getCurrency()->getCurrencyCode()} sold for " .
-                "{$receivedMoney->getAmount()} {$receivedMoney->getCurrency()->getCurrencyCode()}";
+                "{$receivedMoney->getAmount()} {$receivedMoney->getCurrency()->getCurrencyCode()}\n";
 
             break;
         case Ask::ACTION_WALLET:

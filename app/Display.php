@@ -28,18 +28,16 @@ class Display
         $table = (new Table($this->output))
             ->setHeaderTitle("Cryptocurrencies")
             ->setHeaders([
-                "Name",
-                "ExtendedCurrency",
+                "Ticker",
                 "Price (EUR)",
             ]);
 
         foreach ($currencies as $currency) {
-            if ($currency->code() === "EUR") {
+            if ($currency->ticker() === "EUR") {
                 continue;
             }
             $table->addRow([
-                $currency->name(),
-                $currency->code(),
+                $currency->ticker(),
                 BigDecimal::one()->dividedBy($currency->exchangeRate(), 9, RoundingMode::DOWN)
             ]);
         }
@@ -75,10 +73,10 @@ class Display
             ->setHeaderTitle("Transactions")
             ->setHeaders([
                 "Amount sent",
-                "Currency sent",
+                "Ticker",
                 "Transaction",
                 "Amount received",
-                "ExtendedCurrency received",
+                "Ticker",
                 "Date",
             ]);
 
@@ -96,5 +94,4 @@ class Display
         }
         $table->render();
     }
-
 }

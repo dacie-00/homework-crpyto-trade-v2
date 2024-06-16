@@ -10,9 +10,13 @@ class ExtendedCurrency
     private Currency $definition;
     private BigDecimal $exchangeRate;
 
-    public function __construct(Currency $definition, BigDecimal $exchangeRate)
+    public function __construct(string $ticker, BigDecimal $exchangeRate)
     {
-        $this->definition = $definition;
+        $this->definition = new Currency(
+            $ticker,
+            0,
+            "",
+            9);
         $this->exchangeRate = $exchangeRate;
     }
 
@@ -21,14 +25,9 @@ class ExtendedCurrency
         return $this->definition;
     }
 
-    public function code(): string
+    public function ticker(): string
     {
         return $this->definition->getCurrencyCode();
-    }
-
-    public function name(): string
-    {
-        return $this->definition->getName();
     }
 
     public function exchangeRate(): BigDecimal

@@ -33,17 +33,17 @@ class Transaction
     {
         return new self(
             Money::of($transaction["sent_amount"], new Currency(
-                    $transaction["sent_currency_code"],
-                    -1,
-                    $transaction["sent_currency_name"],
+                    $transaction["sent_ticker"],
+                    0,
+                    "",
                     9
                 )
             ),
             $transaction["type"],
             Money::of($transaction["received_amount"], new Currency(
-                    $transaction["received_currency_code"],
-                    -1,
-                    $transaction["received_currency_name"],
+                    $transaction["received_ticker"],
+                    0,
+                    "",
                     9
                 )
             ),

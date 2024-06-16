@@ -54,12 +54,7 @@ class CoinMarketCapApiService implements CryptocurrencyApiServiceInterface
         $currencies = [];
         foreach ($currencyResponse->data as $currency) {
             $currencies[] = new ExtendedCurrency(
-                new Currency(
-                    $currency->symbol,
-                    $currency->id,
-                    $currency->name,
-                    9
-                ),
+                $currency->symbol,
                 BigDecimal::of(1 / $currency->quote->EUR->price)
             );
         }
@@ -101,12 +96,7 @@ class CoinMarketCapApiService implements CryptocurrencyApiServiceInterface
                     continue;
                 }
                 $currencies[] = new ExtendedCurrency(
-                    new Currency(
-                        $currency->symbol,
-                        $currency->id,
-                        $currency->name,
-                        9
-                    ),
+                    $currency->symbol,
                     BigDecimal::of(1 / $currency->quote->EUR->price)
                 );
             }

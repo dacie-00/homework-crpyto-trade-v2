@@ -54,12 +54,12 @@ class Ask
     {
         $names = [];
         foreach ($currencies as $currency) {
-            $names[] = $currency->getName();
+            $names[] = $currency->getCurrencyCode();
         }
         $question = new ChoiceQuestion("Select the currency", $names);
-        $currencyName = $this->helper->ask($this->input, $this->output, $question);
+        $ticker = $this->helper->ask($this->input, $this->output, $question);
         foreach ($currencies as $currency) {
-            if ($currency->getName() === $currencyName) {
+            if ($currency->getCurrencyCode() === $ticker) {
                 return $currency;
             }
         }

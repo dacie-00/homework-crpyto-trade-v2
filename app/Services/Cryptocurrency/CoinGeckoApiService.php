@@ -56,12 +56,7 @@ class CoinGeckoApiService implements CryptocurrencyApiServiceInterface
         $currencies = [];
         foreach ($currencyResponse as $currency) {
             $currencies[] = new ExtendedCurrency(
-                new Currency(
-                    $currency->symbol,
-                    -1, // This API doesn't provide numeric codes, but the currency class expects one
-                    $currency->name,
-                    9
-                ),
+                $currency->symbol,
                 BigDecimal::of(1 / $currency->current_price)
             );
         }
@@ -140,12 +135,7 @@ class CoinGeckoApiService implements CryptocurrencyApiServiceInterface
             foreach ($currencyResponse as $currency) {
                 if (strtoupper($currency->symbol) === $currencyCode) {
                     $currencies[] = new ExtendedCurrency(
-                        new Currency(
-                            strtoupper($currency->symbol),
-                            -1,
-                            $currency->name,
-                            9
-                        ),
+                        strtoupper($currency->symbol),
                         BigDecimal::of(1 / $currency->current_price)
                     );
                 }
