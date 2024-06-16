@@ -88,13 +88,28 @@ class Ask
 
     public function query(): string
     {
-        $question = (new Question("Enter a currency codes to search for (separate by comma) - "))
-            ->setValidator(function ($currencyCode): string {
-                if (empty($currencyCode)) {
-                    throw new RuntimeException("ExtendedCurrency code cannot be empty");
+        $question = (new Question("Enter a ticker to search for (separate multible by comma) - "))
+            ->setValidator(function ($ticker): string {
+                if (empty($ticker)) {
+                    throw new RuntimeException("Ticker cannot be empty");
                 }
-                return $currencyCode;
+                return $ticker;
             });
         return (string)($this->helper->ask($this->input, $this->output, $question));
+    }
+
+    public function ticker()
+    {
+        $question = (new Question("Enter the ticker of the currency you wish to purchase - "))
+            ->setValidator(function ($ticker): string {
+                if (empty($ticker)) {
+                    throw new RuntimeException("The ticker cannot be empty");
+                }
+                if (is_numeric($ticker)) {
+                    throw new RuntimeException("The ticker cannot be a numeric value");
+                }
+                return $ticker;
+            });
+        return strtoupper((string)($this->helper->ask($this->input, $this->output, $question)));
     }
 }

@@ -85,7 +85,7 @@ while (true) {
                 echo "You don't have any money left to spend on cryptocurrencies!\n";
                 break;
             }
-            $ticker = readline("Enter the ticker of the cryptocurrency you wish to purchase - ");
+            $ticker = $ask->ticker();
             $amount = $ask->amount($moneyInWallet);
             $extendedCurrencies = $cryptoApi->search([$ticker]);
             if (empty($extendedCurrencies)) {
