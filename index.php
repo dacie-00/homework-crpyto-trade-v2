@@ -64,7 +64,6 @@ $wallet = new Wallet($connection);
 
 
 if ($wallet->isEmpty()) {
-    echo "foo\n";
     $wallet->add(Money::of(1000, "EUR"));
 }
 
