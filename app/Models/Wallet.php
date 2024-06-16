@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Exceptions\NoMoneyException;
 use Brick\Math\BigDecimal;
 use Brick\Money\Currency;
 use Brick\Money\Money;
@@ -116,7 +117,7 @@ class Wallet
             ->executeQuery()
             ->fetchAssociative();
         if (!$money) {
-            throw new OutOfBoundsException("CryptoCurrency {$ticker} does not exist");
+            throw new NoMoneyException("There is now {$ticker} in the wallet");
         }
         return Money::of($money["amount"],
             new Currency(

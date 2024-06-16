@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 use App\Ask;
 use App\Display;
+use App\Exceptions\NoMoneyException;
 use App\Models\Wallet;
 use App\Repositories\TransactionRepository;
 use App\Services\BuyService;
@@ -78,8 +79,14 @@ while (true) {
     $mainAction = $ask->mainAction();
     switch ($mainAction) {
         case Ask::ACTION_BUY:
+            try {
+                $moneyInWallet = $wallet->getMoney("EUR")->getAmount();
+            } catch (NoMoneyException $e) {
+                echo "You don't have any money left to spend on cryptocurrencies!\n";
+                break;
+            }
             $ticker = readline("Enter the ticker of the cryptocurrency you wish to purchase - ");
-            $amount = $ask->amount($wallet->getMoney("EUR")->getAmount());
+            $amount = $ask->amount($moneyInWallet);
             $extendedCurrencies = $cryptoApi->search([$ticker]);
             if (empty($extendedCurrencies)) {
                 echo "Could not find any currency with ticker {$ticker}\n";
@@ -109,6 +116,10 @@ while (true) {
                     continue;
                 }
                 $ownedCurrencies[] = $money->getCurrency();
+            }
+            if (empty($ownedCurrencies)) {
+                echo "You don't own any cryptocurrencies!\n";
+                break;
             }
             $currency = $ask->crypto($ownedCurrencies);
             $amount = $ask->amount($money->getAmount());
