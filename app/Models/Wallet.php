@@ -8,7 +8,6 @@ use Brick\Math\BigDecimal;
 use Brick\Money\Currency;
 use Brick\Money\Money;
 use Doctrine\DBAL\Connection;
-use OutOfBoundsException;
 
 class Wallet
 {
@@ -34,12 +33,10 @@ class Wallet
                 ->values(
                     [
                         "ticker" => ":ticker",
-                        "name" => ":name",
                         "amount" => ":amount",
                     ]
                 )
                 ->setParameter("ticker", $money->getCurrency()->getCurrencyCode())
-                ->setParameter("name", $money->getCurrency()->getName())
                 ->setParameter("amount", $money->getAmount())
                 ->executeQuery();
             return;
@@ -99,7 +96,7 @@ class Wallet
                 new Currency(
                     $money["ticker"],
                     0,
-                    $money["name"],
+                    "",
                     9
                 )
             ),
