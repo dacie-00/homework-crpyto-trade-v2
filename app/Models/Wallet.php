@@ -66,9 +66,9 @@ class Wallet
 
         $this->connection->createQueryBuilder()->update("wallet")
             ->where("ticker = :ticker")
-            ->set("amount", "amount - :amount")
+            ->set("amount", ":amount")
             ->setParameter("ticker", $money->getCurrency())
-            ->setParameter("amount", BigDecimal::of($currentAmount)->plus($money->getAmount()))
+            ->setParameter("amount", BigDecimal::of($currentAmount)->minus($money->getAmount()))
             ->executeQuery();
 
         $this->connection->createQueryBuilder()->delete("wallet")
