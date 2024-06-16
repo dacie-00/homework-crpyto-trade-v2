@@ -49,7 +49,7 @@ class Display
         $table = (new Table($this->output))
             ->setHeaderTitle("Wallet")
             ->setHeaders([
-                "ExtendedCurrency",
+                "Ticker",
                 "Amount",
             ]);
 
