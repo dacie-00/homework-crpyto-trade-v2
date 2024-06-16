@@ -9,10 +9,10 @@ use App\Repositories\TransactionRepository;
 use App\Services\BuyService;
 use App\Services\SellService;
 use App\Services\Cryptocurrency\CoinMarketCapApiService;
+use Brick\Math\BigDecimal;
 use Brick\Money\CurrencyConverter;
 use Brick\Money\ExchangeRateProvider\BaseCurrencyProvider;
 use Brick\Money\ExchangeRateProvider\ConfigurableProvider;
-use Brick\Money\Money;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Schema\Table;
 use Symfony\Component\Console\Input\ArrayInput;
@@ -45,9 +45,12 @@ if (!$schemaManager->tablesExist(["transactions"])) {
 if (!$schemaManager->tablesExist(["wallet"])) {
     $table = new Table("wallet");
     $table->addColumn("ticker", "string");
-    $table->addColumn("name", "string");
     $table->addColumn("amount", "decimal");
     $schemaManager->createTable($table);
+    $connection->insert('wallet', [
+        "ticker" => "EUR",
+        "amount" => BigDecimal::of(1000),
+    ]);
 }
 
 $cryptoApi = new CoinMarketCapApiService($_ENV["COIN_MARKET_CAP_API_KEY"]);
@@ -63,9 +66,10 @@ $transactionRepository = new TransactionRepository($connection);
 $wallet = new Wallet($connection);
 
 
-if ($wallet->isEmpty()) {
-    $wallet->add(Money::of(1000, "EUR"));
-}
+//if ($wallet->isEmpty()) {
+//    $wallet->add(Money::of(1000, "EUR"));
+//    // TODO: do this on db initialization
+//}
 
 
 $baseProvider = new BaseCurrencyProvider($provider, "EUR");
