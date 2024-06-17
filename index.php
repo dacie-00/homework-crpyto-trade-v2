@@ -4,8 +4,10 @@ declare(strict_types=1);
 use App\Ask;
 use App\Display;
 use App\Exceptions\NoMoneyException;
+use App\Models\User;
 use App\Models\Wallet;
 use App\Repositories\TransactionRepository;
+use App\Repositories\UserRepository;
 use App\Repositories\WalletRepository;
 use App\Services\BuyService;
 use App\Services\SellService;
@@ -33,9 +35,27 @@ $connectionParams = [
 $connection = DriverManager::getConnection($connectionParams);
 
 $schemaManager = $connection->createSchemaManager();
+if (!$schemaManager->tablesExist(["users"])) {
+    $table = new Table("users");
+    $table->addColumn("user_id", "string");
+    $table->setPrimaryKey(["user_id"]);
+
+    $table->addColumn("username", "string");
+    $table->addColumn("password", "string");
+    $schemaManager->createTable($table);
+
+    (new UserRepository($connection))->insert(
+        new User("Person", "password123", "funnyUser")
+    );
+}
+
 if (!$schemaManager->tablesExist(["transactions"])) {
     $table = new Table("transactions");
-    $table->addColumn("id", "string");
+    $table->addColumn("transaction_id", "string");
+    $table->setPrimaryKey(["transaction_id"]);
+    $table->addColumn("user_id", "string");
+    $table->addForeignKeyConstraint("users", ["user_id"], ["user_id"]);
+
     $table->addColumn("sent_amount", "decimal");
     $table->addColumn("sent_ticker", "string");
     $table->addColumn("type", "string");
@@ -47,12 +67,17 @@ if (!$schemaManager->tablesExist(["transactions"])) {
 
 if (!$schemaManager->tablesExist(["wallet"])) {
     $table = new Table("wallet");
-    $table->addColumn("id", "string");
+    $table->addColumn("wallet_id", "string");
+//    $table->setPrimaryKey(["wallet_id"]);
+    $table->addColumn("user_id", "string");
+    $table->addForeignKeyConstraint("users", ["user_id"], ["user_id"]);
+
     $table->addColumn("ticker", "string");
     $table->addColumn("amount", "decimal");
     $schemaManager->createTable($table);
-    $connection->insert('wallet', [
-        "id" => "a",
+    $connection->insert("wallet", [
+        "wallet_id" => "funnyWallet",
+        "user_id" => "funnyUser",
         "ticker" => "EUR",
         "amount" => BigDecimal::of(1000),
     ]);
@@ -69,16 +94,14 @@ $ask = new Ask($consoleInput, $consoleOutput);
 $provider = new ConfigurableProvider();
 $transactionRepository = new TransactionRepository($connection);
 
-//if ($wallet->isEmpty()) {
-//    $wallet->add(Money::of(1000, "EUR"));
-//    // TODO: do this on db initialization
-//}
-
 
 $baseProvider = new BaseCurrencyProvider($provider, "EUR");
 $currencyConverter = new CurrencyConverter($baseProvider);
 
+$walletRepository = new WalletRepository($connection);
+$userRepository = new UserRepository($connection);
 $walletService = new WalletService(new WalletRepository($connection));
+$wallet = new Wallet("funnyUser", "funnyWallet");
 
 $display = new Display($consoleOutput);
 while (true) {
@@ -86,7 +109,7 @@ while (true) {
     switch ($mainAction) {
         case Ask::ACTION_BUY:
             try {
-                $moneyInWallet = $walletService->getMoney("a", "EUR")->getAmount();
+                $moneyInWallet = $walletService->getMoney($wallet, "EUR")->getAmount();
             } catch (NoMoneyException $e) {
                 echo "You don't have any money left to spend on cryptocurrencies!\n";
                 break;
@@ -108,7 +131,7 @@ while (true) {
             $baseProvider = new BaseCurrencyProvider($provider, "EUR");
 
             $transaction =(new BuyService($connection, $walletService, $transactionRepository, $currencyConverter))
-                ->execute("a", $amount, $extendedCurrency);
+                ->execute($wallet, $amount, $extendedCurrency);
 
             $sentMoney = $transaction->sentMoney();
             $receivedMoney = $transaction->receivedMoney();
@@ -117,7 +140,7 @@ while (true) {
             break;
         case Ask::ACTION_SELL:
             $ownedCurrencies = [];
-            foreach ($walletService->getWalletById("a")->contents() as $money) {
+            foreach ($walletService->getWalletById($wallet->id())->contents() as $money) {
                 if ($money->getCurrency()->getCurrencyCode() === "EUR") {
                     continue;
                 }
@@ -146,7 +169,7 @@ while (true) {
 
             $transaction =
                 (new SellService($connection, $walletService, $transactionRepository, $currencyConverter))
-                ->execute("a", $amount, $extendedCurrency);
+                ->execute($wallet, $amount, $extendedCurrency);
 
             $sentMoney = $transaction->sentMoney();
             $receivedMoney = $transaction->receivedMoney();

@@ -39,7 +39,8 @@ class TransactionRepository
         $this->connection->createQueryBuilder()
             ->insert("transactions")
             ->values([
-                "id" => ":id",
+                "transaction_id" => ":transaction_id",
+                "user_id" => ":user_id",
                 "sent_amount" => ":sent_amount",
                 "sent_ticker" => ":sent_ticker",
                 "type" => ":type",
@@ -48,7 +49,8 @@ class TransactionRepository
                 "created_at" => ":created_at",
             ])
             ->setParameters([
-                "id" =>$transaction->id(),
+                "transaction_id" => $transaction->id(),
+                "user_id" => $transaction->userId(),
                 "sent_amount" => $sentMoney->getAmount(),
                 "sent_ticker" => $sentMoney->getCurrency()->getCurrencyCode(),
                 "type" => $transaction->type(),

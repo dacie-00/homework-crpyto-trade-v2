@@ -13,6 +13,7 @@ class Transaction
     public const TYPE_BUY = "buy";
     public const TYPE_SELL = "sell";
 
+    private string $userId;
     private string $id;
     private Money $sentMoney;
     private string $type;
@@ -20,12 +21,14 @@ class Transaction
     private Carbon $createdAt;
 
     public function __construct(
+        string $userId,
         Money $sentMoney,
         string $type,
         Money $receivedMoney,
         ?string $createdAt = null,
         ?string $id = null
     ) {
+        $this->userId = $userId;
         $this->sentMoney = $sentMoney;
         $this->type = $type;
         $this->receivedMoney = $receivedMoney;
@@ -36,6 +39,7 @@ class Transaction
     public static function fromArray(array $transaction): Transaction
     {
         return new self(
+            $transaction["user_id"],
             Money::of($transaction["sent_amount"], new Currency(
                     $transaction["sent_ticker"],
                     0,
@@ -79,5 +83,10 @@ class Transaction
     public function id(): string
     {
         return $this->id;
+    }
+
+    public function userId(): string
+    {
+        return $this->userId;
     }
 }

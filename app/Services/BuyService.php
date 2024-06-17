@@ -33,7 +33,7 @@ class BuyService
     }
 
     public function execute(
-        string $id,
+        Wallet $wallet,
         float $amount,
         ExtendedCurrency $extendedCurrency
     ): Transaction {
@@ -48,10 +48,11 @@ class BuyService
         $moneyToSpend = Money::of($amount, "EUR");
 
         $this->connection->beginTransaction();
-        $this->walletService->addToWallet($id, $moneyToGet);
-        $this->walletService->subtractFromWallet($id, $moneyToSpend);
+        $this->walletService->addToWallet($wallet, $moneyToGet);
+        $this->walletService->subtractFromWallet($wallet, $moneyToSpend);
         $transaction = new Transaction
         (
+            $wallet->userId(),
             $moneyToSpend,
             Transaction::TYPE_BUY,
             $moneyToGet

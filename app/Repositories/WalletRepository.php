@@ -18,20 +18,22 @@ class WalletRepository
         $this->connection = $connection;
     }
 
-    public function insert(string $id, string $ticker, BigDecimal $amount): void
+    public function insert(string $wallet_id, string $user_id, string $ticker, BigDecimal $amount): void
     {
         $this->connection->createQueryBuilder()
             ->insert("wallet")
             ->values(
                 [
-                    "id" => ":id",
+                    "wallet_id" => ":wallet_id",
+                    "user_id" => ":user_id",
                     "ticker" => ":ticker",
                     "amount" => ":amount",
                 ]
             )
             ->setParameters(
                 [
-                    "id" => $id,
+                    "wallet_id" => $wallet_id,
+                    "user_id" => $user_id,
                     "ticker" => $ticker,
                     "amount" => $amount,
                 ]
@@ -39,28 +41,28 @@ class WalletRepository
             ->executeQuery();
     }
 
-    public function delete(string $id, string $ticker): void
+    public function delete(string $wallet_id, string $ticker): void
     {
         $this->connection->createQueryBuilder()
             ->delete("wallet")
-            ->where("id = :id and ticker = :ticker")
+            ->where("wallet_id = :wallet_id and ticker = :ticker")
             ->setParameters(
                 [
-                    "id" => $id,
+                    "wallet_id" => $wallet_id,
                     "ticker" => $ticker,
                 ]
             );
     }
 
-    public function update(string $id, string $ticker, BigDecimal $amount): void
+    public function update(string $wallet_id, string $ticker, BigDecimal $amount): void
     {
         $this->connection->createQueryBuilder()
             ->update("wallet")
-            ->where("id = :id and ticker = :ticker")
+            ->where("wallet_id = :wallet_id and ticker = :ticker")
             ->set("amount", ":amount")
             ->setParameters(
                 [
-                    "id" => $id,
+                    "wallet_id" => $wallet_id,
                     "ticker" => $ticker,
                     "amount" => $amount,
                 ]
@@ -68,15 +70,15 @@ class WalletRepository
             ->executeQuery();
     }
 
-    public function exists(string $id, string $ticker): bool
+    public function exists(string $wallet_id, string $ticker): bool
     {
         return $this->connection->createQueryBuilder()
-            ->select("id")
+            ->select("wallet_id")
             ->from("wallet")
-            ->where("id = :id and ticker = :ticker")
+            ->where("wallet_id = :wallet_id and ticker = :ticker")
             ->setParameters(
                 [
-                    "id" => $id,
+                    "wallet_id" => $wallet_id,
                     "ticker" => $ticker,
                 ]
             )
@@ -84,16 +86,17 @@ class WalletRepository
             ->fetchOne() !== false;
     }
 
-    public function getWalletById(string $id): Wallet
+    public function getWalletById(string $wallet_id): Wallet
     {
         $rows = $this->connection->createQueryBuilder()
             ->from("wallet")
-            ->select("ticker, amount")
-            ->where("id = :id")
-            ->setParameter("id", $id)
+            ->select("user_id, ticker, amount")
+            ->where("wallet_id = :wallet_id")
+            ->setParameter("wallet_id", $wallet_id)
             ->executeQuery()
             ->fetchAllAssociative();
         $content = [];
+        $userId = $rows[0]["user_id"];
         foreach ($rows as $row) {
             $content[] = Money::of($row["amount"],
                 new Currency(
@@ -104,18 +107,18 @@ class WalletRepository
                 )
             );
         }
-        return new Wallet($id, $content);
+        return new Wallet($userId, $wallet_id, $content);
     }
 
-    public function getMoney(string $id, string $ticker): ?Money
+    public function getMoney(string $wallet_id, string $ticker): ?Money
     {
         $amount = $this->connection->createQueryBuilder()
             ->from("wallet")
             ->select("amount")
-            ->where("id = :id and ticker = :ticker")
+            ->where("wallet_id = :wallet_id and ticker = :ticker")
             ->setParameters(
                 [
-                    "id" => $id,
+                    "wallet_id" => $wallet_id,
                     "ticker" => $ticker,
                 ]
             )

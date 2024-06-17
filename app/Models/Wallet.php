@@ -4,9 +4,11 @@ declare(strict_types=1);
 namespace App\Models;
 
 use Brick\Money\Money;
+use Ramsey\Uuid\Uuid;
 
 class Wallet
 {
+    private string $userId;
     private string $id;
     /**
      * @var Money[]
@@ -14,13 +16,18 @@ class Wallet
     private array $contents;
 
     /**
-     * @param string $id
      * @param Money[] $contents
      */
-    public function __construct(string $id, array $contents = [])
+    public function __construct(string $userId, string $id = null, array $contents = [])
     {
-        $this->id = $id;
+        $this->userId = $userId;
+        $this->id = $id ?: Uuid::uuid4()->toString();
         $this->contents = $contents;
+    }
+
+    public function userId(): string
+    {
+        return $this->userId;
     }
 
     public function id(): string
