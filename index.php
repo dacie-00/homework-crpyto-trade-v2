@@ -35,6 +35,7 @@ $connection = DriverManager::getConnection($connectionParams);
 $schemaManager = $connection->createSchemaManager();
 if (!$schemaManager->tablesExist(["transactions"])) {
     $table = new Table("transactions");
+    $table->addColumn("id", "string");
     $table->addColumn("sent_amount", "decimal");
     $table->addColumn("sent_ticker", "string");
     $table->addColumn("type", "string");

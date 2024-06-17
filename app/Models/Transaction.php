@@ -6,12 +6,14 @@ namespace App\Models;
 use Brick\Money\Currency;
 use Brick\Money\Money;
 use Carbon\Carbon;
+use Ramsey\Uuid\Uuid;
 
 class Transaction
 {
     public const TYPE_BUY = "buy";
     public const TYPE_SELL = "sell";
 
+    private string $id;
     private Money $sentMoney;
     private string $type;
     private Money $receivedMoney;
@@ -21,12 +23,14 @@ class Transaction
         Money $sentMoney,
         string $type,
         Money $receivedMoney,
-        ?string $createdAt = null
+        ?string $createdAt = null,
+        ?string $id = null
     ) {
         $this->sentMoney = $sentMoney;
         $this->type = $type;
         $this->receivedMoney = $receivedMoney;
         $this->createdAt = $createdAt ? Carbon::parse($createdAt) : Carbon::now("UTC");
+        $this->id = $id ?: Uuid::uuid4()->toString();
     }
 
     public static function fromArray(array $transaction): Transaction
@@ -47,7 +51,8 @@ class Transaction
                     9
                 )
             ),
-            $transaction['created_at']
+            $transaction["created_at"],
+            $transaction["id"]
         );
     }
 
@@ -69,5 +74,10 @@ class Transaction
     public function createdAt(): Carbon
     {
         return $this->createdAt;
+    }
+
+    public function id(): string
+    {
+        return $this->id;
     }
 }
