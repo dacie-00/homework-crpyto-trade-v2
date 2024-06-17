@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Models\User;
 use App\Models\Wallet;
 use App\Repositories\WalletRepository;
 use Brick\Money\Money;
@@ -53,5 +54,10 @@ class WalletService
     public function getWalletById(string $id): Wallet
     {
         return $this->walletRepository->getWalletById($id);
+    }
+
+    public function getUserWallet(User $user)
+    {
+        return $this->walletRepository->getWalletByUserId($user->id());
     }
 }

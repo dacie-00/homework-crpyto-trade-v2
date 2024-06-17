@@ -136,5 +136,18 @@ class WalletRepository
             ) : null;
     }
 
+    public function getWalletByUserId(string $user_id): ?Wallet
+    {
+        $wallet = $this->connection->createQueryBuilder()
+            ->select("*")
+            ->from("wallet")
+            ->where("user_id = :user_id")
+            ->setParameter("user_id", $user_id)
+            ->executeQuery()
+            ->fetchAssociative();
+
+        return new Wallet($wallet["user_id"], $wallet["wallet_id"]);
+    }
+
 
 }

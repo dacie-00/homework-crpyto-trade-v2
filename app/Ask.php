@@ -112,4 +112,13 @@ class Ask
             });
         return strtoupper((string)($this->helper->ask($this->input, $this->output, $question)));
     }
+
+    public function login(): array
+    {
+        $question = new Question("Enter your username - ");
+        $username = $this->helper->ask($this->input, $this->output, $question);
+        $question = new Question("Enter your password - ");
+        $password = $this->helper->ask($this->input, $this->output, $question);
+        return [$username, $password];
+    }
 }

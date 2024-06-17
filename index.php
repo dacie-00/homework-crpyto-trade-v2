@@ -12,6 +12,7 @@ use App\Repositories\WalletRepository;
 use App\Services\BuyService;
 use App\Services\SellService;
 use App\Services\Cryptocurrency\CoinMarketCapApiService;
+use App\Services\UserValidationService;
 use App\Services\WalletService;
 use Brick\Math\BigDecimal;
 use Brick\Money\CurrencyConverter;
@@ -19,6 +20,7 @@ use Brick\Money\ExchangeRateProvider\BaseCurrencyProvider;
 use Brick\Money\ExchangeRateProvider\ConfigurableProvider;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Schema\Table;
+use Ramsey\Uuid\Uuid;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\ConsoleOutput;
 
@@ -45,7 +47,13 @@ if (!$schemaManager->tablesExist(["users"])) {
     $schemaManager->createTable($table);
 
     (new UserRepository($connection))->insert(
-        new User("Person", "password123", "funnyUser")
+        new User("JaneDoe", md5("password123"), "JaneDoe")
+    );
+    (new UserRepository($connection))->insert(
+        new User("foobar", md5("foobar"), "foobar")
+    );
+    (new UserRepository($connection))->insert(
+        new User("sillyGoose", md5("quack"), "sillyGoose")
     );
 }
 
@@ -65,6 +73,8 @@ if (!$schemaManager->tablesExist(["transactions"])) {
     $schemaManager->createTable($table);
 }
 
+$userRepository = new UserRepository($connection);
+
 if (!$schemaManager->tablesExist(["wallet"])) {
     $table = new Table("wallet");
     $table->addColumn("wallet_id", "string");
@@ -75,12 +85,14 @@ if (!$schemaManager->tablesExist(["wallet"])) {
     $table->addColumn("ticker", "string");
     $table->addColumn("amount", "decimal");
     $schemaManager->createTable($table);
-    $connection->insert("wallet", [
-        "wallet_id" => "funnyWallet",
-        "user_id" => "funnyUser",
-        "ticker" => "EUR",
-        "amount" => BigDecimal::of(1000),
-    ]);
+    foreach($userRepository->getAll() as $user) {
+        $connection->insert("wallet", [
+            "wallet_id" => $user->username() . "Wallet",
+            "user_id" => $user->id(),
+            "ticker" => "EUR",
+            "amount" => BigDecimal::of(1000),
+        ]);
+    }
 }
 
 $cryptoApi = new CoinMarketCapApiService($_ENV["COIN_MARKET_CAP_API_KEY"]);
@@ -99,9 +111,20 @@ $baseProvider = new BaseCurrencyProvider($provider, "EUR");
 $currencyConverter = new CurrencyConverter($baseProvider);
 
 $walletRepository = new WalletRepository($connection);
-$userRepository = new UserRepository($connection);
 $walletService = new WalletService(new WalletRepository($connection));
-$wallet = new Wallet("funnyUser", "funnyWallet");
+
+
+$users = $userRepository->getAll();
+$user = null;
+while(true) {
+    [$username, $password] = $ask->login();
+    if ($user = (new UserValidationService($userRepository))->login($username, $password)) {
+        break;
+    }
+    echo "Incorrect username or password!\n";
+}
+
+$wallet = $walletService->getUserWallet($user);
 
 $display = new Display($consoleOutput);
 while (true) {

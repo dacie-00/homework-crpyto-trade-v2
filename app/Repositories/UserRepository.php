@@ -5,6 +5,7 @@ namespace App\Repositories;
 
 use App\Models\User;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Exception;
 
 class UserRepository
 {
@@ -32,5 +33,43 @@ class UserRepository
                 "password" => $user->password(),
             ])
             ->executeQuery();
+    }
+
+    public function findByUsername($username): ?User
+    {
+        $user = $this->connection->createQueryBuilder()
+            ->select("*")
+            ->from("users")
+            ->where("username = :username")
+            ->setParameter("username", $username)
+            ->executeQuery()
+            ->fetchAssociative();
+        return $user !== false ?
+            new User(
+                $user["username"],
+                $user["password"],
+                $user["user_id"]
+            ) : null;
+    }
+
+    /**
+     * @return User[]
+     */
+    public function getAll(): array
+    {
+        $usersData = $this->connection->createQueryBuilder()
+            ->select("*")
+            ->from("users")
+            ->executeQuery()
+            ->fetchAllAssociative();
+        $users = [];
+        foreach($usersData as $userData) {
+            $users[] = new User(
+                $userData["username"],
+                $userData["password"],
+                $userData["user_id"]
+            );
+        }
+        return $users;
     }
 }
