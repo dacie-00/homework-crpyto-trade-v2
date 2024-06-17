@@ -6,9 +6,11 @@ use App\Display;
 use App\Exceptions\NoMoneyException;
 use App\Models\Wallet;
 use App\Repositories\TransactionRepository;
+use App\Repositories\WalletRepository;
 use App\Services\BuyService;
 use App\Services\SellService;
 use App\Services\Cryptocurrency\CoinMarketCapApiService;
+use App\Services\WalletService;
 use Brick\Math\BigDecimal;
 use Brick\Money\CurrencyConverter;
 use Brick\Money\ExchangeRateProvider\BaseCurrencyProvider;
@@ -44,10 +46,12 @@ if (!$schemaManager->tablesExist(["transactions"])) {
 
 if (!$schemaManager->tablesExist(["wallet"])) {
     $table = new Table("wallet");
+    $table->addColumn("id", "string");
     $table->addColumn("ticker", "string");
     $table->addColumn("amount", "decimal");
     $schemaManager->createTable($table);
     $connection->insert('wallet', [
+        "id" => "a",
         "ticker" => "EUR",
         "amount" => BigDecimal::of(1000),
     ]);
@@ -63,8 +67,6 @@ $ask = new Ask($consoleInput, $consoleOutput);
 
 $provider = new ConfigurableProvider();
 $transactionRepository = new TransactionRepository($connection);
-$wallet = new Wallet($connection);
-
 
 //if ($wallet->isEmpty()) {
 //    $wallet->add(Money::of(1000, "EUR"));
@@ -75,13 +77,15 @@ $wallet = new Wallet($connection);
 $baseProvider = new BaseCurrencyProvider($provider, "EUR");
 $currencyConverter = new CurrencyConverter($baseProvider);
 
+$walletService = new WalletService(new WalletRepository($connection));
+
 $display = new Display($consoleOutput);
 while (true) {
     $mainAction = $ask->mainAction();
     switch ($mainAction) {
         case Ask::ACTION_BUY:
             try {
-                $moneyInWallet = $wallet->getMoney("EUR")->getAmount();
+                $moneyInWallet = $walletService->getMoney("a", "EUR")->getAmount();
             } catch (NoMoneyException $e) {
                 echo "You don't have any money left to spend on cryptocurrencies!\n";
                 break;
@@ -102,8 +106,8 @@ while (true) {
             );
             $baseProvider = new BaseCurrencyProvider($provider, "EUR");
 
-            $transaction =(new BuyService($connection, $transactionRepository, $currencyConverter))
-                ->execute($wallet, $amount, $extendedCurrency);
+            $transaction =(new BuyService($connection, $walletService, $transactionRepository, $currencyConverter))
+                ->execute("a", $amount, $extendedCurrency);
 
             $sentMoney = $transaction->sentMoney();
             $receivedMoney = $transaction->receivedMoney();
@@ -112,7 +116,7 @@ while (true) {
             break;
         case Ask::ACTION_SELL:
             $ownedCurrencies = [];
-            foreach ($wallet->contents() as $money) {
+            foreach ($walletService->getWalletById("a")->contents() as $money) {
                 if ($money->getCurrency()->getCurrencyCode() === "EUR") {
                     continue;
                 }
@@ -140,8 +144,8 @@ while (true) {
             $baseProvider = new BaseCurrencyProvider($provider, "EUR");
 
             $transaction =
-                (new SellService($connection, $transactionRepository, $currencyConverter))
-                ->execute($wallet, $amount, $extendedCurrency);
+                (new SellService($connection, $walletService, $transactionRepository, $currencyConverter))
+                ->execute("a", $amount, $extendedCurrency);
 
             $sentMoney = $transaction->sentMoney();
             $receivedMoney = $transaction->receivedMoney();
@@ -150,7 +154,7 @@ while (true) {
 
             break;
         case Ask::ACTION_WALLET:
-            $display->wallet($wallet);
+            $display->wallet($walletService->getWalletById("a"));
             break;
         case Ask::ACTION_HISTORY:
             $display->transactions($transactionRepository->getAll());

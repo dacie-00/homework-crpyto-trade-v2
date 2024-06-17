@@ -7,6 +7,7 @@ use App\Models\ExtendedCurrency;
 use App\Models\Transaction;
 use App\Models\Wallet;
 use App\Repositories\TransactionRepository;
+use App\Repositories\WalletRepository;
 use Brick\Math\RoundingMode;
 use Brick\Money\CurrencyConverter;
 use Brick\Money\Money;
@@ -15,21 +16,24 @@ use Doctrine\DBAL\Connection;
 class BuyService
 {
     private Connection $connection;
+    private WalletService $walletService;
     private TransactionRepository $transactionRepository;
     private CurrencyConverter $currencyConverter;
 
     public function __construct(
         Connection $connection,
+        WalletService $walletService,
         TransactionRepository $transactionRepository,
         CurrencyConverter $currencyConverter
     ) {
         $this->connection = $connection;
+        $this->walletService = $walletService;
         $this->transactionRepository = $transactionRepository;
         $this->currencyConverter = $currencyConverter;
     }
 
     public function execute(
-        Wallet $wallet,
+        string $id,
         float $amount,
         ExtendedCurrency $extendedCurrency
     ): Transaction {
@@ -44,8 +48,8 @@ class BuyService
         $moneyToSpend = Money::of($amount, "EUR");
 
         $this->connection->beginTransaction();
-        $wallet->add($moneyToGet);
-        $wallet->subtract($moneyToSpend);
+        $this->walletService->addToWallet($id, $moneyToGet);
+        $this->walletService->subtractFromWallet($id, $moneyToSpend);
         $transaction = new Transaction
         (
             $moneyToSpend,
