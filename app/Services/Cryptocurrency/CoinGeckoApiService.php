@@ -5,10 +5,8 @@ namespace App\Services\Cryptocurrency;
 
 use App\Models\ExtendedCurrency;
 use Brick\Math\BigDecimal;
-use Brick\Money\Currency;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
-use GuzzleHttp\Exception\GuzzleException;
 
 class CoinGeckoApiService implements CryptocurrencyApiServiceInterface
 {

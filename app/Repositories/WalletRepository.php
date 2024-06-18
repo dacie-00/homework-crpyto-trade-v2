@@ -73,17 +73,17 @@ class WalletRepository
     public function exists(string $wallet_id, string $ticker): bool
     {
         return $this->connection->createQueryBuilder()
-            ->select("wallet_id")
-            ->from("wallet")
-            ->where("wallet_id = :wallet_id and ticker = :ticker")
-            ->setParameters(
-                [
-                    "wallet_id" => $wallet_id,
-                    "ticker" => $ticker,
-                ]
-            )
-            ->executeQuery()
-            ->fetchOne() !== false;
+                ->select("wallet_id")
+                ->from("wallet")
+                ->where("wallet_id = :wallet_id and ticker = :ticker")
+                ->setParameters(
+                    [
+                        "wallet_id" => $wallet_id,
+                        "ticker" => $ticker,
+                    ]
+                )
+                ->executeQuery()
+                ->fetchOne() !== false;
     }
 
     public function getWalletById(string $wallet_id): Wallet

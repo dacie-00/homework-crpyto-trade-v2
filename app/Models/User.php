@@ -15,8 +15,7 @@ class User
         string $username,
         string $password,
         ?string $id = null
-    )
-    {
+    ) {
         $this->username = $username;
         $this->password = $password;
         $this->id = $id ?: Uuid::uuid4()->toString();

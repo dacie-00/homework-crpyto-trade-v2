@@ -39,7 +39,7 @@ class Display
             }
             $table->addRow([
                 $currency->ticker(),
-                BigDecimal::one()->dividedBy($currency->exchangeRate(), 9, RoundingMode::DOWN)
+                BigDecimal::one()->dividedBy($currency->exchangeRate(), 9, RoundingMode::DOWN),
             ]);
         }
         $table->render();
@@ -61,7 +61,7 @@ class Display
             $table->addRow([
                 $money->getCurrency(),
                 $moneyWithoutZeros,
-                is_numeric($profits[$index]) ? number_format($profits[$index], 2) . "%" : $profits[$index]
+                is_numeric($profits[$index]) ? number_format($profits[$index], 2) . "%" : $profits[$index],
             ]);
         }
         $table->render();

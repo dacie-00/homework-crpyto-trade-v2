@@ -8,7 +8,6 @@ use App\Models\User;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use Brick\Money\Currency;
-use Brick\Money\Money;
 use DateTimeInterface;
 use Doctrine\DBAL\Connection;
 
@@ -46,7 +45,7 @@ class TransactionRepository
             ->setParameters(
                 [
                     "user_id" => $user->id(),
-                    "received_ticker" => $currency->getCurrencyCode()
+                    "received_ticker" => $currency->getCurrencyCode(),
                 ]
             )
             ->executeQuery()
@@ -93,7 +92,7 @@ class TransactionRepository
         $spent = BigDecimal::zero();
         $received = BigDecimal::zero();
 
-        foreach($amounts as $amount) {
+        foreach ($amounts as $amount) {
             $received = $received->plus($amount["received_amount"]);
             $spent = $spent->plus($amount["sent_amount"]);
 

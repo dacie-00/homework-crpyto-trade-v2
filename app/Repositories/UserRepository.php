@@ -5,7 +5,6 @@ namespace App\Repositories;
 
 use App\Models\User;
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Exception;
 
 class UserRepository
 {
@@ -63,7 +62,7 @@ class UserRepository
             ->executeQuery()
             ->fetchAllAssociative();
         $users = [];
-        foreach($usersData as $userData) {
+        foreach ($usersData as $userData) {
             $users[] = new User(
                 $userData["username"],
                 $userData["password"],

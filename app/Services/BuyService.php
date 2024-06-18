@@ -7,7 +7,6 @@ use App\Models\ExtendedCurrency;
 use App\Models\Transaction;
 use App\Models\Wallet;
 use App\Repositories\TransactionRepository;
-use App\Repositories\WalletRepository;
 use Brick\Math\RoundingMode;
 use Brick\Money\CurrencyConverter;
 use Brick\Money\Money;
