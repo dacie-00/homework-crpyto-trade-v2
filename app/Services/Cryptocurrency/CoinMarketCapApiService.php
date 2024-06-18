@@ -45,11 +45,21 @@ class CoinMarketCapApiService implements CryptocurrencyApiServiceInterface
             ]);
         } catch (ClientException $e) {
             $response = $e->getResponse();
-            $responseBody = json_decode($response->getBody()->getContents(), false, 512, JSON_THROW_ON_ERROR);
+            $responseBody = json_decode(
+                $response->getBody()->getContents(),
+                false,
+                512,
+                JSON_THROW_ON_ERROR
+            );
             throw new FailedHttpRequestException("CoinMarketCap Error - {$responseBody->status->error_message}\n");
         }
 
-        $currencyResponse = json_decode($response->getBody()->getContents(), false, 512, JSON_THROW_ON_ERROR);
+        $currencyResponse = json_decode(
+            $response->getBody()->getContents(),
+            false,
+            512,
+            JSON_THROW_ON_ERROR
+        );
 
         $currencies = [];
         foreach ($currencyResponse->data as $currency) {
@@ -83,11 +93,21 @@ class CoinMarketCapApiService implements CryptocurrencyApiServiceInterface
             ]);
         } catch (ClientException $e) {
             $response = $e->getResponse();
-            $responseBody = json_decode($response->getBody()->getContents(), false, 512, JSON_THROW_ON_ERROR);
+            $responseBody = json_decode(
+                $response->getBody()->getContents(),
+                false,
+                512,
+                JSON_THROW_ON_ERROR
+            );
             throw new FailedHttpRequestException("CoinMarketCap Error - {$responseBody->status->error_message}\n");
         }
 
-        $response = json_decode($response->getBody()->getContents(), false, 512, JSON_THROW_ON_ERROR);
+        $response = json_decode(
+            $response->getBody()->getContents(),
+            false,
+            512,
+            JSON_THROW_ON_ERROR
+        );
         $currencies = [];
         foreach ($currencyCodes as $currencyCode) {
             if (isset($response->data->$currencyCode)) {

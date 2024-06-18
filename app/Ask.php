@@ -98,7 +98,7 @@ class Ask
         return (string)($this->helper->ask($this->input, $this->output, $question));
     }
 
-    public function ticker()
+    public function ticker(): string
     {
         $question = (new Question("Enter the ticker of the currency you wish to purchase - "))
             ->setValidator(function ($ticker): string {

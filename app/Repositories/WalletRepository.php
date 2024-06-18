@@ -148,6 +148,4 @@ class WalletRepository
 
         return new Wallet($wallet["user_id"], $wallet["wallet_id"]);
     }
-
-
 }

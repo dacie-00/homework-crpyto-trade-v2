@@ -20,23 +20,7 @@ class TransactionRepository
         $this->connection = $connection;
     }
 
-    /**
-     * @return Transaction[]
-     */
-    public function getAll(): array
-    {
-        $transactions = [];
-        $transactionData = $this->connection->createQueryBuilder()
-            ->select("*")
-            ->from("transactions")
-            ->executeQuery();
-        foreach ($transactionData->fetchAllAssociative() as $transaction) {
-            $transactions[] = Transaction::fromArray($transaction);
-        }
-        return $transactions;
-    }
-
-    public function getByUserAndCurrency(User $user, Currency $currency)
+    public function getByUserAndCurrency(User $user, Currency $currency): array
     {
         return $this->connection->createQueryBuilder()
             ->select("sent_amount, received_amount")

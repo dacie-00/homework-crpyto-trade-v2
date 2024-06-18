@@ -46,11 +46,21 @@ class CoinGeckoApiService implements CryptocurrencyApiServiceInterface
             ]);
         } catch (ClientException $e) {
             $response = $e->getResponse();
-            $responseBody = json_decode($response->getBody()->getContents(), false, 512, JSON_THROW_ON_ERROR);
+            $responseBody = json_decode(
+                $response->getBody()->getContents(),
+                false,
+                512,
+                JSON_THROW_ON_ERROR
+            );
             throw new FailedHttpRequestException("CoinGecko Error - {$responseBody->error}\n");
         }
 
-        $currencyResponse = json_decode($response->getBody()->getContents(), false, 512, JSON_THROW_ON_ERROR);
+        $currencyResponse = json_decode(
+            $response->getBody()->getContents(),
+            false,
+            512,
+            JSON_THROW_ON_ERROR
+        );
 
         $currencies = [];
         foreach ($currencyResponse as $currency) {
@@ -82,11 +92,21 @@ class CoinGeckoApiService implements CryptocurrencyApiServiceInterface
             ]);
         } catch (ClientException $e) {
             $response = $e->getResponse();
-            $responseBody = json_decode($response->getBody()->getContents(), false, 512, JSON_THROW_ON_ERROR);
+            $responseBody = json_decode(
+                $response->getBody()->getContents(),
+                false,
+                512,
+                JSON_THROW_ON_ERROR
+            );
             throw new FailedHttpRequestException("CoinGecko Error - {$responseBody->error}\n");
         }
 
-        $response = json_decode($response->getBody()->getContents(), false, 512, JSON_THROW_ON_ERROR);
+        $response = json_decode(
+            $response->getBody()->getContents(),
+            false,
+            512,
+            JSON_THROW_ON_ERROR
+        );
         if (!isset($response->coins)) {
             return null;
         }
@@ -124,11 +144,21 @@ class CoinGeckoApiService implements CryptocurrencyApiServiceInterface
             ]);
         } catch (ClientException $e) {
             $response = $e->getResponse();
-            $responseBody = json_decode($response->getBody()->getContents(), false, 512, JSON_THROW_ON_ERROR);
+            $responseBody = json_decode(
+                $response->getBody()->getContents(),
+                false,
+                512,
+                JSON_THROW_ON_ERROR
+            );
             throw new FailedHttpRequestException("CoinGecko Error - {$responseBody->error}\n");
         }
 
-        $currencyResponse = json_decode($response->getBody()->getContents(), false, 512, JSON_THROW_ON_ERROR);
+        $currencyResponse = json_decode(
+            $response->getBody()->getContents(),
+            false,
+            512,
+            JSON_THROW_ON_ERROR
+        );
         $currencies = [];
         foreach ($currencyCodes as $currencyCode) {
             foreach ($currencyResponse as $currency) {

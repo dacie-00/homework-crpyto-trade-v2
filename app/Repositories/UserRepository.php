@@ -34,7 +34,7 @@ class UserRepository
             ->executeQuery();
     }
 
-    public function findByUsername($username): ?User
+    public function findByUsername(string $username): ?User
     {
         $user = $this->connection->createQueryBuilder()
             ->select("*")

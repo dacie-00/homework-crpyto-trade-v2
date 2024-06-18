@@ -34,7 +34,7 @@ class WalletService
     {
         $ticker = $money->getCurrency()->getCurrencyCode();
         if (!$this->walletRepository->exists($wallet->id(), $ticker)) {
-            return; // TODO: maybe log something here
+            return;
         }
         $initialMoney = $this->walletRepository->getMoney($wallet->id(), $ticker);
 
@@ -56,7 +56,7 @@ class WalletService
         return $this->walletRepository->getWalletById($id);
     }
 
-    public function getUserWallet(User $user)
+    public function getUserWallet(User $user): ?Wallet
     {
         return $this->walletRepository->getWalletByUserId($user->id());
     }
