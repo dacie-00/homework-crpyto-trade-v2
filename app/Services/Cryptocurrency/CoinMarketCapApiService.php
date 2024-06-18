@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Services\Cryptocurrency;
 
+use App\Exceptions\FailedHttpRequestException;
 use App\Models\ExtendedCurrency;
 use Brick\Math\BigDecimal;
 use GuzzleHttp\Client;
@@ -45,7 +46,7 @@ class CoinMarketCapApiService implements CryptocurrencyApiServiceInterface
         } catch (ClientException $e) {
             $response = $e->getResponse();
             $responseBody = json_decode($response->getBody()->getContents(), false, 512, JSON_THROW_ON_ERROR);
-            exit("CoinMarketCap Error - {$responseBody->status->error_message}\n");
+            throw new FailedHttpRequestException("CoinMarketCap Error - {$responseBody->status->error_message}\n");
         }
 
         $currencyResponse = json_decode($response->getBody()->getContents(), false, 512, JSON_THROW_ON_ERROR);
@@ -83,7 +84,7 @@ class CoinMarketCapApiService implements CryptocurrencyApiServiceInterface
         } catch (ClientException $e) {
             $response = $e->getResponse();
             $responseBody = json_decode($response->getBody()->getContents(), false, 512, JSON_THROW_ON_ERROR);
-            exit("CoinMarketCap Error - {$responseBody->status->error_message}\n");
+            throw new FailedHttpRequestException("CoinMarketCap Error - {$responseBody->status->error_message}\n");
         }
 
         $response = json_decode($response->getBody()->getContents(), false, 512, JSON_THROW_ON_ERROR);

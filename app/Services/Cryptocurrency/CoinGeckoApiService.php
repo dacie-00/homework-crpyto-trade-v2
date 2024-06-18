@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Services\Cryptocurrency;
 
+use App\Exceptions\FailedHttpRequestException;
 use App\Models\ExtendedCurrency;
 use Brick\Math\BigDecimal;
 use GuzzleHttp\Client;
@@ -46,7 +47,7 @@ class CoinGeckoApiService implements CryptocurrencyApiServiceInterface
         } catch (ClientException $e) {
             $response = $e->getResponse();
             $responseBody = json_decode($response->getBody()->getContents(), false, 512, JSON_THROW_ON_ERROR);
-            exit("CoinGecko Error - {$responseBody->error}\n");
+            throw new FailedHttpRequestException("CoinGecko Error - {$responseBody->error}\n");
         }
 
         $currencyResponse = json_decode($response->getBody()->getContents(), false, 512, JSON_THROW_ON_ERROR);
@@ -82,7 +83,7 @@ class CoinGeckoApiService implements CryptocurrencyApiServiceInterface
         } catch (ClientException $e) {
             $response = $e->getResponse();
             $responseBody = json_decode($response->getBody()->getContents(), false, 512, JSON_THROW_ON_ERROR);
-            exit("CoinGecko Error - {$responseBody->error}\n");
+            throw new FailedHttpRequestException("CoinGecko Error - {$responseBody->error}\n");
         }
 
         $response = json_decode($response->getBody()->getContents(), false, 512, JSON_THROW_ON_ERROR);
@@ -124,7 +125,7 @@ class CoinGeckoApiService implements CryptocurrencyApiServiceInterface
         } catch (ClientException $e) {
             $response = $e->getResponse();
             $responseBody = json_decode($response->getBody()->getContents(), false, 512, JSON_THROW_ON_ERROR);
-            exit("CoinGecko Error - {$responseBody->error}\n");
+            throw new FailedHttpRequestException("CoinGecko Error - {$responseBody->error}\n");
         }
 
         $currencyResponse = json_decode($response->getBody()->getContents(), false, 512, JSON_THROW_ON_ERROR);

@@ -35,6 +35,7 @@ $connectionParams = [
 
 $connection = DriverManager::getConnection($connectionParams);
 
+
 $schemaManager = $connection->createSchemaManager();
 if (!$schemaManager->tablesExist(["users"])) {
     $table = new Table("users");
@@ -77,7 +78,6 @@ $userRepository = new UserRepository($connection);
 if (!$schemaManager->tablesExist(["wallet"])) {
     $table = new Table("wallet");
     $table->addColumn("wallet_id", "string");
-//    $table->setPrimaryKey(["wallet_id"]);
     $table->addColumn("user_id", "string");
     $table->addForeignKeyConstraint("users", ["user_id"], ["user_id"]);
 
@@ -94,6 +94,7 @@ if (!$schemaManager->tablesExist(["wallet"])) {
     }
 }
 
+
 $cryptoApi = new CoinMarketCapApiService($_ENV["COIN_MARKET_CAP_API_KEY"]);
 //$cryptoApi = new CoinGeckoApiService($_ENV["COIN_GECKO_API_KEY"]);
 
@@ -101,17 +102,13 @@ $consoleInput = new ArrayInput([]);
 $consoleOutput = new ConsoleOutput();
 $ask = new Ask($consoleInput, $consoleOutput);
 
-
 $provider = new ConfigurableProvider();
-$transactionRepository = new TransactionRepository($connection);
-
-
 $baseProvider = new BaseCurrencyProvider($provider, "EUR");
 $currencyConverter = new CurrencyConverter($baseProvider);
 
+$transactionRepository = new TransactionRepository($connection);
 $walletRepository = new WalletRepository($connection);
 $walletService = new WalletService(new WalletRepository($connection));
-
 
 $users = $userRepository->getAll();
 $user = null;
