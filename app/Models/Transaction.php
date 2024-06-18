@@ -56,7 +56,7 @@ class Transaction
                 )
             ),
             $transaction["created_at"],
-            $transaction["id"]
+            $transaction["transaction_id"]
         );
     }
 

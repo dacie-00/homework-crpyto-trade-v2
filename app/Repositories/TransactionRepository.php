@@ -102,4 +102,22 @@ class TransactionRepository
         }
         return null;
     }
+
+    /**
+     * @return Transaction[]
+     */
+    public function getByUser(User $user): array
+    {
+        $transactions = [];
+        $transactionData = $this->connection->createQueryBuilder()
+            ->select("*")
+            ->from("transactions")
+            ->where("user_id = :user_id")
+            ->setParameter("user_id", $user->id())
+            ->executeQuery();
+        foreach ($transactionData->fetchAllAssociative() as $transaction) {
+            $transactions[] = Transaction::fromArray($transaction);
+        }
+        return $transactions;
+    }
 }

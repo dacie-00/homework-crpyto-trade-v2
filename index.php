@@ -226,7 +226,7 @@ while (true) {
             $display->wallet($wallet, $percentages);
             break;
         case Ask::ACTION_HISTORY:
-            $display->transactions($transactionRepository->getAll());
+            $display->transactions($transactionRepository->getByUser($user));
             break;
         case Ask::ACTION_LIST:
             $display->currencies($cryptoApi->getTop());
