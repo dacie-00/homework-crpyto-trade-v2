@@ -70,7 +70,7 @@ class Ask
         $min = BigDecimal::of(0.00000001);
         $min->toScale(8, RoundingMode::DOWN);
         $max->toScale(8, RoundingMode::DOWN);
-        $question = (new Question("Enter the amount of euro you wish to spend ($min-$max) - "))
+        $question = (new Question("Enter the amount you wish to spend ($min-$max) - "))
             ->setValidator(function ($value) use ($min, $max): string {
                 if (!is_numeric($value)) {
                     throw new RuntimeException("Quantity must be a number");
@@ -88,7 +88,7 @@ class Ask
 
     public function query(): string
     {
-        $question = (new Question("Enter a ticker to search for (separate multible by comma) - "))
+        $question = (new Question("Enter a ticker to search for (separate multiple by comma) - "))
             ->setValidator(function ($ticker): string {
                 if (empty($ticker)) {
                     throw new RuntimeException("Ticker cannot be empty");
