@@ -4,12 +4,12 @@ declare(strict_types=1);
 use App\Ask;
 use App\Display;
 use App\Exceptions\NoMoneyException;
-use App\Models\User;
 use App\Repositories\TransactionRepository;
 use App\Repositories\UserRepository;
 use App\Repositories\WalletRepository;
 use App\Services\BuyService;
 use App\Services\Cryptocurrency\CoinMarketCapApiService;
+use App\Services\DatabaseInitializationService;
 use App\Services\SellService;
 use App\Services\UserValidationService;
 use App\Services\WalletService;
@@ -19,7 +19,6 @@ use Brick\Money\CurrencyConverter;
 use Brick\Money\ExchangeRateProvider\BaseCurrencyProvider;
 use Brick\Money\ExchangeRateProvider\ConfigurableProvider;
 use Doctrine\DBAL\DriverManager;
-use Doctrine\DBAL\Schema\Table;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\ConsoleOutput;
 
@@ -35,65 +34,12 @@ $connectionParams = [
 
 $connection = DriverManager::getConnection($connectionParams);
 
-
-$schemaManager = $connection->createSchemaManager();
-if (!$schemaManager->tablesExist(["users"])) {
-    $table = new Table("users");
-    $table->addColumn("user_id", "string");
-    $table->setPrimaryKey(["user_id"]);
-
-    $table->addColumn("username", "string");
-    $table->addColumn("password", "string");
-    $schemaManager->createTable($table);
-
-    (new UserRepository($connection))->insert(
-        new User("JaneDoe", md5("password123"), "JaneDoe")
-    );
-    (new UserRepository($connection))->insert(
-        new User("foobar", md5("foobar"), "foobar")
-    );
-    (new UserRepository($connection))->insert(
-        new User("sillyGoose", md5("quack"), "sillyGoose")
-    );
-}
-
-if (!$schemaManager->tablesExist(["transactions"])) {
-    $table = new Table("transactions");
-    $table->addColumn("transaction_id", "string");
-    $table->setPrimaryKey(["transaction_id"]);
-    $table->addColumn("user_id", "string");
-    $table->addForeignKeyConstraint("users", ["user_id"], ["user_id"]);
-
-    $table->addColumn("sent_amount", "decimal");
-    $table->addColumn("sent_ticker", "string");
-    $table->addColumn("type", "string");
-    $table->addColumn("received_amount", "decimal");
-    $table->addColumn("received_ticker", "string");
-    $table->addColumn("created_at", "string");
-    $schemaManager->createTable($table);
-}
-
 $userRepository = new UserRepository($connection);
 
-if (!$schemaManager->tablesExist(["wallet"])) {
-    $table = new Table("wallet");
-    $table->addColumn("wallet_id", "string");
-    $table->addColumn("user_id", "string");
-    $table->addForeignKeyConstraint("users", ["user_id"], ["user_id"]);
-
-    $table->addColumn("ticker", "string");
-    $table->addColumn("amount", "decimal");
-    $schemaManager->createTable($table);
-    foreach ($userRepository->getAll() as $user) {
-        $connection->insert("wallet", [
-            "wallet_id" => $user->username() . "Wallet",
-            "user_id" => $user->id(),
-            "ticker" => "EUR",
-            "amount" => BigDecimal::of(1000),
-        ]);
-    }
-}
-
+$databaseInitializer = new DatabaseInitializationService($connection);
+$databaseInitializer->initializeUsersTable();
+$databaseInitializer->initializeTransactionsTable();
+$databaseInitializer->initializeWalletsTable($userRepository);
 
 $cryptoApi = new CoinMarketCapApiService($_ENV["COIN_MARKET_CAP_API_KEY"]);
 //$cryptoApi = new CoinGeckoApiService($_ENV["COIN_GECKO_API_KEY"]);
