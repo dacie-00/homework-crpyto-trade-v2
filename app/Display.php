@@ -5,6 +5,7 @@ namespace App;
 
 use App\Models\ExtendedCurrency;
 use App\Models\Transaction;
+use App\Models\Wallet;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use Brick\Money\Money;
@@ -44,21 +45,23 @@ class Display
         $table->render();
     }
 
-    public function wallet($wallet): void
+    public function wallet(Wallet $wallet, $profits): void
     {
         $table = (new Table($this->output))
             ->setHeaderTitle("Wallet")
             ->setHeaders([
                 "Ticker",
                 "Amount",
+                "Profit",
             ]);
 
         /** @var Money $money */
-        foreach ($wallet->contents() as $money) {
+        foreach ($wallet->contents() as $index => $money) {
             $moneyWithoutZeros = rtrim((string)$money->getAmount(), "0");
             $table->addRow([
                 $money->getCurrency(),
                 $moneyWithoutZeros,
+                is_numeric($profits[$index]) ? number_format($profits[$index], 2) . "%" : $profits[$index]
             ]);
         }
         $table->render();

@@ -15,6 +15,7 @@ use App\Services\Cryptocurrency\CoinMarketCapApiService;
 use App\Services\UserValidationService;
 use App\Services\WalletService;
 use Brick\Math\BigDecimal;
+use Brick\Math\RoundingMode;
 use Brick\Money\CurrencyConverter;
 use Brick\Money\ExchangeRateProvider\BaseCurrencyProvider;
 use Brick\Money\ExchangeRateProvider\ConfigurableProvider;
@@ -124,7 +125,7 @@ while(true) {
     echo "Incorrect username or password!\n";
 }
 
-$wallet = $walletService->getUserWallet($user);
+$walletInfo = $walletService->getUserWallet($user);
 
 $display = new Display($consoleOutput);
 while (true) {
@@ -132,7 +133,7 @@ while (true) {
     switch ($mainAction) {
         case Ask::ACTION_BUY:
             try {
-                $moneyInWallet = $walletService->getMoney($wallet, "EUR")->getAmount();
+                $moneyInWallet = $walletService->getMoney($walletInfo, "EUR")->getAmount();
             } catch (NoMoneyException $e) {
                 echo "You don't have any money left to spend on cryptocurrencies!\n";
                 break;
@@ -154,7 +155,7 @@ while (true) {
             $baseProvider = new BaseCurrencyProvider($provider, "EUR");
 
             $transaction =(new BuyService($connection, $walletService, $transactionRepository, $currencyConverter))
-                ->execute($wallet, $amount, $extendedCurrency);
+                ->execute($walletInfo, $amount, $extendedCurrency);
 
             $sentMoney = $transaction->sentMoney();
             $receivedMoney = $transaction->receivedMoney();
@@ -163,7 +164,7 @@ while (true) {
             break;
         case Ask::ACTION_SELL:
             $ownedCurrencies = [];
-            foreach ($walletService->getWalletById($wallet->id())->contents() as $money) {
+            foreach ($walletService->getWalletById($walletInfo->id())->contents() as $money) {
                 if ($money->getCurrency()->getCurrencyCode() === "EUR") {
                     continue;
                 }
@@ -192,7 +193,7 @@ while (true) {
 
             $transaction =
                 (new SellService($connection, $walletService, $transactionRepository, $currencyConverter))
-                ->execute($wallet, $amount, $extendedCurrency);
+                ->execute($walletInfo, $amount, $extendedCurrency);
 
             $sentMoney = $transaction->sentMoney();
             $receivedMoney = $transaction->receivedMoney();
@@ -201,7 +202,30 @@ while (true) {
 
             break;
         case Ask::ACTION_WALLET:
-            $display->wallet($walletService->getWalletById("a"));
+            $wallet = $walletRepository->getWalletById($walletInfo->id());
+
+            $currencyCodes = array_map(fn ($money) => $money->getCurrency()->getCurrencyCode(), $wallet->contents());
+            $currencyDate = $cryptoApi->search($currencyCodes);
+            $marketCurrencies = [];
+            foreach ($currencyDate as $currency) {
+                $marketCurrencies[$currency->definition()->getCurrencyCode()] = $currency;
+            }
+
+            $percentages = [];
+            foreach ($wallet->contents() as $index => $money) {
+                if ($money->getCurrency()->getCurrencyCode() === "EUR") {
+                    $percentages[] = "Not available";
+                    continue;
+                }
+                $average = $transactionRepository->getAveragePrice($user, $money->getCurrency(), $money->getAmount());
+                $marketRate = BigDecimal::one()->dividedBy($marketCurrencies[$money->getCurrency()->getCurrencyCode()]->exchangeRate(), null, RoundingMode::DOWN);
+                $percentages[] =
+                    Bigdecimal::of(100)
+                    ->multipliedBy(
+                        $marketRate->dividedBy($average, 9, RoundingMode::DOWN)
+                            ->minus(BigDecimal::one()))->toFloat();
+            }
+            $display->wallet($wallet, $percentages);
             break;
         case Ask::ACTION_HISTORY:
             $display->transactions($transactionRepository->getAll());

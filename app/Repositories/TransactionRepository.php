@@ -4,6 +4,11 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Models\Transaction;
+use App\Models\User;
+use Brick\Math\BigDecimal;
+use Brick\Math\RoundingMode;
+use Brick\Money\Currency;
+use Brick\Money\Money;
 use DateTimeInterface;
 use Doctrine\DBAL\Connection;
 
@@ -30,6 +35,22 @@ class TransactionRepository
             $transactions[] = Transaction::fromArray($transaction);
         }
         return $transactions;
+    }
+
+    public function getByUserAndCurrency(User $user, Currency $currency)
+    {
+        return $this->connection->createQueryBuilder()
+            ->select("sent_amount, received_amount")
+            ->from("transactions")
+            ->where("user_id = :user_id and received_ticker = :received_ticker")
+            ->setParameters(
+                [
+                    "user_id" => $user->id(),
+                    "received_ticker" => $currency->getCurrencyCode()
+                ]
+            )
+            ->executeQuery()
+            ->fetchAllAssociative();
     }
 
     public function add(Transaction $transaction): void
@@ -62,5 +83,24 @@ class TransactionRepository
                     ->format(DateTimeInterface::ATOM),
             ])
             ->executeStatement();
+    }
+
+    public function getAveragePrice(User $user, Currency $currency, BigDecimal $until): ?BigDecimal
+    {
+        $amounts = $this->getByUserAndCurrency($user, $currency);
+        $amounts = array_reverse($amounts);
+
+        $spent = BigDecimal::zero();
+        $received = BigDecimal::zero();
+
+        foreach($amounts as $amount) {
+            $received = $received->plus($amount["received_amount"]);
+            $spent = $spent->plus($amount["sent_amount"]);
+
+            if ($received->isGreaterThanOrEqualTo($until)) {
+                return $spent->dividedBy($received, 9, RoundingMode::UP);
+            }
+        }
+        return null;
     }
 }
