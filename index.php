@@ -69,6 +69,7 @@ while (true) {
 $walletInfo = $walletService->getUserWallet($user);
 
 $display = new Display($consoleOutput);
+echo "Welcome, {$user->username()}!\n";
 while (true) {
     $mainAction = $ask->mainAction();
     switch ($mainAction) {
