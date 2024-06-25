@@ -17,7 +17,15 @@ class CurrencyController
 
     public function index()
     {
-        return "index page";
+        $currencies = $this->currencyRepository->getTop();
+        $currencyData = [];
+        foreach ($currencies as $currency) {
+            $currencyData[] = [
+                "ticker" => $currency->definition()->getCurrencyCode(),
+                "exchangeRate" => (string)$currency->exchangeRate(),
+            ];
+        }
+        return $currencyData;
     }
 
     public function show()

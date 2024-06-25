@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Top currencies</title>
+</head>
+<header>
+    {{ include("header.html") }}
+</header>
+<body>
+<table>
+    <tr>
+        <th>Ticker</th>
+        <th>Exchange Rate</th>
+    </tr>
+    {% for currency in currencies %}
+    <tr>
+        <td>{{currency.ticker}}</td>
+        <td>{{currency.exchangeRate}}</td>
+    </tr>
+    {% endfor %}
+</table>
+</body>
+</html>

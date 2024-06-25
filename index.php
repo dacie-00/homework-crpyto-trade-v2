@@ -21,11 +21,16 @@ use Brick\Money\ExchangeRateProvider\ConfigurableProvider;
 use Doctrine\DBAL\DriverManager;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\ConsoleOutput;
+use Twig\Environment;
+use Twig\Loader\FilesystemLoader;
 
 require_once "vendor/autoload.php";
 
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
+
+$loader = new FilesystemLoader("app/Templates");
+$twig = new Environment($loader);
 
 $connectionParams = [
     "driver" => "pdo_sqlite",
@@ -97,7 +102,8 @@ switch ($routeInfo[0]) {
         $handle = $routeInfo[1];
         $vars = $routeInfo[2];
         [$class, $method] = $handle;
-        echo (new $class)->$method(...array_values($vars));
+//        var_dump($(new $class)->$method(...array_values($vars)));die;
+        echo $twig->render("index.html", ["currencies" => (new $class)->$method(...array_values($vars))]);
         break;
 }
 
