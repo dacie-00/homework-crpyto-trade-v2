@@ -12,6 +12,7 @@
     "symfony/console": "^5.4",
     "nesbot/carbon": "^2.72",
     "brick/money": "^0.5.3",
-    "doctrine/dbal": "^3.8"
+    "doctrine/dbal": "^3.8",
+    "nikic/fast-route": "^1.3"
   }
 }
