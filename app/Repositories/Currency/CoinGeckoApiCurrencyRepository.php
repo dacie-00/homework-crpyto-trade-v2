@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Services\Cryptocurrency;
+namespace App\Repositories\Currency;
 
 use App\Exceptions\FailedHttpRequestException;
 use App\Models\ExtendedCurrency;
@@ -9,7 +9,7 @@ use Brick\Math\BigDecimal;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 
-class CoinGeckoApiService implements CryptocurrencyApiServiceInterface
+class CoinGeckoApiCurrencyRepository implements CurrencyRepositoryInterface
 {
     private string $apiKey;
     private Client $client;

@@ -2,16 +2,16 @@
 declare(strict_types=1);
 
 use App\Ask;
+use App\Controllers\CurrencyController;
 use App\Display;
 use App\Exceptions\NoMoneyException;
+use App\Repositories\Currency\CoinMarketCapApiCurrencyRepository;
 use App\Repositories\TransactionRepository;
 use App\Repositories\UserRepository;
 use App\Repositories\WalletRepository;
 use App\Services\BuyService;
-use App\Services\Cryptocurrency\CoinMarketCapApiService;
 use App\Services\DatabaseInitializationService;
 use App\Services\SellService;
-use App\Services\UserValidationService;
 use App\Services\WalletService;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
@@ -41,8 +41,8 @@ $databaseInitializer->initializeUsersTable();
 $databaseInitializer->initializeTransactionsTable();
 $databaseInitializer->initializeWalletsTable($userRepository);
 
-$cryptoApi = new CoinMarketCapApiService($_ENV["COIN_MARKET_CAP_API_KEY"]);
-//$cryptoApi = new CoinGeckoApiService($_ENV["COIN_GECKO_API_KEY"]);
+$cryptoApi = new CoinMarketCapApiCurrencyRepository($_ENV["COIN_MARKET_CAP_API_KEY"]);
+//$cryptoApi = new CoinGeckoApiCurrencyRepository($_ENV["COIN_GECKO_API_KEY"]);
 
 $consoleInput = new ArrayInput([]);
 $consoleOutput = new ConsoleOutput();
@@ -58,15 +58,52 @@ $walletService = new WalletService(new WalletRepository($connection));
 
 $users = $userRepository->getAll();
 $user = null;
-while (true) {
-    [$username, $password] = $ask->login();
-    if ($user = (new UserValidationService($userRepository))->login($username, $password)) {
+//while (true) {
+//    [$username, $password] = $ask->login();
+//    if ($user = (new UserValidationService($userRepository))->login($username, $password)) {
+//        break;
+//    }
+//    echo "Incorrect username or password!\n";
+//}
+//
+//$walletInfo = $walletService->getUserWallet($user);
+
+
+$dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) {
+    $r->addRoute('GET', '/', [CurrencyController::class, "index"]);
+    $r->addRoute('GET', '/show', [CurrencyController::class, "show"]);
+});
+
+// Fetch method and URI from somewhere
+$httpMethod = $_SERVER['REQUEST_METHOD'];
+$uri = $_SERVER['REQUEST_URI'];
+
+// Strip query string (?foo=bar) and decode URI
+if (false !== $pos = strpos($uri, '?')) {
+    $uri = substr($uri, 0, $pos);
+}
+$uri = rawurldecode($uri);
+
+$routeInfo = $dispatcher->dispatch($httpMethod, $uri);
+switch ($routeInfo[0]) {
+    case FastRoute\Dispatcher::NOT_FOUND:
+        // ... 404 Not Found
         break;
-    }
-    echo "Incorrect username or password!\n";
+    case FastRoute\Dispatcher::METHOD_NOT_ALLOWED:
+        $allowedMethods = $routeInfo[1];
+        // ... 405 Method Not Allowed
+        break;
+    case FastRoute\Dispatcher::FOUND:
+        $handle = $routeInfo[1];
+        $vars = $routeInfo[2];
+        [$class, $method] = $handle;
+        echo (new $class)->$method(...array_values($vars));
+        break;
 }
 
-$walletInfo = $walletService->getUserWallet($user);
+die;
+
+
 
 $display = new Display($consoleOutput);
 echo "Welcome, {$user->username()}!\n";
