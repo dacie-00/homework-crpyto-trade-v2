@@ -4,19 +4,23 @@
 {{ include("header.html.twig") }}
 <body>
 <h1>
-    Top currencies
+    Currency list
 </h1>
-<table>
-    <tr>
-        <th>Ticker</th>
-        <th>Exchange Rate</th>
-    </tr>
-    {% for currency in currencies %}
+{% if not currencies %}
+    <p>No currencies found.</p>
+{% else %}
+    <table>
         <tr>
-            <td>{{ currency.ticker }}</td>
-            <td>{{ currency.exchangeRate }}</td>
+            <th>Ticker</th>
+            <th>Exchange Rate</th>
         </tr>
-    {% endfor %}
-</table>
+        {% for currency in currencies %}
+            <tr>
+                <td>{{ currency.ticker }}</td>
+                <td>{{ currency.exchangeRate }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endif %}
 </body>
 </html>

@@ -17,7 +17,13 @@ class CurrencyController
 
     public function index()
     {
-        $currencies = $this->currencyRepository->getTop();
+        if (isset($_GET["tickers"])) {
+            $tickers = explode(",", $_GET["tickers"]);
+            $tickers = array_map(static fn($value) => trim($value), $tickers);
+            $currencies = $this->currencyRepository->search($tickers);
+        } else {
+            $currencies = $this->currencyRepository->getTop();
+        }
         $currencyData = [];
         foreach ($currencies as $currency) {
             $currencyData[] = [
@@ -34,12 +40,12 @@ class CurrencyController
         $codes = array_map(static fn($value) => trim($value), $codes);
         $currencies = $this->currencyRepository->search($codes);
         $currencyData = [];
-        foreach ($currencies as $currency) {
-            $currencyData[] = [
-                "ticker" => $currency->definition()->getCurrencyCode(),
-                "exchangeRate" => (string)$currency->exchangeRate(),
+        if (!empty($currencies)) {
+            $currencyData = [
+                "ticker" => $currencies[0]->definition()->getCurrencyCode(),
+                "exchangeRate" => (string)$currencies[0]->exchangeRate(),
             ];
         }
-        return ["currencies/show.html.twig", ["currencies" => $currencyData]];
+        return ["currencies/show.html.twig", ["currency" => $currencyData]];
     }
 }
