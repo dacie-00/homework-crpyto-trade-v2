@@ -10,6 +10,7 @@ use Brick\Math\RoundingMode;
 use Brick\Money\Currency;
 use DateTimeInterface;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Exception;
 
 class TransactionRepository
 {
@@ -98,6 +99,22 @@ class TransactionRepository
             ->from("transactions")
             ->where("user_id = :user_id")
             ->setParameter("user_id", $user->id())
+            ->executeQuery();
+        foreach ($transactionData->fetchAllAssociative() as $transaction) {
+            $transactions[] = Transaction::fromArray($transaction);
+        }
+        return $transactions;
+    }
+
+    /**
+     * @return Transaction[]
+     */
+    public function getAll(): array
+    {
+        $transactions = [];
+        $transactionData = $this->connection->createQueryBuilder()
+            ->select("*")
+            ->from("transactions")
             ->executeQuery();
         foreach ($transactionData->fetchAllAssociative() as $transaction) {
             $transactions[] = Transaction::fromArray($transaction);

@@ -71,4 +71,21 @@ class UserRepository
         }
         return $users;
     }
+
+    public function findById(string $id): ?User
+    {
+        $user = $this->connection->createQueryBuilder()
+            ->select("*")
+            ->from("users")
+            ->where("username = :id")
+            ->setParameter("id", $id)
+            ->executeQuery()
+            ->fetchAssociative();
+        return $user !== false ?
+            new User(
+                $user["username"],
+                $user["password"],
+                $user["user_id"]
+            ) : null;
+    }
 }

@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+{{ include("head.html.twig") }}
+{{ include("header.html.twig") }}
+<body>
+<h1>
+    Transaction list
+</h1>
+{% if not transactions %}
+    <p>No transactions found.</p>
+{% else %}
+    <table>
+        <tr>
+            <th>User</th>
+            <th>Sent Amount</th>
+            <th>Sent Ticker</th>
+            <th>Type</th>
+            <th>Received Amount</th>
+            <th>Received Ticker</th>
+            <th>Date</th>
+        </tr>
+        {% for transaction in transactions %}
+            <tr>
+                <td>{{ transaction.username }}</td>
+                <td>{{ transaction.sentAmount }}</td>
+                <td>{{ transaction.sentTicker }}</td>
+                <td>{{ transaction.type }}</td>
+                <td>{{ transaction.receivedAmount }}</td>
+                <td>{{ transaction.receivedTicker }}</td>
+                <td>{{ transaction.date }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endif %}
+</body>
+</html>
