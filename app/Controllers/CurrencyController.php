@@ -25,11 +25,21 @@ class CurrencyController
                 "exchangeRate" => (string)$currency->exchangeRate(),
             ];
         }
-        return $currencyData;
+        return ["currencies/index.html.twig", ["currencies" => $currencyData]];
     }
 
-    public function show()
+    public function show(string $ticker)
     {
-        return "show single currency page";
+        $codes = explode(",", $ticker);
+        $codes = array_map(static fn($value) => trim($value), $codes);
+        $currencies = $this->currencyRepository->search($codes);
+        $currencyData = [];
+        foreach ($currencies as $currency) {
+            $currencyData[] = [
+                "ticker" => $currency->definition()->getCurrencyCode(),
+                "exchangeRate" => (string)$currency->exchangeRate(),
+            ];
+        }
+        return ["currencies/show.html.twig", ["currencies" => $currencyData]];
     }
 }

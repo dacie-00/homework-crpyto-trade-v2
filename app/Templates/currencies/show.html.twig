@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+{{ include("head.html.twig") }}
+{{ include("header.html.twig") }}
+<body>
+<h1>
+    Search results
+</h1>
+{% if currencies %}
+    <table>
+        <tr>
+            <th>Ticker</th>
+            <th>Exchange Rate</th>
+        </tr>
+        {% for currency in currencies %}
+            <tr>
+                <td>{{ currency.ticker }}</td>
+                <td>{{ currency.exchangeRate }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+{% else %}
+    <p>No currencies found.</p>
+{% endif %}
+</body>

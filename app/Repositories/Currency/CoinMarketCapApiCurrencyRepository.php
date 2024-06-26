@@ -76,6 +76,7 @@ class CoinMarketCapApiCurrencyRepository implements CurrencyRepositoryInterface
      */
     public function search(array $currencyCodes): array
     {
+        $currencyCodes = array_map(fn($code) => strtoupper($code), $currencyCodes);
         $url = "cryptocurrency/quotes/latest";
         $parameters = [
             "symbol" => implode(",", $currencyCodes),

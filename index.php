@@ -76,7 +76,8 @@ $user = null;
 
 $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) {
     $r->addRoute('GET', '/', [CurrencyController::class, "index"]);
-    $r->addRoute('GET', '/show', [CurrencyController::class, "show"]);
+    $r->addRoute('GET', '/currencies', [CurrencyController::class, "index"]);
+    $r->addRoute('GET', '/currencies/{ticker}', [CurrencyController::class, "show"]);
 });
 
 // Fetch method and URI from somewhere
@@ -93,17 +94,19 @@ $routeInfo = $dispatcher->dispatch($httpMethod, $uri);
 switch ($routeInfo[0]) {
     case FastRoute\Dispatcher::NOT_FOUND:
         // ... 404 Not Found
+        echo "404";
         break;
     case FastRoute\Dispatcher::METHOD_NOT_ALLOWED:
         $allowedMethods = $routeInfo[1];
         // ... 405 Method Not Allowed
+        echo "405";
         break;
     case FastRoute\Dispatcher::FOUND:
         $handle = $routeInfo[1];
         $vars = $routeInfo[2];
         [$class, $method] = $handle;
-//        var_dump($(new $class)->$method(...array_values($vars)));die;
-        echo $twig->render("index.html", ["currencies" => (new $class)->$method(...array_values($vars))]);
+        [$template, $data] = (new $class)->$method(...array_values($vars));
+        echo $twig->render($template, $data);
         break;
 }
 
