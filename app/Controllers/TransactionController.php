@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Models\Transaction;
 use App\Repositories\TransactionRepository;
 use App\Repositories\UserRepository;
 use Doctrine\DBAL\DriverManager;
@@ -37,5 +38,10 @@ class TransactionController
             ];
         }
         return ["transactions/index.html.twig", ["transactions" => $transactionData]];
+    }
+
+    public function store(Transaction $transaction)
+    {
+
     }
 }

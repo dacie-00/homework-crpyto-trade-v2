@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="en">
+{{ include("head.html.twig") }}
+{{ include("header.html.twig") }}
+<body>
+<h1>
+    Transfer
+</h1>
+{% if error %}
+    <p> {{ error }}</p>
+{% else %}
+    <p>Transfer successful!</p>
+{% endif %}
+</body>

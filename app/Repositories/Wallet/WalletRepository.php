@@ -1,9 +1,10 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Repositories;
+namespace App\Repositories\Wallet;
 
 use App\Models\Wallet;
+use App\Repositories\Wallet\Exceptions\WalletNotFoundException;
 use Brick\Math\BigDecimal;
 use Brick\Money\Currency;
 use Brick\Money\Money;
@@ -95,6 +96,9 @@ class WalletRepository
             ->setParameter("wallet_id", $wallet_id)
             ->executeQuery()
             ->fetchAllAssociative();
+        if (empty($rows)) {
+            throw new WalletNotFoundException("Wallet ($wallet_id) not found");
+        }
         $content = [];
         $userId = $rows[0]["user_id"];
         foreach ($rows as $row) {

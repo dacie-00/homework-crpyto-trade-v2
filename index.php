@@ -4,16 +4,17 @@ declare(strict_types=1);
 use App\Ask;
 use App\Controllers\CurrencyController;
 use App\Controllers\TransactionController;
+use App\Controllers\WalletController;
 use App\Display;
 use App\Exceptions\NoMoneyException;
+use App\Models\User;
 use App\Repositories\Currency\CoinMarketCapApiCurrencyRepository;
 use App\Repositories\TransactionRepository;
 use App\Repositories\UserRepository;
-use App\Repositories\WalletRepository;
+use App\Repositories\Wallet\WalletRepository;
 use App\Services\BuyService;
 use App\Services\DatabaseInitializationService;
 use App\Services\SellService;
-use App\Services\UserValidationService;
 use App\Services\WalletService;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
@@ -75,12 +76,17 @@ $walletService = new WalletService(new WalletRepository($connection));
 //
 //$walletInfo = $walletService->getUserWallet($user);
 
+// Temporary user autologin
+$user = new User("foobar", "3858f62230ac3c915f300c664312c63f", "foobar");
+$walletInfo = $walletService->getUserWallet($user);
 
 $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) {
-    $r->addRoute('GET', '/', [CurrencyController::class, "index"]);
+//    $r->addRoute('GET', '/', [WalletController::class, "show"]);
     $r->addRoute('GET', '/currencies', [CurrencyController::class, "index"]);
     $r->addRoute('GET', '/currencies/{ticker}', [CurrencyController::class, "show"]);
     $r->addRoute('GET', '/transactions', [TransactionController::class, "index"]);
+    $r->addRoute('GET', '/wallets/{id}', [WalletController::class, "show"]);
+    $r->addRoute('POST', '/wallets/{id}/transfer', [WalletController::class, "transfer"]);
 });
 
 // Fetch method and URI from somewhere

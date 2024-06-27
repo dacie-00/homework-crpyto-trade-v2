@@ -5,7 +5,7 @@ namespace App\Services;
 
 use App\Models\User;
 use App\Models\Wallet;
-use App\Repositories\WalletRepository;
+use App\Repositories\Wallet\WalletRepository;
 use Brick\Money\Money;
 
 class WalletService
