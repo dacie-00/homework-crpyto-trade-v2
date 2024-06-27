@@ -52,7 +52,8 @@ class WalletRepository
                     "wallet_id" => $walletId,
                     "ticker" => $ticker,
                 ]
-            );
+            )
+            ->executeQuery();
     }
 
     public function update(string $walletId, string $ticker, BigDecimal $amount): void
