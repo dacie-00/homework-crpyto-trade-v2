@@ -15,6 +15,8 @@ use App\Services\Transfers\Exceptions\InvalidTransferCurrencyTickerException;
 use App\Services\Transfers\Exceptions\InvalidTransferTypeException;
 use App\Services\Transfers\TransferRequestValidationService;
 use App\Services\WalletService;
+use Brick\Math\BigDecimal;
+use Brick\Math\RoundingMode;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
 
@@ -23,6 +25,7 @@ class WalletController
     private TransactionRepository $transactionRepository;
     private WalletRepository $walletRepository;
     private Connection $connection;
+    private CoinMarketCapApiCurrencyRepository $currencyRepository;
 
     public function __construct()
     {
@@ -34,6 +37,7 @@ class WalletController
 
         $this->transactionRepository = new TransactionRepository($this->connection);
         $this->walletRepository = new WalletRepository($this->connection);
+        $this->currencyRepository = new CoinMarketCapApiCurrencyRepository($_ENV["COIN_MARKET_CAP_API_KEY"]);
     }
 
     public function show(string $id): array
@@ -43,11 +47,41 @@ class WalletController
         } catch (WalletNotFoundException $e) {
             return ["wallets/show.html.twig", ["wallet" => []]];
         }
+
+        // This entire block until wallet data is for getting the percentage change in profit
+        $percentages = [];
+        $currencyCodes = array_map(fn($money) => $money->getCurrency()->getCurrencyCode(), $wallet->contents());
+        $currencyData = $this->currencyRepository->search($currencyCodes);
+        $marketCurrencies = [];
+        foreach ($currencyData as $currency) {
+            $marketCurrencies[$currency->definition()->getCurrencyCode()] = $currency;
+        }
+
+        foreach ($wallet->contents() as $money) {
+            if ($money->getCurrency()->getCurrencyCode() === "EUR") {
+                $percentages[] = "Not available";
+                continue;
+            }
+            $average = $this->transactionRepository->getAveragePrice($wallet->userId(), $money->getCurrency(), $money->getAmount());
+            $marketRate = BigDecimal::one()
+                ->dividedBy(
+                    $marketCurrencies[$money->getCurrency()->getCurrencyCode()]->exchangeRate(),
+                    9,
+                    RoundingMode::DOWN
+                );
+            $percentages[] =
+                Bigdecimal::of(100)
+                    ->multipliedBy(
+                        $marketRate->dividedBy($average, 9, RoundingMode::DOWN)
+                            ->minus(BigDecimal::one()))->toFloat();
+        }
+
         $walletData = [];
-        foreach ($wallet->contents() as $entry) {
+        foreach ($wallet->contents() as $index => $entry) {
             $walletData[] = [
                 "ticker" => $entry->getCurrency(),
                 "amount" => $entry->getAmount(),
+                "profit" => $percentages[$index],
             ];
         }
         return ["wallets/show.html.twig", ["wallet" => $walletData]];

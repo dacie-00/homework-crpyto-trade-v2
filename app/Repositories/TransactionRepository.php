@@ -21,7 +21,7 @@ class TransactionRepository
         $this->connection = $connection;
     }
 
-    public function getByUserAndCurrency(User $user, Currency $currency): array
+    public function getByUserAndCurrency(string $userId, Currency $currency): array
     {
         return $this->connection->createQueryBuilder()
             ->select("sent_amount, received_amount")
@@ -29,7 +29,7 @@ class TransactionRepository
             ->where("user_id = :user_id and received_ticker = :received_ticker")
             ->setParameters(
                 [
-                    "user_id" => $user->id(),
+                    "user_id" => $userId,
                     "received_ticker" => $currency->getCurrencyCode(),
                 ]
             )
@@ -69,9 +69,9 @@ class TransactionRepository
             ->executeStatement();
     }
 
-    public function getAveragePrice(User $user, Currency $currency, BigDecimal $until): ?BigDecimal
+    public function getAveragePrice(string $userId, Currency $currency, BigDecimal $until): ?BigDecimal
     {
-        $amounts = $this->getByUserAndCurrency($user, $currency);
+        $amounts = $this->getByUserAndCurrency($userId, $currency);
         $amounts = array_reverse($amounts);
 
         $spent = BigDecimal::zero();

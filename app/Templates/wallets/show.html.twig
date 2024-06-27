@@ -13,11 +13,13 @@
         <tr>
             <th>Ticker</th>
             <th>Amount</th>
+            <th>Profit %</th>
         </tr>
         {% for money in wallet %}
             <tr>
                 <td>{{ money.ticker }}</td>
                 <td>{{ money.amount }}</td>
+                <td>{{ money.profit }}</td>
             </tr>
         {% endfor %}
     </table>
