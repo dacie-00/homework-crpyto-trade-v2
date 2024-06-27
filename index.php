@@ -62,7 +62,6 @@ $currencyConverter = new CurrencyConverter($baseProvider);
 
 $transactionRepository = new TransactionRepository($connection);
 $walletRepository = new WalletRepository($connection);
-$walletService = new WalletService(new WalletRepository($connection));
 
 //$users = $userRepository->getAll();
 //$user = null;
@@ -78,10 +77,9 @@ $walletService = new WalletService(new WalletRepository($connection));
 
 // Temporary user autologin
 $user = new User("foobar", "3858f62230ac3c915f300c664312c63f", "foobar");
-$walletInfo = $walletService->getUserWallet($user);
+$walletInfo = $walletRepository->getWalletByUserId($user->id());
 
 $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) {
-//    $r->addRoute('GET', '/', [WalletController::class, "show"]);
     $r->addRoute('GET', '/', [CurrencyController::class, "index"]);
     $r->addRoute('GET', '/currencies', [CurrencyController::class, "index"]);
     $r->addRoute('GET', '/currencies/{ticker}', [CurrencyController::class, "show"]);
