@@ -82,6 +82,7 @@ $walletInfo = $walletService->getUserWallet($user);
 
 $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) {
 //    $r->addRoute('GET', '/', [WalletController::class, "show"]);
+    $r->addRoute('GET', '/', [CurrencyController::class, "index"]);
     $r->addRoute('GET', '/currencies', [CurrencyController::class, "index"]);
     $r->addRoute('GET', '/currencies/{ticker}', [CurrencyController::class, "show"]);
     $r->addRoute('GET', '/transactions', [TransactionController::class, "index"]);

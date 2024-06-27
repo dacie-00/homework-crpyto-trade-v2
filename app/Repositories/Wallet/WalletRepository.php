@@ -19,7 +19,7 @@ class WalletRepository
         $this->connection = $connection;
     }
 
-    public function insert(string $wallet_id, string $user_id, string $ticker, BigDecimal $amount): void
+    public function insert(string $walletId, string $userId, string $ticker, BigDecimal $amount): void
     {
         $this->connection->createQueryBuilder()
             ->insert("wallet")
@@ -33,8 +33,8 @@ class WalletRepository
             )
             ->setParameters(
                 [
-                    "wallet_id" => $wallet_id,
-                    "user_id" => $user_id,
+                    "wallet_id" => $walletId,
+                    "user_id" => $userId,
                     "ticker" => $ticker,
                     "amount" => $amount,
                 ]
@@ -42,20 +42,20 @@ class WalletRepository
             ->executeQuery();
     }
 
-    public function delete(string $wallet_id, string $ticker): void
+    public function delete(string $walletId, string $ticker): void
     {
         $this->connection->createQueryBuilder()
             ->delete("wallet")
             ->where("wallet_id = :wallet_id and ticker = :ticker")
             ->setParameters(
                 [
-                    "wallet_id" => $wallet_id,
+                    "wallet_id" => $walletId,
                     "ticker" => $ticker,
                 ]
             );
     }
 
-    public function update(string $wallet_id, string $ticker, BigDecimal $amount): void
+    public function update(string $walletId, string $ticker, BigDecimal $amount): void
     {
         $this->connection->createQueryBuilder()
             ->update("wallet")
@@ -63,7 +63,7 @@ class WalletRepository
             ->set("amount", ":amount")
             ->setParameters(
                 [
-                    "wallet_id" => $wallet_id,
+                    "wallet_id" => $walletId,
                     "ticker" => $ticker,
                     "amount" => $amount,
                 ]
@@ -71,7 +71,7 @@ class WalletRepository
             ->executeQuery();
     }
 
-    public function exists(string $wallet_id, string $ticker): bool
+    public function exists(string $walletId, string $ticker): bool
     {
         return $this->connection->createQueryBuilder()
                 ->select("wallet_id")
@@ -79,7 +79,7 @@ class WalletRepository
                 ->where("wallet_id = :wallet_id and ticker = :ticker")
                 ->setParameters(
                     [
-                        "wallet_id" => $wallet_id,
+                        "wallet_id" => $walletId,
                         "ticker" => $ticker,
                     ]
                 )
@@ -87,17 +87,17 @@ class WalletRepository
                 ->fetchOne() !== false;
     }
 
-    public function getWalletById(string $wallet_id): Wallet
+    public function getWalletById(string $walletId): Wallet
     {
         $rows = $this->connection->createQueryBuilder()
             ->from("wallet")
             ->select("user_id, ticker, amount")
             ->where("wallet_id = :wallet_id")
-            ->setParameter("wallet_id", $wallet_id)
+            ->setParameter("wallet_id", $walletId)
             ->executeQuery()
             ->fetchAllAssociative();
         if (empty($rows)) {
-            throw new WalletNotFoundException("Wallet ($wallet_id) not found");
+            throw new WalletNotFoundException("Wallet ($walletId) not found");
         }
         $content = [];
         $userId = $rows[0]["user_id"];
@@ -111,10 +111,10 @@ class WalletRepository
                 )
             );
         }
-        return new Wallet($userId, $wallet_id, $content);
+        return new Wallet($userId, $walletId, $content);
     }
 
-    public function getMoney(string $wallet_id, string $ticker): ?Money
+    public function getMoney(string $walletId, string $ticker): Money
     {
         $amount = $this->connection->createQueryBuilder()
             ->from("wallet")
@@ -122,34 +122,74 @@ class WalletRepository
             ->where("wallet_id = :wallet_id and ticker = :ticker")
             ->setParameters(
                 [
-                    "wallet_id" => $wallet_id,
+                    "wallet_id" => $walletId,
                     "ticker" => $ticker,
                 ]
             )
             ->executeQuery()
             ->fetchOne();
-        return $amount !== false ?
-            Money::of(
-                $amount,
+        return Money::of(
+            $amount ?: 0,
                 new Currency(
                     $ticker,
                     0,
                     "",
                     9
                 )
-            ) : null;
+        );
     }
 
-    public function getWalletByUserId(string $user_id): ?Wallet
+    public function getWalletByUserId(string $userId): ?Wallet
     {
         $wallet = $this->connection->createQueryBuilder()
             ->select("*")
             ->from("wallet")
             ->where("user_id = :user_id")
-            ->setParameter("user_id", $user_id)
+            ->setParameter("user_id", $userId)
             ->executeQuery()
             ->fetchAssociative();
 
         return new Wallet($wallet["user_id"], $wallet["wallet_id"]);
+    }
+
+    public function getOwner(string $walletId): string
+    {
+        $userId = $this->connection->createQueryBuilder()
+            ->select("user_id")
+            ->from("wallet")
+            ->where("wallet_id = :wallet_id")
+            ->setParameter("wallet_id", $walletId)
+            ->executeQuery()
+            ->fetchOne();
+        return $userId;
+    }
+
+    public function addToWallet(string $walletId, Money $money): void
+    {
+        $ticker = $money->getCurrency()->getCurrencyCode();
+        if (!$this->exists($walletId, $ticker)) {
+            $this->insert($walletId, $this->getOwner($walletId), $ticker, $money->getAmount());
+            return;
+        }
+        $initialMoney = $this->getMoney($walletId, $ticker);
+
+        $newAmount = $initialMoney->getAmount()->plus($money->getAmount());
+        $this->update($walletId, $ticker, $newAmount);
+    }
+
+    public function subtractFromWallet(string $walletId, Money $money): void
+    {
+        $ticker = $money->getCurrency()->getCurrencyCode();
+        if (!$this->exists($walletId, $ticker)) {
+            return;
+        }
+        $initialMoney = $this->getMoney($walletId, $ticker);
+
+        $newAmount = $initialMoney->getAmount()->minus($money->getAmount());
+        if ($newAmount->isNegativeOrZero()) {
+            $this->delete($walletId, $ticker);
+            return;
+        }
+        $this->update($walletId, $ticker, $newAmount);
     }
 }

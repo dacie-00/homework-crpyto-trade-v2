@@ -8,6 +8,7 @@ use App\Repositories\TransactionRepository;
 use App\Repositories\Wallet\Exceptions\WalletNotFoundException;
 use App\Repositories\Wallet\WalletRepository;
 use App\Services\BuyService;
+use App\Services\Exceptions\InsufficientMoneyException;
 use App\Services\SellService;
 use App\Services\Transfers\Exceptions\InvalidTransferAmountException;
 use App\Services\Transfers\Exceptions\InvalidTransferCurrencyTickerException;
@@ -58,31 +59,34 @@ class WalletController
         try {
             (new TransferRequestValidationService())->validate($_POST);
         } catch (InvalidTransferTypeException|InvalidTransferAmountException|InvalidTransferCurrencyTickerException $e) {
-            var_dump($_POST);
             return ["wallets/transfer.html.twig", ["error" => $e->getMessage()]];
         }
-        if ($_POST["type"] === "buy") {
-            (new BuyService(
-                $this->connection,
-                (new WalletService($this->walletRepository)),
-                $this->transactionRepository,
-                (new CoinMarketCapApiCurrencyRepository($_ENV["COIN_MARKET_CAP_API_KEY"]))))
-                ->execute(
-                    $this->walletRepository->getWalletById($walletId),
-                    (float)$_POST["amount"],
-                    $_POST["currency"],
-                );
-        } elseif ($_POST["type"] === "sell") {
-            (new SellService(
-                $this->connection,
-                (new WalletService($this->walletRepository)),
-                $this->transactionRepository,
-                (new CoinMarketCapApiCurrencyRepository($_ENV["COIN_MARKET_CAP_API_KEY"]))))
-                ->execute(
-                    $this->walletRepository->getWalletById($walletId),
-                    (float)$_POST["amount"],
-                    $_POST["currency"],
-                );
+        try {
+            if ($_POST["type"] === "buy") {
+                (new BuyService(
+                    $this->connection,
+                    $this->transactionRepository,
+                    $this->walletRepository,
+                    (new CoinMarketCapApiCurrencyRepository($_ENV["COIN_MARKET_CAP_API_KEY"]))))
+                    ->execute(
+                        $walletId,
+                        (float)$_POST["amount"],
+                        $_POST["currency"],
+                    );
+            } elseif ($_POST["type"] === "sell") {
+                (new SellService(
+                    $this->connection,
+                    $this->transactionRepository,
+                    $this->walletRepository,
+                    (new CoinMarketCapApiCurrencyRepository($_ENV["COIN_MARKET_CAP_API_KEY"]))))
+                    ->execute(
+                        $walletId,
+                        (float)$_POST["amount"],
+                        $_POST["currency"],
+                    );
+            }
+        } catch (InsufficientMoneyException $e) {
+            return ["wallets/transfer.html.twig", ["error" => $e->getMessage()]];
         }
 
         return ["wallets/transfer.html.twig",

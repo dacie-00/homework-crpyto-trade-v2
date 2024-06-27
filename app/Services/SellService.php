@@ -3,47 +3,50 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Models\ExtendedCurrency;
 use App\Models\Transaction;
-use App\Models\Wallet;
 use App\Repositories\Currency\CurrencyRepositoryInterface;
 use App\Repositories\TransactionRepository;
+use App\Repositories\Wallet\WalletRepository;
+use App\Services\Exceptions\InsufficientMoneyException;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
-use Brick\Money\CurrencyConverter;
 use Brick\Money\Money;
 use Doctrine\DBAL\Connection;
 
 class SellService
 {
     private Connection $connection;
-    private WalletService $walletService;
     private TransactionRepository $transactionRepository;
+    private WalletRepository $walletRepository;
     private CurrencyRepositoryInterface $currencyRepository;
 
     public function __construct(
         Connection $connection,
-        WalletService $walletService,
         TransactionRepository $transactionRepository,
+        WalletRepository $walletRepository,
         CurrencyRepositoryInterface $currencyRepository
     ) {
         $this->connection = $connection;
-        $this->walletService = $walletService;
         $this->transactionRepository = $transactionRepository;
+        $this->walletRepository = $walletRepository;
         $this->currencyRepository = $currencyRepository;
     }
 
     public function execute(
-        Wallet $wallet,
+        string $walletId,
         float $amount,
         string $ticker
     ): Transaction {
-
+        if ($this->walletRepository->getMoney($walletId, $ticker)->isLessThan(BigDecimal::of($amount))) {
+            throw new InsufficientMoneyException("Not enough $ticker in wallet");
+        }
         $extendedCurrencies = $this->currencyRepository->search([$ticker]);
+
         if (empty($extendedCurrencies)) {
             echo "currency not found"; // TODO: throw exception within repository class
         }
         $extendedCurrency = $extendedCurrencies[0];
+
 
         $moneyToSpend = Money::of($amount, $extendedCurrency->definition());
 //        $moneyToGet = $this->currencyConverter->convert(
@@ -57,11 +60,11 @@ class SellService
         $moneyToGet = Money::of($money, "EUR", null, RoundingMode::DOWN);
 
         $this->connection->beginTransaction();
-        $this->walletService->addToWallet($wallet, $moneyToGet);
-        $this->walletService->subtractFromWallet($wallet, $moneyToSpend);
+        $this->walletRepository->addToWallet($walletId, $moneyToGet);
+        $this->walletRepository->subtractFromWallet($walletId, $moneyToSpend);
         $transaction = new Transaction
         (
-            $wallet->userId(),
+            $this->walletRepository->getOwner($walletId),
             $moneyToSpend,
             Transaction::TYPE_SELL,
             $moneyToGet
