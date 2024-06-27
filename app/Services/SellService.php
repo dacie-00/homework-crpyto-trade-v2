@@ -40,23 +40,21 @@ class SellService
         if ($this->walletRepository->getMoney($walletId, $ticker)->isLessThan(BigDecimal::of($amount))) {
             throw new InsufficientMoneyException("Not enough $ticker in wallet");
         }
-        $extendedCurrencies = $this->currencyRepository->search([$ticker]);
 
+        $extendedCurrencies = $this->currencyRepository->search([$ticker]);
         if (empty($extendedCurrencies)) {
             echo "currency not found"; // TODO: throw exception within repository class
         }
         $extendedCurrency = $extendedCurrencies[0];
 
-
         $moneyToSpend = Money::of($amount, $extendedCurrency->definition());
-//        $moneyToGet = $this->currencyConverter->convert(
-//            Money::of($amount, $extendedCurrency->definition()),
-//            "EUR",
-//            RoundingMode::DOWN);
-//
-        $money = BigDecimal::of($amount)->multipliedBy(BigDecimal::one()->dividedBy($extendedCurrency->exchangeRate(), 9, RoundingMode::DOWN));
-//        $money = BigDecimal::of($amount)->multipliedBy(BigDecimal::one()->dividedBy($extendedCurrency->exchangeRate(), null, RoundingMode::DOWN));
-//        $money = BigDecimal::of($amount)->multipliedBy($extendedCurrency->exchangeRate());
+        $money = BigDecimal::of($amount)->multipliedBy(
+            BigDecimal::one()->dividedBy(
+                $extendedCurrency->exchangeRate(),
+                9,
+                RoundingMode::DOWN
+            )
+        );
         $moneyToGet = Money::of($money, "EUR", null, RoundingMode::DOWN);
 
         $this->connection->beginTransaction();
@@ -72,26 +70,5 @@ class SellService
         $this->transactionRepository->add($transaction);
         $this->connection->commit();
         return $transaction;
-//        $moneyToSpend = Money::of($amount, $extendedCurrency->definition());
-//        $moneyToGet = $this->currencyConverter->convert(
-//            Money::of($amount, $extendedCurrency->definition()),
-//            "EUR",
-//            RoundingMode::DOWN);
-//
-//        $this->connection->beginTransaction();
-//        $this->walletService->addToWallet($wallet, $moneyToGet);
-//        $this->walletService->subtractFromWallet($wallet, $moneyToSpend);
-//        $transaction = new Transaction
-//        (
-//            $wallet->userId(),
-//            $moneyToSpend,
-//            Transaction::TYPE_SELL,
-//            $moneyToGet
-//        );
-//        $this->transactionRepository->add($transaction);
-//        $this->connection->commit();
-//
-//        return $transaction;
     }
-
 }

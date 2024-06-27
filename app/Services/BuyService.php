@@ -3,19 +3,13 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Models\ExtendedCurrency;
 use App\Models\Transaction;
-use App\Models\Wallet;
 use App\Repositories\Currency\CurrencyRepositoryInterface;
 use App\Repositories\TransactionRepository;
 use App\Repositories\Wallet\WalletRepository;
 use App\Services\Exceptions\InsufficientMoneyException;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
-use Brick\Money\Currency;
-use Brick\Money\CurrencyConverter;
-use Brick\Money\ExchangeRateProvider\BaseCurrencyProvider;
-use Brick\Money\ExchangeRateProvider\ConfigurableProvider;
 use Brick\Money\Money;
 use Doctrine\DBAL\Connection;
 
@@ -44,9 +38,9 @@ class BuyService
         string $ticker
     ): Transaction {
         $moneyToSpend = Money::of($amount, "EUR");
+
         $moneyInWallet = $this->walletRepository->getMoney($walletId, "EUR")->getAmount();
         if ($moneyToSpend->isGreaterThan($moneyInWallet)) {
-            echo "foo";
             throw new InsufficientMoneyException("Not enough EUR in wallet");
         }
 
