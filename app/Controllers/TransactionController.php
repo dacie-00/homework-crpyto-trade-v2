@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
-use App\Models\Transaction;
 use App\Repositories\TransactionRepository;
 use App\Repositories\UserRepository;
 use Doctrine\DBAL\DriverManager;
