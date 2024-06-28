@@ -3,6 +3,11 @@
 {{ include("head.html.twig") }}
 {{ include("header.html.twig") }}
 <body>
+<form action="/currencies">
+    <label for="tickers">Find currencies by tickers:</label><br>
+    <input type="text" id="tickers" name="tickers">
+    <input type="submit" value="Submit">
+</form>
 <h1>
     {% if query %}
         Currency - {{ query }}

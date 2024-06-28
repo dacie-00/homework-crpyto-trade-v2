@@ -28,7 +28,7 @@ class TransactionController
     public function index(): array
     {
         if (!isset($_GET["user"])) {
-            header("Location: /");
+            header("Location: /404");
             die;
         }
         $transactions = $this->transactionRepository->getByUser($this->userRepository->findByUsername($_GET["user"]));

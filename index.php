@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 use App\Controllers\CurrencyController;
+use App\Controllers\NotFoundController;
 use App\Controllers\TransactionController;
 use App\Controllers\WalletController;
 use App\Models\User;
@@ -72,6 +73,7 @@ $walletInfo = $walletRepository->getWalletByUserId($user->id());
 
 $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) {
     $r->addRoute('GET', '/', [CurrencyController::class, "index"]);
+    $r->addRoute('GET', '/404', [NotFoundController::class, "index"]);
     $r->addRoute('GET', '/currencies', [CurrencyController::class, "index"]);
     $r->addRoute('GET', '/currencies/{ticker}', [CurrencyController::class, "show"]);
     $r->addRoute('GET', '/transactions', [TransactionController::class, "index"]);
@@ -92,8 +94,7 @@ $uri = rawurldecode($uri);
 $routeInfo = $dispatcher->dispatch($httpMethod, $uri);
 switch ($routeInfo[0]) {
     case FastRoute\Dispatcher::NOT_FOUND:
-        // ... 404 Not Found
-        echo "404";
+        header("Location: /404");
         break;
     case FastRoute\Dispatcher::METHOD_NOT_ALLOWED:
         $allowedMethods = $routeInfo[1];
