@@ -4,10 +4,10 @@
 {{ include("header.html.twig") }}
 <body>
 <h1>
-    Currency
+    Currency - {{ query }}
 </h1>
 {% if not currency %}
-    <p>Currency not found.</p>
+    <p>Currency {{ query }} not found.</p>
 {% else %}
     <table>
         <tr>

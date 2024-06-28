@@ -4,7 +4,11 @@
 {{ include("header.html.twig") }}
 <body>
 <h1>
-    Currency list
+    {% if query %}
+        Currency - {{ query }}
+    {% else %}
+        Currency list
+    {% endif %}
 </h1>
 {% if not currencies %}
     <p>No currencies found.</p>

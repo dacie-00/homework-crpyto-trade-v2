@@ -3,8 +3,10 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Exceptions\FailedHttpRequestException;
 use App\Repositories\Currency\CoinMarketCapApiCurrencyRepository;
 use App\Repositories\Currency\CurrencyRepositoryInterface;
+use App\Repositories\Currency\Exceptions\CurrencyNotFoundException;
 
 class CurrencyController
 {
@@ -15,12 +17,16 @@ class CurrencyController
         $this->currencyRepository = new CoinMarketCapApiCurrencyRepository($_ENV["COIN_MARKET_CAP_API_KEY"]);
     }
 
-    public function index()
+    public function index(): array
     {
         if (isset($_GET["tickers"])) {
             $tickers = explode(",", $_GET["tickers"]);
             $tickers = array_map(static fn($value) => trim($value), $tickers);
-            $currencies = $this->currencyRepository->search($tickers);
+            try {
+                $currencies = $this->currencyRepository->search($tickers);
+            } catch (CurrencyNotFoundException $e) {
+                return ["currencies/index.html.twig", ["query" => $_GET["tickers"]]];
+            }
         } else {
             $currencies = $this->currencyRepository->getTop();
         }
@@ -31,14 +37,19 @@ class CurrencyController
                 "exchangeRate" => (string)$currency->exchangeRate(),
             ];
         }
-        return ["currencies/index.html.twig", ["currencies" => $currencyData]];
+        return ["currencies/index.html.twig", ["query" => $_GET["tickers"], "currencies" => $currencyData]];
     }
 
-    public function show(string $ticker)
+    public function show(string $ticker): array
     {
         $codes = explode(",", $ticker);
         $codes = array_map(static fn($value) => trim($value), $codes);
-        $currencies = $this->currencyRepository->search($codes);
+        try {
+            $currencies = $this->currencyRepository->search($codes);
+        } catch (CurrencyNotFoundException $e) {
+            return ["currencies/show.html.twig", ["query" => $ticker]];
+        }
+
         $currencyData = [];
         if (!empty($currencies)) {
             $currencyData = [
@@ -46,6 +57,6 @@ class CurrencyController
                 "exchangeRate" => (string)$currencies[0]->exchangeRate(),
             ];
         }
-        return ["currencies/show.html.twig", ["currency" => $currencyData]];
+        return ["currencies/show.html.twig", ["query" => $ticker, "currency" => $currencyData]];
     }
 }
