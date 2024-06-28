@@ -27,7 +27,11 @@ class TransactionController
 
     public function index(): array
     {
-        $transactions = $this->transactionRepository->getAll();
+        if (!isset($_GET["user"])) {
+            header("Location: /");
+            die;
+        }
+        $transactions = $this->transactionRepository->getByUser($this->userRepository->findByUsername($_GET["user"]));
         $transactionData = [];
         foreach ($transactions as $transaction) {
             $transactionData[] = [
