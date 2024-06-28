@@ -5,9 +5,11 @@ namespace App\Services;
 
 use App\Models\Transaction;
 use App\Repositories\Currency\CurrencyRepositoryInterface;
+use App\Repositories\Currency\Exceptions\CurrencyNotFoundException;
 use App\Repositories\TransactionRepository;
 use App\Repositories\Wallet\WalletRepository;
 use App\Services\Exceptions\InsufficientMoneyException;
+use App\Services\Exceptions\TransactionFailedException;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use Brick\Money\Money;
@@ -41,10 +43,14 @@ class SellService
             throw new InsufficientMoneyException("Not enough $ticker in wallet");
         }
 
-        $extendedCurrencies = $this->currencyRepository->search([$ticker]);
-        if (empty($extendedCurrencies)) {
-            echo "currency not found"; // TODO: throw exception within repository class
+        try {
+            $extendedCurrencies = $this->currencyRepository->search([$ticker]);
+        } catch (CurrencyNotFoundException $e) {
+            throw new TransactionFailedException("Unknown currency - $ticker");
         }
+//        if (empty($extendedCurrencies)) {
+//            echo "currency not found"; // TODO: throw exception within repository class
+//        }
         $extendedCurrency = $extendedCurrencies[0];
 
         $moneyToSpend = Money::of($amount, $extendedCurrency->definition());

@@ -4,11 +4,13 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Repositories\Currency\CoinMarketCapApiCurrencyRepository;
+use App\Repositories\Currency\Exceptions\CurrencyNotFoundException;
 use App\Repositories\TransactionRepository;
 use App\Repositories\Wallet\Exceptions\WalletNotFoundException;
 use App\Repositories\Wallet\WalletRepository;
 use App\Services\BuyService;
 use App\Services\Exceptions\InsufficientMoneyException;
+use App\Services\Exceptions\TransactionFailedException;
 use App\Services\SellService;
 use App\Services\Transfers\Exceptions\InvalidTransferAmountException;
 use App\Services\Transfers\Exceptions\InvalidTransferCurrencyTickerException;
@@ -119,7 +121,7 @@ class WalletController
                         $_POST["currency"],
                     );
             }
-        } catch (InsufficientMoneyException $e) {
+        } catch (InsufficientMoneyException|TransactionFailedException $e) {
             return ["wallets/transfer.html.twig", ["error" => $e->getMessage()]];
         }
 

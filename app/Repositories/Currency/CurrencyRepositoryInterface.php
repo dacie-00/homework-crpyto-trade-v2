@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Repositories\Currency;
 
 use App\Models\ExtendedCurrency;
+use App\Repositories\Currency\Exceptions\CurrencyNotFoundException;
 
 interface CurrencyRepositoryInterface
 {
@@ -15,6 +16,7 @@ interface CurrencyRepositoryInterface
     /**
      * @param string[] $currencyCodes
      * @return ExtendedCurrency[]
+     *@throws CurrencyNotFoundException
      */
     public function search(array $currencyCodes): array;
 }

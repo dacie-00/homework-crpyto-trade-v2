@@ -5,6 +5,7 @@ namespace App\Repositories\Currency;
 
 use App\Exceptions\FailedHttpRequestException;
 use App\Models\ExtendedCurrency;
+use App\Repositories\Currency\Exceptions\CurrencyNotFoundException;
 use Brick\Math\BigDecimal;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
@@ -159,6 +160,11 @@ class CoinGeckoApiCurrencyRepository implements CurrencyRepositoryInterface
             512,
             JSON_THROW_ON_ERROR
         );
+        if (empty($currencyResponse)) {
+            $codes = implode(",", $currencyCodes);
+            throw new CurrencyNotFoundException("No data found for currency(-ies) $codes.\n");
+        };
+
         $currencies = [];
         foreach ($currencyCodes as $currencyCode) {
             foreach ($currencyResponse as $currency) {
