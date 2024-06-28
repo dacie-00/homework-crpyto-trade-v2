@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 use App\Controllers\CurrencyController;
-use App\Controllers\NotFoundController;
+use App\Controllers\ErrorController;
 use App\Controllers\TransactionController;
 use App\Controllers\WalletController;
 use App\Repositories\UserRepository;
@@ -47,7 +47,7 @@ $databaseInitializer->initializeWalletsTable($userRepository);
 
 $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) {
     $r->addRoute('GET', '/', [CurrencyController::class, "index"]);
-    $r->addRoute('GET', '/404', [NotFoundController::class, "index"]);
+    $r->addRoute('GET', '/404', [ErrorController::class, "index"]);
     $r->addRoute('GET', '/currencies', [CurrencyController::class, "index"]);
     $r->addRoute('GET', '/currencies/{ticker}', [CurrencyController::class, "show"]);
     $r->addRoute('GET', '/transactions', [TransactionController::class, "index"]);
