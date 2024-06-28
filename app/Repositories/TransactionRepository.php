@@ -10,7 +10,6 @@ use Brick\Math\RoundingMode;
 use Brick\Money\Currency;
 use DateTimeInterface;
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Exception;
 
 class TransactionRepository
 {

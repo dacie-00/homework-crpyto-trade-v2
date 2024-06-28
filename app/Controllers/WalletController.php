@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Repositories\Currency\CoinMarketCapApiCurrencyRepository;
-use App\Repositories\Currency\Exceptions\CurrencyNotFoundException;
 use App\Repositories\TransactionRepository;
 use App\Repositories\Wallet\Exceptions\WalletNotFoundException;
 use App\Repositories\Wallet\WalletRepository;

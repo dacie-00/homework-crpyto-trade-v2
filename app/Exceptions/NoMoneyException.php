@@ -3,7 +3,9 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
-class NoMoneyException extends \OutOfBoundsException
+use OutOfBoundsException;
+
+class NoMoneyException extends OutOfBoundsException
 {
 
 }

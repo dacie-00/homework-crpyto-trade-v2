@@ -113,7 +113,7 @@ class CoinMarketCapApiCurrencyRepository implements CurrencyRepositoryInterface
         if (!get_object_vars($response->data)) {
             $codes = implode(",", $currencyCodes);
             throw new CurrencyNotFoundException("No data found for currency(-ies) $codes.\n");
-        };
+        }
         $currencies = [];
         foreach ($currencyCodes as $currencyCode) {
             if (isset($response->data->$currencyCode)) {

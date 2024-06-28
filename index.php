@@ -1,23 +1,15 @@
 <?php
 declare(strict_types=1);
 
-use App\Ask;
 use App\Controllers\CurrencyController;
 use App\Controllers\TransactionController;
 use App\Controllers\WalletController;
-use App\Display;
-use App\Exceptions\NoMoneyException;
 use App\Models\User;
 use App\Repositories\Currency\CoinMarketCapApiCurrencyRepository;
 use App\Repositories\TransactionRepository;
 use App\Repositories\UserRepository;
 use App\Repositories\Wallet\WalletRepository;
-use App\Services\BuyService;
 use App\Services\DatabaseInitializationService;
-use App\Services\SellService;
-use App\Services\WalletService;
-use Brick\Math\BigDecimal;
-use Brick\Math\RoundingMode;
 use Brick\Money\CurrencyConverter;
 use Brick\Money\ExchangeRateProvider\BaseCurrencyProvider;
 use Brick\Money\ExchangeRateProvider\ConfigurableProvider;
@@ -54,7 +46,6 @@ $cryptoApi = new CoinMarketCapApiCurrencyRepository($_ENV["COIN_MARKET_CAP_API_K
 
 $consoleInput = new ArrayInput([]);
 $consoleOutput = new ConsoleOutput();
-$ask = new Ask($consoleInput, $consoleOutput);
 
 $provider = new ConfigurableProvider();
 $baseProvider = new BaseCurrencyProvider($provider, "EUR");

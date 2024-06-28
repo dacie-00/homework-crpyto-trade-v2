@@ -3,9 +3,7 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
-use App\Exceptions\FailedHttpRequestException;
 use App\Repositories\Currency\CoinMarketCapApiCurrencyRepository;
-use App\Repositories\Currency\CurrencyRepositoryInterface;
 use App\Repositories\Currency\Exceptions\CurrencyNotFoundException;
 
 class CurrencyController
@@ -37,7 +35,7 @@ class CurrencyController
                 "exchangeRate" => (string)$currency->exchangeRate(),
             ];
         }
-        return ["currencies/index.html.twig", ["query" => $_GET["tickers"], "currencies" => $currencyData]];
+        return ["currencies/index.html.twig", ["currencies" => $currencyData]];
     }
 
     public function show(string $ticker): array

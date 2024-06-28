@@ -131,12 +131,12 @@ class WalletRepository
             ->fetchOne();
         return Money::of(
             $amount ?: 0,
-                new Currency(
-                    $ticker,
-                    0,
-                    "",
-                    9
-                )
+            new Currency(
+                $ticker,
+                0,
+                "",
+                9
+            )
         );
     }
 

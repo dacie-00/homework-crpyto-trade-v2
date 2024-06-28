@@ -16,7 +16,7 @@ interface CurrencyRepositoryInterface
     /**
      * @param string[] $currencyCodes
      * @return ExtendedCurrency[]
-     *@throws CurrencyNotFoundException
+     * @throws CurrencyNotFoundException
      */
     public function search(array $currencyCodes): array;
 }

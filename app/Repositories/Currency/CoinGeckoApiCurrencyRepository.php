@@ -163,7 +163,7 @@ class CoinGeckoApiCurrencyRepository implements CurrencyRepositoryInterface
         if (empty($currencyResponse)) {
             $codes = implode(",", $currencyCodes);
             throw new CurrencyNotFoundException("No data found for currency(-ies) $codes.\n");
-        };
+        }
 
         $currencies = [];
         foreach ($currencyCodes as $currencyCode) {

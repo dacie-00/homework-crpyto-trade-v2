@@ -10,6 +10,9 @@ use Doctrine\DBAL\DriverManager;
 
 class TransactionController
 {
+    private TransactionRepository $transactionRepository;
+    private UserRepository $userRepository;
+
     public function __construct()
     {
         $connectionParams = [
@@ -22,7 +25,7 @@ class TransactionController
         $this->userRepository = new userRepository($connection);
     }
 
-    public function index()
+    public function index(): array
     {
         $transactions = $this->transactionRepository->getAll();
         $transactionData = [];
@@ -38,10 +41,5 @@ class TransactionController
             ];
         }
         return ["transactions/index.html.twig", ["transactions" => $transactionData]];
-    }
-
-    public function store(Transaction $transaction)
-    {
-
     }
 }

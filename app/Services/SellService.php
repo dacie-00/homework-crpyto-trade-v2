@@ -48,9 +48,6 @@ class SellService
         } catch (CurrencyNotFoundException $e) {
             throw new TransactionFailedException("Unknown currency - $ticker");
         }
-//        if (empty($extendedCurrencies)) {
-//            echo "currency not found"; // TODO: throw exception within repository class
-//        }
         $extendedCurrency = $extendedCurrencies[0];
 
         $moneyToSpend = Money::of($amount, $extendedCurrency->definition());
