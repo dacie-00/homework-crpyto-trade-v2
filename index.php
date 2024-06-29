@@ -46,13 +46,10 @@ $databaseInitializer->initializeWalletsTable($userRepository);
 //$walletInfo = $walletService->getUserWallet($user);
 
 $dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) {
-    $r->addRoute('GET', '/', [CurrencyController::class, "index"]);
-    $r->addRoute('GET', '/404', [ErrorController::class, "index"]);
-    $r->addRoute('GET', '/currencies', [CurrencyController::class, "index"]);
-    $r->addRoute('GET', '/currencies/{ticker}', [CurrencyController::class, "show"]);
-    $r->addRoute('GET', '/transactions', [TransactionController::class, "index"]);
-    $r->addRoute('GET', '/wallets/{id}', [WalletController::class, "show"]);
-    $r->addRoute('POST', '/wallets/{id}/transfer', [WalletController::class, "transfer"]);
+    $routes = include __DIR__ . "/routes.php";
+    foreach ($routes as $route) {
+        $r->addRoute($route[0], $route[1], $route[2]);
+    }
 });
 
 $httpMethod = $_SERVER['REQUEST_METHOD'];
