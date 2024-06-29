@@ -16,7 +16,7 @@ require_once "vendor/autoload.php";
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
 
-$loader = new FilesystemLoader("app/Templates");
+$loader = new FilesystemLoader("templates");
 $twig = new Environment($loader);
 
 $connectionParams = [
