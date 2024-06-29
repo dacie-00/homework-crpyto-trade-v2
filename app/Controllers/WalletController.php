@@ -17,6 +17,7 @@ use App\Services\Transfers\Exceptions\InvalidTransferAmountException;
 use App\Services\Transfers\Exceptions\InvalidTransferCurrencyTickerException;
 use App\Services\Transfers\Exceptions\InvalidTransferTypeException;
 use App\Services\Transfers\TransferRequestValidationService;
+use App\TemplateResponse;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
 
@@ -40,12 +41,12 @@ class WalletController
         $this->currencyRepository = new CoinMarketCapApiCurrencyRepository($_ENV["COIN_MARKET_CAP_API_KEY"]);
     }
 
-    public function show(string $id): array
+    public function show(string $id): TemplateResponse
     {
         try {
             $wallet = $this->walletRepository->getWalletById($id);
         } catch (WalletNotFoundException $e) {
-            return ["wallets/show", ["wallet" => []]];
+            return new TemplateResponse("wallets/show", ["wallet" => []]);
         }
 
         // This entire block until wallet data is for getting the percentage change in profit
@@ -81,15 +82,15 @@ class WalletController
                 "profit" => $percentages[$index],
             ];
         }
-        return ["wallets/show", ["wallet" => $walletData]];
+        return new TemplateResponse("wallets/show", ["wallet" => $walletData]);
     }
 
-    public function transfer(string $walletId): array
+    public function transfer(string $walletId): TemplateResponse
     {
         try {
             (new TransferRequestValidationService())->validate($_POST);
         } catch (InvalidTransferTypeException|InvalidTransferAmountException|InvalidTransferCurrencyTickerException $e) {
-            return ["wallets/transfer", ["error" => $e->getMessage()]];
+            return new TemplateResponse("wallets/transfer", ["error" => $e->getMessage()]);
         }
         try {
             if ($_POST["type"] === "buy") {
@@ -120,16 +121,17 @@ class WalletController
                     );
             }
         } catch (InsufficientMoneyException|TransactionFailedException $e) {
-            return ["wallets/transfer", ["error" => $e->getMessage()]];
+            return new TemplateResponse("wallets/transfer", ["error" => $e->getMessage()]);
         }
 
-        return ["wallets/transfer",
+        return new TemplateResponse(
+            "wallets/transfer",
             [
                 "id" => $walletId,
                 "type" => $_POST["type"],
                 "amount" => $_POST["amount"],
                 "currency" => $_POST["currency"],
-            ],
-        ];
+            ]
+        );
     }
 }

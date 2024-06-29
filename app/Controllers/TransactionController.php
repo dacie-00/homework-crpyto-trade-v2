@@ -5,6 +5,7 @@ namespace App\Controllers;
 
 use App\Repositories\TransactionRepository;
 use App\Repositories\UserRepository;
+use App\TemplateResponse;
 use Doctrine\DBAL\DriverManager;
 
 class TransactionController
@@ -24,13 +25,13 @@ class TransactionController
         $this->userRepository = new userRepository($connection);
     }
 
-    public function index(): array
+    public function index(): TemplateResponse
     {
         if (!isset($_GET["user"])) {
             header("Location: /404");
             die;
         }
         $transactions = $this->transactionRepository->getByUser($this->userRepository->findByUsername($_GET["user"]));
-        return ["transactions/index", ["transactions" => $transactions]];
+        return new TemplateResponse("transactions/index", ["transactions" => $transactions]);
     }
 }

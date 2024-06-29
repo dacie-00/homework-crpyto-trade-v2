@@ -3,11 +3,13 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\TemplateResponse;
+
 class ErrorController
 {
-    public function index()
+    public function index(): TemplateResponse
     {
-        return ["404", []];
+        return new TemplateResponse("404", []);
     }
 
 }

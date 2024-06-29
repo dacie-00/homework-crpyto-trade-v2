@@ -5,6 +5,7 @@ namespace App\Controllers;
 
 use App\Repositories\Currency\CoinMarketCapApiCurrencyRepository;
 use App\Repositories\Currency\Exceptions\CurrencyNotFoundException;
+use App\TemplateResponse;
 
 class CurrencyController
 {
@@ -15,7 +16,7 @@ class CurrencyController
         $this->currencyRepository = new CoinMarketCapApiCurrencyRepository($_ENV["COIN_MARKET_CAP_API_KEY"]);
     }
 
-    public function index(): array
+    public function index(): TemplateResponse
     {
         if (isset($_GET["tickers"])) {
             $tickers = explode(",", $_GET["tickers"]);
@@ -23,15 +24,15 @@ class CurrencyController
             try {
                 $currencies = $this->currencyRepository->search($tickers);
             } catch (CurrencyNotFoundException $e) {
-                return ["currencies/index", ["query" => $_GET["tickers"]]];
+                return new TemplateResponse("currencies/index", ["query" => $_GET["tickers"]]);
             }
         } else {
             $currencies = $this->currencyRepository->getTop();
         }
-        return ["currencies/index", ["currencies" => $currencies]];
+        return new TemplateResponse("currencies/index", ["currencies" => $currencies]);
     }
 
-    public function show(string $ticker): array
+    public function show(string $ticker): TemplateResponse
     {
         $codes = explode(",", $ticker);
         $codes = array_map(static fn($value) => trim($value), $codes);
@@ -41,6 +42,6 @@ class CurrencyController
             return ["currencies/show", ["query" => $ticker]];
         }
 
-        return ["currencies/show", ["query" => $ticker, "currency" => $currencies]];
+        return new TemplateResponse("currencies/show", ["query" => $ticker, "currency" => $currencies]);
     }
 }
