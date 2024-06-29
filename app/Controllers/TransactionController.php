@@ -31,6 +31,6 @@ class TransactionController
             die;
         }
         $transactions = $this->transactionRepository->getByUser($this->userRepository->findByUsername($_GET["user"]));
-        return ["transactions/index.html.twig", ["transactions" => $transactions]];
+        return ["transactions/index", ["transactions" => $transactions]];
     }
 }

@@ -7,7 +7,7 @@ class ErrorController
 {
     public function index()
     {
-        return ["404.html.twig", []];
+        return ["404", []];
     }
 
 }

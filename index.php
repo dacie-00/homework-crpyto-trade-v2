@@ -70,6 +70,6 @@ switch ($routeInfo[0]) {
         $vars = $routeInfo[2];
         [$class, $method] = $handle;
         [$template, $data] = (new $class)->$method(...array_values($vars));
-        echo $twig->render($template, $data);
+        echo $twig->render($template . ".html.twig", $data);
         break;
 }

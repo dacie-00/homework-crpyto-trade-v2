@@ -45,7 +45,7 @@ class WalletController
         try {
             $wallet = $this->walletRepository->getWalletById($id);
         } catch (WalletNotFoundException $e) {
-            return ["wallets/show.html.twig", ["wallet" => []]];
+            return ["wallets/show", ["wallet" => []]];
         }
 
         // This entire block until wallet data is for getting the percentage change in profit
@@ -81,7 +81,7 @@ class WalletController
                 "profit" => $percentages[$index],
             ];
         }
-        return ["wallets/show.html.twig", ["wallet" => $walletData]];
+        return ["wallets/show", ["wallet" => $walletData]];
     }
 
     public function transfer(string $walletId): array
@@ -89,7 +89,7 @@ class WalletController
         try {
             (new TransferRequestValidationService())->validate($_POST);
         } catch (InvalidTransferTypeException|InvalidTransferAmountException|InvalidTransferCurrencyTickerException $e) {
-            return ["wallets/transfer.html.twig", ["error" => $e->getMessage()]];
+            return ["wallets/transfer", ["error" => $e->getMessage()]];
         }
         try {
             if ($_POST["type"] === "buy") {
@@ -120,10 +120,10 @@ class WalletController
                     );
             }
         } catch (InsufficientMoneyException|TransactionFailedException $e) {
-            return ["wallets/transfer.html.twig", ["error" => $e->getMessage()]];
+            return ["wallets/transfer", ["error" => $e->getMessage()]];
         }
 
-        return ["wallets/transfer.html.twig",
+        return ["wallets/transfer",
             [
                 "id" => $walletId,
                 "type" => $_POST["type"],

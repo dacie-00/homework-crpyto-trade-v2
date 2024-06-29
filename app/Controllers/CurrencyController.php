@@ -23,12 +23,12 @@ class CurrencyController
             try {
                 $currencies = $this->currencyRepository->search($tickers);
             } catch (CurrencyNotFoundException $e) {
-                return ["currencies/index.html.twig", ["query" => $_GET["tickers"]]];
+                return ["currencies/index", ["query" => $_GET["tickers"]]];
             }
         } else {
             $currencies = $this->currencyRepository->getTop();
         }
-        return ["currencies/index.html.twig", ["currencies" => $currencies]];
+        return ["currencies/index", ["currencies" => $currencies]];
     }
 
     public function show(string $ticker): array
@@ -38,9 +38,9 @@ class CurrencyController
         try {
             $currencies = $this->currencyRepository->search($codes);
         } catch (CurrencyNotFoundException $e) {
-            return ["currencies/show.html.twig", ["query" => $ticker]];
+            return ["currencies/show", ["query" => $ticker]];
         }
 
-        return ["currencies/show.html.twig", ["query" => $ticker, "currency" => $currencies]];
+        return ["currencies/show", ["query" => $ticker, "currency" => $currencies]];
     }
 }
