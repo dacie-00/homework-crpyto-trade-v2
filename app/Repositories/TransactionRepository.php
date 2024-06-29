@@ -3,13 +3,13 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
+use App\Models\Currency;
+use App\Models\Money;
 use App\Models\Transaction;
 use App\Models\User;
-use Brick\Math\BigDecimal;
-use Brick\Math\RoundingMode;
-use Brick\Money\Currency;
 use DateTimeInterface;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Driver\PDO\Exception;
 
 class TransactionRepository
 {
@@ -29,7 +29,7 @@ class TransactionRepository
             ->setParameters(
                 [
                     "user_id" => $userId,
-                    "received_ticker" => $currency->getCurrencyCode(),
+                    "received_ticker" => $currency->ticker(),
                 ]
             )
             ->executeQuery()
@@ -55,11 +55,11 @@ class TransactionRepository
             ->setParameters([
                 "transaction_id" => $transaction->id(),
                 "user_id" => $transaction->userId(),
-                "sent_amount" => $sentMoney->getAmount(),
-                "sent_ticker" => $sentMoney->getCurrency()->getCurrencyCode(),
+                "sent_amount" => $sentMoney->amount(),
+                "sent_ticker" => $sentMoney->ticker(),
                 "type" => $transaction->type(),
-                "received_amount" => $receivedMoney->getAmount(),
-                "received_ticker" => $receivedMoney->getCurrency()->getCurrencyCode(),
+                "received_amount" => $receivedMoney->amount(),
+                "received_ticker" => $receivedMoney->ticker(),
                 "created_at" => $transaction
                     ->createdAt()
                     ->timezone("UTC")
@@ -68,23 +68,22 @@ class TransactionRepository
             ->executeStatement();
     }
 
-    public function getAveragePrice(string $userId, Currency $currency, BigDecimal $until): ?BigDecimal
+    public function getAveragePrice(string $userId, Money $money): float
     {
-        $amounts = $this->getByUserAndCurrency($userId, $currency);
+        $amounts = $this->getByUserAndCurrency($userId, $money->currency());
         $amounts = array_reverse($amounts);
 
-        $spent = BigDecimal::zero();
-        $received = BigDecimal::zero();
-
+        $received = 0;
+        $spent = 0;
         foreach ($amounts as $amount) {
-            $received = $received->plus($amount["received_amount"]);
-            $spent = $spent->plus($amount["sent_amount"]);
+            $received += $amount["received_amount"];
+            $spent += $amount["sent_amount"];
 
-            if ($received->isGreaterThanOrEqualTo($until)) {
-                return $spent->dividedBy($received, 9, RoundingMode::UP);
+            if ($received >= $money->amount()) { // TODO: account for floating point imprecision here
+                return $spent / $received;
             }
         }
-        return null;
+        throw new Exception(""); // TODO: make exception here
     }
 
     /**
@@ -108,7 +107,7 @@ class TransactionRepository
     /**
      * @return Transaction[]
      */
-    public function getAll(): array
+    public function getAll(): array // TODO: remove if unused
     {
         $transactions = [];
         $transactionData = $this->connection->createQueryBuilder()

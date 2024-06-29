@@ -5,7 +5,6 @@ namespace App\Services;
 
 use App\Models\User;
 use App\Repositories\UserRepository;
-use Brick\Math\BigDecimal;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Schema\Table;
@@ -80,7 +79,7 @@ class DatabaseInitializationService
                     "wallet_id" => $user->username() . "Wallet",
                     "user_id" => $user->id(),
                     "ticker" => "EUR",
-                    "amount" => BigDecimal::of(1000),
+                    "amount" => 1000,
                 ]);
             }
         }

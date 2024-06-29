@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Models\Currency;
+use App\Models\Money;
 use App\Models\Transaction;
 use App\Repositories\Currency\CurrencyRepositoryInterface;
 use App\Repositories\Currency\Exceptions\CurrencyNotFoundException;
@@ -10,9 +12,6 @@ use App\Repositories\TransactionRepository;
 use App\Repositories\Wallet\WalletRepository;
 use App\Services\Exceptions\InsufficientMoneyException;
 use App\Services\Exceptions\TransactionFailedException;
-use Brick\Math\BigDecimal;
-use Brick\Math\RoundingMode;
-use Brick\Money\Money;
 use Doctrine\DBAL\Connection;
 
 class SellService
@@ -36,29 +35,26 @@ class SellService
 
     public function execute(
         string $walletId,
-        float $amount,
-        string $ticker
+        Money $moneyToSpend
     ): Transaction {
-        if ($this->walletRepository->getMoney($walletId, $ticker)->isLessThan(BigDecimal::of($amount))) {
-            throw new InsufficientMoneyException("Not enough $ticker in wallet");
+        $moneyInWallet = $this->walletRepository->getMoney($walletId, $moneyToSpend);
+        if ($moneyInWallet->amount() < $moneyToSpend->amount()) {
+            throw new InsufficientMoneyException(
+                "Not enough {$moneyToSpend->ticker()} in wallet ({$moneyInWallet->amount()}/{$moneyToSpend->amount()})"
+            );
         }
 
         try {
-            $extendedCurrencies = $this->currencyRepository->search([$ticker]);
+            $newestCurrency = $this->currencyRepository->search([$moneyToSpend->ticker()]);
         } catch (CurrencyNotFoundException $e) {
-            throw new TransactionFailedException("Unknown currency - $ticker");
+            throw new TransactionFailedException("Unknown currency - {$moneyToSpend->ticker()}");
         }
-        $extendedCurrency = $extendedCurrencies[0];
+        $newestCurrency = $newestCurrency[0];
 
-        $moneyToSpend = Money::of($amount, $extendedCurrency->definition());
-        $money = BigDecimal::of($amount)->multipliedBy(
-            BigDecimal::one()->dividedBy(
-                $extendedCurrency->exchangeRate(),
-                9,
-                RoundingMode::DOWN
-            )
+        $moneyToGet = new Money(
+            $moneyToSpend->amount() * $newestCurrency->exchangeRate(),
+            new Currency("EUR")
         );
-        $moneyToGet = Money::of($money, "EUR", null, RoundingMode::DOWN);
 
         $this->connection->beginTransaction();
         $this->walletRepository->addToWallet($walletId, $moneyToGet);

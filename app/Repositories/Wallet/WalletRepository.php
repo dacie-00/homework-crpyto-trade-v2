@@ -3,11 +3,10 @@ declare(strict_types=1);
 
 namespace App\Repositories\Wallet;
 
+use App\Models\Currency;
+use App\Models\Money;
 use App\Models\Wallet;
 use App\Repositories\Wallet\Exceptions\WalletNotFoundException;
-use Brick\Math\BigDecimal;
-use Brick\Money\Currency;
-use Brick\Money\Money;
 use Doctrine\DBAL\Connection;
 
 class WalletRepository
@@ -19,7 +18,7 @@ class WalletRepository
         $this->connection = $connection;
     }
 
-    public function insert(string $walletId, string $userId, string $ticker, BigDecimal $amount): void
+    public function insert(string $walletId, string $userId, Money $money): void
     {
         $this->connection->createQueryBuilder()
             ->insert("wallet")
@@ -35,14 +34,14 @@ class WalletRepository
                 [
                     "wallet_id" => $walletId,
                     "user_id" => $userId,
-                    "ticker" => $ticker,
-                    "amount" => $amount,
+                    "ticker" => $money->ticker(),
+                    "amount" => $money->amount(),
                 ]
             )
             ->executeQuery();
     }
 
-    public function delete(string $walletId, string $ticker): void
+    public function delete(string $walletId, Money $money): void
     {
         $this->connection->createQueryBuilder()
             ->delete("wallet")
@@ -50,13 +49,13 @@ class WalletRepository
             ->setParameters(
                 [
                     "wallet_id" => $walletId,
-                    "ticker" => $ticker,
+                    "ticker" => $money->ticker(),
                 ]
             )
             ->executeQuery();
     }
 
-    public function update(string $walletId, string $ticker, BigDecimal $amount): void
+    public function update(string $walletId, Money $money): void
     {
         $this->connection->createQueryBuilder()
             ->update("wallet")
@@ -65,14 +64,14 @@ class WalletRepository
             ->setParameters(
                 [
                     "wallet_id" => $walletId,
-                    "ticker" => $ticker,
-                    "amount" => $amount,
+                    "ticker" => $money->ticker(),
+                    "amount" => $money->amount(),
                 ]
             )
             ->executeQuery();
     }
 
-    public function exists(string $walletId, string $ticker): bool
+    public function exists(string $walletId, Money $money): bool
     {
         return $this->connection->createQueryBuilder()
                 ->select("wallet_id")
@@ -81,7 +80,7 @@ class WalletRepository
                 ->setParameters(
                     [
                         "wallet_id" => $walletId,
-                        "ticker" => $ticker,
+                        "ticker" => $money->ticker(),
                     ]
                 )
                 ->executeQuery()
@@ -103,19 +102,17 @@ class WalletRepository
         $content = [];
         $userId = $rows[0]["user_id"];
         foreach ($rows as $row) {
-            $content[] = Money::of($row["amount"],
+            $content[] = new Money(
+                (float)$row["amount"],
                 new Currency(
                     $row["ticker"],
-                    0,
-                    "",
-                    9
                 )
             );
         }
         return new Wallet($userId, $walletId, $content);
     }
 
-    public function getMoney(string $walletId, string $ticker): Money
+    public function getMoney(string $walletId, Money $money): Money
     {
         $amount = $this->connection->createQueryBuilder()
             ->from("wallet")
@@ -124,18 +121,15 @@ class WalletRepository
             ->setParameters(
                 [
                     "wallet_id" => $walletId,
-                    "ticker" => $ticker,
+                    "ticker" => $money->ticker(),
                 ]
             )
             ->executeQuery()
             ->fetchOne();
-        return Money::of(
-            $amount ?: 0,
+        return new Money(
+            (float)$amount ?: 0,
             new Currency(
-                $ticker,
-                0,
-                "",
-                9
+                $money->ticker(),
             )
         );
     }
@@ -167,30 +161,28 @@ class WalletRepository
 
     public function addToWallet(string $walletId, Money $money): void
     {
-        $ticker = $money->getCurrency()->getCurrencyCode();
-        if (!$this->exists($walletId, $ticker)) {
-            $this->insert($walletId, $this->getOwner($walletId), $ticker, $money->getAmount());
+        if (!$this->exists($walletId, $money)) {
+            $this->insert($walletId, $this->getOwner($walletId), $money);
             return;
         }
-        $initialMoney = $this->getMoney($walletId, $ticker);
+        $moneyInWallet = $this->getMoney($walletId, $money);
 
-        $newAmount = $initialMoney->getAmount()->plus($money->getAmount());
-        $this->update($walletId, $ticker, $newAmount);
+        $moneyInWallet->setAmount($money->amount() + $money->amount());
+        $this->update($walletId, $money);
     }
 
     public function subtractFromWallet(string $walletId, Money $money): void
     {
-        $ticker = $money->getCurrency()->getCurrencyCode();
-        if (!$this->exists($walletId, $ticker)) {
+        if (!$this->exists($walletId, $money)) {
             return;
         }
-        $initialMoney = $this->getMoney($walletId, $ticker);
+        $moneyInWallet = $this->getMoney($walletId, $money);
 
-        $newAmount = $initialMoney->getAmount()->minus($money->getAmount());
-        if ($newAmount->isNegativeOrZero()) {
-            $this->delete($walletId, $ticker);
+        $moneyInWallet->setAmount($money->amount() - $money->amount());
+        if ($money->amount() <= 0) {
+            $this->delete($walletId, $money);
             return;
         }
-        $this->update($walletId, $ticker, $newAmount);
+        $this->update($walletId, $money);
     }
 }

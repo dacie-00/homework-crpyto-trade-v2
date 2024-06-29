@@ -4,9 +4,8 @@ declare(strict_types=1);
 namespace App\Repositories\Currency;
 
 use App\Exceptions\FailedHttpRequestException;
-use App\Models\ExtendedCurrency;
+use App\Models\Currency;
 use App\Repositories\Currency\Exceptions\CurrencyNotFoundException;
-use Brick\Math\BigDecimal;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 
@@ -24,7 +23,7 @@ class CoinMarketCapApiCurrencyRepository implements CurrencyRepositoryInterface
     }
 
     /**
-     * @return ExtendedCurrency[]
+     * @return Currency[]
      */
     public function getTop(int $page = 1, int $currenciesPerPage = 10): array
     {
@@ -64,16 +63,16 @@ class CoinMarketCapApiCurrencyRepository implements CurrencyRepositoryInterface
 
         $currencies = [];
         foreach ($currencyResponse->data as $currency) {
-            $currencies[] = new ExtendedCurrency(
+            $currencies[] = new Currency(
                 $currency->symbol,
-                BigDecimal::of(1 / $currency->quote->EUR->price)
+                1 / $currency->quote->EUR->price
             );
         }
         return $currencies;
     }
 
     /**
-     * @return ExtendedCurrency[]
+     * @return Currency[]
      */
     public function search(array $currencyCodes): array
     {
@@ -121,9 +120,9 @@ class CoinMarketCapApiCurrencyRepository implements CurrencyRepositoryInterface
                 if (!$currency->is_active) {
                     continue;
                 }
-                $currencies[] = new ExtendedCurrency(
+                $currencies[] = new Currency(
                     $currency->symbol,
-                    BigDecimal::of(1 / $currency->quote->EUR->price)
+                    1 / $currency->quote->EUR->price
                 );
             }
         }

@@ -4,9 +4,8 @@ declare(strict_types=1);
 namespace App\Repositories\Currency;
 
 use App\Exceptions\FailedHttpRequestException;
-use App\Models\ExtendedCurrency;
+use App\Models\Currency;
 use App\Repositories\Currency\Exceptions\CurrencyNotFoundException;
-use Brick\Math\BigDecimal;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 
@@ -24,7 +23,7 @@ class CoinGeckoApiCurrencyRepository implements CurrencyRepositoryInterface
     }
 
     /**
-     * @return ExtendedCurrency[]
+     * @return Currency[]
      */
     public function getTop(int $page = 1, int $currenciesPerPage = 10): array
     {
@@ -65,9 +64,9 @@ class CoinGeckoApiCurrencyRepository implements CurrencyRepositoryInterface
 
         $currencies = [];
         foreach ($currencyResponse as $currency) {
-            $currencies[] = new ExtendedCurrency(
+            $currencies[] = new Currency(
                 $currency->symbol,
-                BigDecimal::of(1 / $currency->current_price)
+                1 / $currency->current_price
             );
         }
         return $currencies;
@@ -115,7 +114,7 @@ class CoinGeckoApiCurrencyRepository implements CurrencyRepositoryInterface
     }
 
     /**
-     * @return ExtendedCurrency[]
+     * @return Currency[]
      */
     public function search(array $currencyCodes): array
     {
@@ -169,9 +168,9 @@ class CoinGeckoApiCurrencyRepository implements CurrencyRepositoryInterface
         foreach ($currencyCodes as $currencyCode) {
             foreach ($currencyResponse as $currency) {
                 if (strtoupper($currency->symbol) === $currencyCode) {
-                    $currencies[] = new ExtendedCurrency(
+                    $currencies[] = new Currency(
                         strtoupper($currency->symbol),
-                        BigDecimal::of(1 / $currency->current_price)
+                        1 / $currency->current_price
                     );
                 }
             }

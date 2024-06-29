@@ -31,18 +31,6 @@ class TransactionController
             die;
         }
         $transactions = $this->transactionRepository->getByUser($this->userRepository->findByUsername($_GET["user"]));
-        $transactionData = [];
-        foreach ($transactions as $transaction) {
-            $transactionData[] = [
-                "username" => $this->userRepository->findById($transaction->userId())->username(),
-                "sentAmount" => $transaction->sentMoney()->getAmount(),
-                "sentTicker" => $transaction->sentMoney()->getCurrency(),
-                "type" => $transaction->type(),
-                "receivedAmount" => $transaction->receivedMoney()->getAmount(),
-                "receivedTicker" => $transaction->receivedMoney()->getCurrency(),
-                "date" => $transaction->createdAt()->format('Y-m-d H:i:s'),
-            ];
-        }
-        return ["transactions/index.html.twig", ["transactions" => $transactionData]];
+        return ["transactions/index.html.twig", ["transactions" => $transactions]];
     }
 }

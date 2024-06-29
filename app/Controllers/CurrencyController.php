@@ -28,14 +28,7 @@ class CurrencyController
         } else {
             $currencies = $this->currencyRepository->getTop();
         }
-        $currencyData = [];
-        foreach ($currencies as $currency) {
-            $currencyData[] = [
-                "ticker" => $currency->definition()->getCurrencyCode(),
-                "exchangeRate" => (string)$currency->exchangeRate(),
-            ];
-        }
-        return ["currencies/index.html.twig", ["currencies" => $currencyData]];
+        return ["currencies/index.html.twig", ["currencies" => $currencies]];
     }
 
     public function show(string $ticker): array
@@ -48,13 +41,6 @@ class CurrencyController
             return ["currencies/show.html.twig", ["query" => $ticker]];
         }
 
-        $currencyData = [];
-        if (!empty($currencies)) {
-            $currencyData = [
-                "ticker" => $currencies[0]->definition()->getCurrencyCode(),
-                "exchangeRate" => (string)$currencies[0]->exchangeRate(),
-            ];
-        }
-        return ["currencies/show.html.twig", ["query" => $ticker, "currency" => $currencyData]];
+        return ["currencies/show.html.twig", ["query" => $ticker, "currency" => $currencies]];
     }
 }

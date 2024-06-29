@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Models\Currency;
+use App\Models\Money;
 use App\Repositories\Currency\CoinMarketCapApiCurrencyRepository;
 use App\Repositories\TransactionRepository;
 use App\Repositories\Wallet\Exceptions\WalletNotFoundException;
@@ -15,9 +17,6 @@ use App\Services\Transfers\Exceptions\InvalidTransferAmountException;
 use App\Services\Transfers\Exceptions\InvalidTransferCurrencyTickerException;
 use App\Services\Transfers\Exceptions\InvalidTransferTypeException;
 use App\Services\Transfers\TransferRequestValidationService;
-use App\Services\WalletService;
-use Brick\Math\BigDecimal;
-use Brick\Math\RoundingMode;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
 
@@ -50,38 +49,35 @@ class WalletController
         }
 
         // This entire block until wallet data is for getting the percentage change in profit
-        $percentages = [];
-        $currencyCodes = array_map(fn($money) => $money->getCurrency()->getCurrencyCode(), $wallet->contents());
-        $currencyData = $this->currencyRepository->search($currencyCodes);
-        $marketCurrencies = [];
-        foreach ($currencyData as $currency) {
-            $marketCurrencies[$currency->definition()->getCurrencyCode()] = $currency;
-        }
-
+        $tickers = [];
         foreach ($wallet->contents() as $money) {
-            if ($money->getCurrency()->getCurrencyCode() === "EUR") {
+            if ($money->ticker() !== "EUR") {
+                $tickers[] = $money->ticker();
+            }
+        }
+        $marketCurrencies = [];
+        if (!empty($tickers)) {
+            $currencyData = $this->currencyRepository->search($tickers);
+            foreach ($currencyData as $currency) {
+                $marketCurrencies[$currency->ticker()] = $currency;
+            }
+        }
+        $percentages = [];
+        foreach ($wallet->contents() as $money) {
+            if ($money->ticker() === "EUR") {
                 $percentages[] = "Not available";
                 continue;
             }
-            $average = $this->transactionRepository->getAveragePrice($wallet->userId(), $money->getCurrency(), $money->getAmount());
-            $marketRate = BigDecimal::one()
-                ->dividedBy(
-                    $marketCurrencies[$money->getCurrency()->getCurrencyCode()]->exchangeRate(),
-                    9,
-                    RoundingMode::DOWN
-                );
-            $percentages[] =
-                Bigdecimal::of(100)
-                    ->multipliedBy(
-                        $marketRate->dividedBy($average, 9, RoundingMode::DOWN)
-                            ->minus(BigDecimal::one()))->toFloat();
+            $average = $this->transactionRepository->getAveragePrice($wallet->userId(), $money);
+            $marketRate = $marketCurrencies[$money->ticker()]->exchangeRate();
+            $percentages[] = 100 * ($marketRate / $average - 1);
         }
 
-        $walletData = [];
-        foreach ($wallet->contents() as $index => $entry) {
+        $walletData = []; // TODO: add percentages as a setter for money?
+        foreach ($wallet->contents() as $index => $money) {
             $walletData[] = [
-                "ticker" => $entry->getCurrency(),
-                "amount" => $entry->getAmount(),
+                "ticker" => $money->ticker(),
+                "amount" => $money->amount(),
                 "profit" => $percentages[$index],
             ];
         }
@@ -90,7 +86,6 @@ class WalletController
 
     public function transfer(string $walletId): array
     {
-        $error = "";
         try {
             (new TransferRequestValidationService())->validate($_POST);
         } catch (InvalidTransferTypeException|InvalidTransferAmountException|InvalidTransferCurrencyTickerException $e) {
@@ -105,8 +100,10 @@ class WalletController
                     (new CoinMarketCapApiCurrencyRepository($_ENV["COIN_MARKET_CAP_API_KEY"]))))
                     ->execute(
                         $walletId,
-                        (float)$_POST["amount"],
-                        $_POST["currency"],
+                        new Money(
+                            (float)$_POST["amount"],
+                            new Currency($_POST["currency"])
+                        )
                     );
             } elseif ($_POST["type"] === "sell") {
                 (new SellService(
@@ -116,8 +113,10 @@ class WalletController
                     (new CoinMarketCapApiCurrencyRepository($_ENV["COIN_MARKET_CAP_API_KEY"]))))
                     ->execute(
                         $walletId,
-                        (float)$_POST["amount"],
-                        $_POST["currency"],
+                        new Money(
+                            (float)$_POST["amount"],
+                            new Currency($_POST["currency"])
+                        )
                     );
             }
         } catch (InsufficientMoneyException|TransactionFailedException $e) {

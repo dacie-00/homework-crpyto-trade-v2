@@ -3,8 +3,6 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Brick\Money\Currency;
-use Brick\Money\Money;
 use Carbon\Carbon;
 use Ramsey\Uuid\Uuid;
 
@@ -40,19 +38,17 @@ class Transaction
     {
         return new self(
             $transaction["user_id"],
-            Money::of($transaction["sent_amount"], new Currency(
+            new Money(
+                (float)$transaction["sent_amount"],
+                new Currency(
                     $transaction["sent_ticker"],
-                    0,
-                    "",
-                    9
                 )
             ),
             $transaction["type"],
-            Money::of($transaction["received_amount"], new Currency(
+            new Money(
+                (float)$transaction["received_amount"],
+                new Currency(
                     $transaction["received_ticker"],
-                    0,
-                    "",
-                    9
                 )
             ),
             $transaction["created_at"],

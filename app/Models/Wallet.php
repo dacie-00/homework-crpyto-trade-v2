@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Brick\Money\Money;
 use Ramsey\Uuid\Uuid;
 
 class Wallet
