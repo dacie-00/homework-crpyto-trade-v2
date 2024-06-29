@@ -1,23 +1,23 @@
-<!doctype html>
-<html lang="en">
-{{ include("head.html.twig") }}
-{{ include("header.html.twig") }}
-<body>
-<h1>
-    Currency - {{ query }}
-</h1>
-{% if not currency %}
-    <p>Currency {{ query }} not found.</p>
-{% else %}
-    <table>
-        <tr>
-            <th>Ticker</th>
-            <th>Exchange Rate</th>
-        </tr>
-        <tr>
-            <td>{{ currency.ticker }}</td>
-            <td>{{ currency.exchangeRate }}</td>
-        </tr>
-    </table>
-{% endif %}
-</body>
+{% from "macros/format_number.html.twig" import formatNumber %}
+{% extends "partials/_base.html.twig" %}
+
+{% block title %} Transaction list {% endblock %}
+{% block content %}
+    <h1>
+        Currency - {{ query }}
+    </h1>
+    {% if not currency %}
+        <p>Currency {{ query }} not found.</p>
+    {% else %}
+        <table>
+            <tr>
+                <th>Ticker</th>
+                <th>Exchange Rate</th>
+            </tr>
+            <tr>
+                <td>{{ currency.ticker }}</td>
+                <td>{{ formatNumber(currency.exchangeRate) }}</td>
+            </tr>
+        </table>
+    {% endif %}
+{% endblock %}

@@ -1,36 +1,36 @@
-<!doctype html>
-<html lang="en">
-{{ include("head.html.twig") }}
-{{ include("header.html.twig") }}
-<body>
-<h1>
-    Wallet
-</h1>
-{% if not wallet %}
-    <p>Wallet not found.</p>
-{% else %}
-    <table>
-        <tr>
-            <th>Ticker</th>
-            <th>Amount</th>
-            <th>Profit %</th>
-        </tr>
-        {% for money in wallet %}
+{% from "macros/format_number.html.twig" import formatNumber %}
+{% extends "partials/_base.html.twig" %}
+
+{% block title %} Wallet {% endblock %}
+{% block content %}
+    <h1>
+        Wallet
+    </h1>
+    {% if not wallet %}
+        <p>Wallet not found.</p>
+    {% else %}
+        <table>
             <tr>
-                <td>{{ money.ticker }}</td>
-                <td>{{ money.amount }}</td>
-                <td>{{ money.profit }}</td>
+                <th>Ticker</th>
+                <th>Amount</th>
+                <th>Profit %</th>
             </tr>
-        {% endfor %}
-    </table>
-{% endif %}
-<h2>Sell currency</h2>
-<form action="/wallets/foobarWallet/transfer" method="post">
-    <input type="hidden" id="type" name="type" value="sell">
-    <label for="amount">Amount</label>
-    <input type="text" id="amount" name="amount"><br>
-    <label for="currency">Currency ticker</label>
-    <input type="text" id="currency" name="currency"><br>
-    <input type="submit" value="Submit">
-</form>
-</body>
+            {% for money in wallet %}
+                <tr>
+                    <td>{{ money.ticker }}</td>
+                    <td>{{ formatNumber(money.amount) }}</td>
+                    <td>{{ formatNumber(money.profit, 4) }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+    <h2>Sell currency</h2>
+    <form action="/wallets/foobarWallet/transfer" method="post">
+        <input type="hidden" id="type" name="type" value="sell">
+        <label for="amount">Amount</label>
+        <input type="text" id="amount" name="amount"><br>
+        <label for="currency">Currency ticker</label>
+        <input type="text" id="currency" name="currency"><br>
+        <input type="submit" value="Submit">
+    </form>
+{% endblock %}

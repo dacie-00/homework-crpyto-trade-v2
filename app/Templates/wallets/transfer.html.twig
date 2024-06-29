@@ -1,14 +1,13 @@
-<!doctype html>
-<html lang="en">
-{{ include("head.html.twig") }}
-{{ include("header.html.twig") }}
-<body>
-<h1>
-    Transfer
-</h1>
-{% if error %}
-    <p> Transfer unsuccessful - {{ error }}</p>
-{% else %}
-    <p>Transfer successful!</p>
-{% endif %}
-</body>
+{% extends "partials/_base.html.twig" %}
+
+{% block title %} Transfer {% endblock %}
+{% block content %}
+    <h1>
+        Transfer
+    </h1>
+    {% if error %}
+        <p> Transfer unsuccessful - {{ error }}</p>
+    {% else %}
+        <p>Transfer successful!</p>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,3 @@
+{% macro formatNumber (value, decimals = 8) %}
+    {{ value|number_format(decimals)|trim("0", "right")|trim(".", "right") }}
+{% endmacro %}

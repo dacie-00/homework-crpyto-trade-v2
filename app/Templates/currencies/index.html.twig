@@ -1,44 +1,43 @@
-<!doctype html>
-<html lang="en">
-{{ include("head.html.twig") }}
-{{ include("header.html.twig") }}
-<body>
-<form action="/currencies">
-    <label for="tickers">Find currencies by tickers:</label><br>
-    <input type="text" id="tickers" name="tickers">
-    <input type="submit" value="Submit">
-</form>
-<h1>
-    {% if query %}
-        Currency - {{ query }}
+{% from "macros/format_number.html.twig" import formatNumber %}
+{% extends "partials/_base.html.twig" %}
+
+{% block title %} Top currencies {% endblock %}
+{% block content %}
+    <form action="/currencies">
+        <label for="tickers">Find currencies by tickers:</label><br>
+        <input type="text" id="tickers" name="tickers">
+        <input type="submit" value="Submit">
+    </form>
+    <h1>
+        {% if query %}
+            Currency - {{ query }}
+        {% else %}
+            Currency list
+        {% endif %}
+    </h1>
+    {% if not currencies %}
+        <p>No currencies found.</p>
     {% else %}
-        Currency list
-    {% endif %}
-</h1>
-{% if not currencies %}
-    <p>No currencies found.</p>
-{% else %}
-    <table>
-        <tr>
-            <th>Ticker</th>
-            <th>Exchange Rate</th>
-        </tr>
-        {% for currency in currencies %}
+        <table>
             <tr>
-                <td>{{ currency.ticker }}</td>
-                <td>{{ currency.exchangeRate }}</td>
+                <th>Ticker</th>
+                <th>Exchange Rate</th>
             </tr>
-        {% endfor %}
-    </table>
-{% endif %}
-<h2>Buy currency</h2>
-<form action="/wallets/foobarWallet/transfer" method="post">
-    <input type="hidden" id="type" name="type" value="buy">
-    <label for="amount">Amount</label>
-    <input type="text" id="amount" name="amount"><br>
-    <label for="currency">Currency ticker</label>
-    <input type="text" id="currency" name="currency"><br>
-    <input type="submit" value="Submit">
-</form>
-</body>
-</html>
+            {% for currency in currencies %}
+                <tr>
+                    <td>{{ currency.ticker }}</td>
+                    <td>{{ formatNumber(currency.exchangeRate) }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+    <h2>Buy currency</h2>
+    <form action="/wallets/foobarWallet/transfer" method="post">
+        <input type="hidden" id="type" name="type" value="buy">
+        <label for="amount">Amount</label>
+        <input type="text" id="amount" name="amount"><br>
+        <label for="currency">Currency ticker</label>
+        <input type="text" id="currency" name="currency"><br>
+        <input type="submit" value="Submit">
+    </form>
+{% endblock %}

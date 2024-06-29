@@ -1,34 +1,33 @@
-<!doctype html>
-<html lang="en">
-{{ include("head.html.twig") }}
-{{ include("header.html.twig") }}
-<body>
-<h1>
-    Transaction list
-</h1>
-{% if not transactions %}
-    <p>No transactions found.</p>
-{% else %}
-    <table>
-        <tr>
-            <th>Sent Amount</th>
-            <th>Sent Ticker</th>
-            <th>Type</th>
-            <th>Received Amount</th>
-            <th>Received Ticker</th>
-            <th>Date</th>
-        </tr>
-        {% for transaction in transactions %}
+{% from "macros/format_number.html.twig" import formatNumber %}
+{% extends "partials/_base.html.twig" %}
+
+{% block title %} Transaction list {% endblock %}
+{% block content %}
+    <h1>
+        Transaction list
+    </h1>
+    {% if not transactions %}
+        <p>No transactions found.</p>
+    {% else %}
+        <table>
             <tr>
-                <td>{{ transaction.sentMoney.amount }}</td>
-                <td>{{ transaction.sentMoney.ticker }}</td>
-                <td>{{ transaction.type }}</td>
-                <td>{{ transaction.receivedMoney.amount }}</td>
-                <td>{{ transaction.receivedMoney.ticker }}</td>
-                <td>{{ transaction.createdAt }} UTC</td>
+                <th>Sent Amount</th>
+                <th>Sent Ticker</th>
+                <th>Type</th>
+                <th>Received Amount</th>
+                <th>Received Ticker</th>
+                <th>Date</th>
             </tr>
-        {% endfor %}
-    </table>
-{% endif %}
-</body>
-</html>
+            {% for transaction in transactions %}
+                <tr>
+                    <td>{{ formatNumber(transaction.sentMoney.amount) }}</td>
+                    <td>{{ transaction.sentMoney.ticker }}</td>
+                    <td>{{ transaction.type }}</td>
+                    <td>{{ formatNumber(transaction.receivedMoney.amount) }}</td>
+                    <td>{{ transaction.receivedMoney.ticker }}</td>
+                    <td>{{ transaction.createdAt }} UTC</td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+{% endblock %}
