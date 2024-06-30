@@ -9,7 +9,7 @@ use App\Models\Wallet;
 use App\Repositories\Wallet\Exceptions\WalletNotFoundException;
 use Doctrine\DBAL\Connection;
 
-class WalletRepository
+class DoctrineDbalWalletRepository implements WalletRepositoryInterface
 {
     private Connection $connection;
 

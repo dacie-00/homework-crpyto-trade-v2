@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Repositories;
+namespace App\Repositories\Transaction;
 
 use App\Models\Currency;
 use App\Models\Money;
@@ -11,7 +11,7 @@ use DateTimeInterface;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver\PDO\Exception;
 
-class TransactionRepository
+class DoctrineDbalTransactionRepository implements TransactionRepositoryInterface
 {
     private Connection $connection;
 

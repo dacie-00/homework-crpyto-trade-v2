@@ -3,26 +3,25 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
-use App\Repositories\TransactionRepository;
-use App\Repositories\UserRepository;
+use App\Repositories\Transaction\DoctrineDbalTransactionRepository;
+use App\Repositories\Transaction\TransactionRepositoryInterface;
+use App\Repositories\User\DoctrineDbalUserRepository;
+use App\Repositories\User\UserRepositoryInterface;
 use App\TemplateResponse;
 use Doctrine\DBAL\DriverManager;
 
 class TransactionController
 {
-    private TransactionRepository $transactionRepository;
-    private UserRepository $userRepository;
+    private TransactionRepositoryInterface $transactionRepository;
+    private UserRepositoryInterface $userRepository;
 
-    public function __construct()
+    public function __construct(
+        TransactionRepositoryInterface $transactionRepository,
+        UserRepositoryInterface $userRepository
+    )
     {
-        $connectionParams = [
-            "driver" => "pdo_sqlite",
-            "path" => "storage/database.sqlite",
-        ];
-        $connection = DriverManager::getConnection($connectionParams);
-
-        $this->transactionRepository = new TransactionRepository($connection);
-        $this->userRepository = new userRepository($connection);
+        $this->transactionRepository = $transactionRepository;
+        $this->userRepository = $userRepository;
     }
 
     public function index(): TemplateResponse

@@ -13,6 +13,7 @@
     "nesbot/carbon": "^2.72",
     "doctrine/dbal": "^3.8",
     "nikic/fast-route": "^1.3",
-    "twig/twig": "^3.0"
+    "twig/twig": "^3.0",
+    "php-di/php-di": "^6.4"
   }
 }

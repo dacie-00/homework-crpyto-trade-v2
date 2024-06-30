@@ -1,12 +1,12 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Repositories;
+namespace App\Repositories\User;
 
 use App\Models\User;
 use Doctrine\DBAL\Connection;
 
-class UserRepository
+class DoctrineDbalUserRepository implements UserRepositoryInterface
 {
     private Connection $connection;
 

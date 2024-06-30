@@ -6,9 +6,12 @@ namespace App\Controllers;
 use App\Models\Currency;
 use App\Models\Money;
 use App\Repositories\Currency\CoinMarketCapApiCurrencyRepository;
-use App\Repositories\TransactionRepository;
+use App\Repositories\Currency\CurrencyRepositoryInterface;
+use App\Repositories\Transaction\DoctrineDbalTransactionRepository;
+use App\Repositories\Transaction\TransactionRepositoryInterface;
 use App\Repositories\Wallet\Exceptions\WalletNotFoundException;
-use App\Repositories\Wallet\WalletRepository;
+use App\Repositories\Wallet\DoctrineDbalWalletRepository;
+use App\Repositories\Wallet\WalletRepositoryInterface;
 use App\Services\BuyService;
 use App\Services\Exceptions\InsufficientMoneyException;
 use App\Services\Exceptions\TransactionFailedException;
@@ -23,22 +26,20 @@ use Doctrine\DBAL\DriverManager;
 
 class WalletController
 {
-    private TransactionRepository $transactionRepository;
-    private WalletRepository $walletRepository;
-    private Connection $connection;
-    private CoinMarketCapApiCurrencyRepository $currencyRepository;
+    private TransactionRepositoryInterface $transactionRepository;
+    private WalletRepositoryInterface $walletRepository;
+    private CurrencyRepositoryInterface $currencyRepository;
 
-    public function __construct()
+    public function __construct(
+        TransactionRepositoryInterface $transactionRepository,
+        WalletRepositoryInterface $walletRepository,
+        CurrencyRepositoryInterface $currencyRepository
+
+    )
     {
-        $connectionParams = [
-            "driver" => "pdo_sqlite",
-            "path" => "storage/database.sqlite",
-        ];
-        $this->connection = DriverManager::getConnection($connectionParams);
-
-        $this->transactionRepository = new TransactionRepository($this->connection);
-        $this->walletRepository = new WalletRepository($this->connection);
-        $this->currencyRepository = new CoinMarketCapApiCurrencyRepository($_ENV["COIN_MARKET_CAP_API_KEY"]);
+        $this->transactionRepository = $transactionRepository;
+        $this->walletRepository = $walletRepository;
+        $this->currencyRepository = $currencyRepository;
     }
 
     public function show(string $id): TemplateResponse
@@ -83,55 +84,5 @@ class WalletController
             ];
         }
         return new TemplateResponse("wallets/show", ["wallet" => $walletData]);
-    }
-
-    public function transfer(string $walletId): TemplateResponse
-    {
-        try {
-            (new TransferRequestValidationService())->validate($_POST);
-        } catch (InvalidTransferTypeException|InvalidTransferAmountException|InvalidTransferCurrencyTickerException $e) {
-            return new TemplateResponse("wallets/transfer", ["error" => $e->getMessage()]);
-        }
-        try {
-            if ($_POST["type"] === "buy") {
-                (new BuyService(
-                    $this->connection,
-                    $this->transactionRepository,
-                    $this->walletRepository,
-                    (new CoinMarketCapApiCurrencyRepository($_ENV["COIN_MARKET_CAP_API_KEY"]))))
-                    ->execute(
-                        $walletId,
-                        new Money(
-                            (float)$_POST["amount"],
-                            new Currency($_POST["currency"])
-                        )
-                    );
-            } elseif ($_POST["type"] === "sell") {
-                (new SellService(
-                    $this->connection,
-                    $this->transactionRepository,
-                    $this->walletRepository,
-                    (new CoinMarketCapApiCurrencyRepository($_ENV["COIN_MARKET_CAP_API_KEY"]))))
-                    ->execute(
-                        $walletId,
-                        new Money(
-                            (float)$_POST["amount"],
-                            new Currency($_POST["currency"])
-                        )
-                    );
-            }
-        } catch (InsufficientMoneyException|TransactionFailedException $e) {
-            return new TemplateResponse("wallets/transfer", ["error" => $e->getMessage()]);
-        }
-
-        return new TemplateResponse(
-            "wallets/transfer",
-            [
-                "id" => $walletId,
-                "type" => $_POST["type"],
-                "amount" => $_POST["amount"],
-                "currency" => $_POST["currency"],
-            ]
-        );
     }
 }

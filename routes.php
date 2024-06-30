@@ -15,5 +15,4 @@ return [
     ["POST", "/currencies/{ticker}/sell", [CurrencyController::class, "sell"]],
     ["GET", "/transactions", [TransactionController::class, "index"]],
     ["GET", "/wallets/{id}", [WalletController::class, "show"]],
-    ["POST", "/wallets/{id}/transfer", [WalletController::class, "transfer"]],
 ];

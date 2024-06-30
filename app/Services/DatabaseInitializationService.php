@@ -4,7 +4,8 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\User;
-use App\Repositories\UserRepository;
+use App\Repositories\User\DoctrineDbalUserRepository;
+use App\Repositories\User\UserRepositoryInterface;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Schema\Table;
@@ -31,13 +32,13 @@ class DatabaseInitializationService
             $table->addColumn("password", "string");
             $this->schemaManager->createTable($table);
 
-            (new UserRepository($this->connection))->insert(
+            (new DoctrineDbalUserRepository($this->connection))->insert(
                 new User("JaneDoe", md5("password123"), "JaneDoe")
             );
-            (new UserRepository($this->connection))->insert(
+            (new DoctrineDbalUserRepository($this->connection))->insert(
                 new User("foobar", md5("foobar"), "foobar")
             );
-            (new UserRepository($this->connection))->insert(
+            (new DoctrineDbalUserRepository($this->connection))->insert(
                 new User("sillyGoose", md5("quack"), "sillyGoose")
             );
         }
@@ -62,7 +63,7 @@ class DatabaseInitializationService
         }
     }
 
-    public function initializeWalletsTable(UserRepository $userRepository): void
+    public function initializeWalletsTable(UserRepositoryInterface $userRepository): void
     {
         if (!$this->schemaManager->tablesExist(["wallet"])) {
             $table = new Table("wallet");

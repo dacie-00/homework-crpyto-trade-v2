@@ -1,17 +1,24 @@
 <?php
 declare(strict_types=1);
 
-use App\Controllers\CurrencyController;
-use App\Controllers\ErrorController;
-use App\Controllers\TransactionController;
-use App\Controllers\WalletController;
 use App\RedirectResponse;
-use App\Repositories\UserRepository;
+use App\Repositories\Currency\CoinMarketCapApiCurrencyRepository;
+use App\Repositories\Currency\CurrencyRepositoryInterface;
+use App\Repositories\Transaction\DoctrineDbalTransactionRepository;
+use App\Repositories\Transaction\TransactionRepositoryInterface;
+use App\Repositories\User\DoctrineDbalUserRepository;
+use App\Repositories\User\UserRepositoryInterface;
+use App\Repositories\Wallet\DoctrineDbalWalletRepository;
+use App\Repositories\Wallet\WalletRepositoryInterface;
 use App\Services\DatabaseInitializationService;
 use App\TemplateResponse;
+use DI\ContainerBuilder;
+use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
+use function DI\create;
+use function DI\get;
 
 require_once "vendor/autoload.php";
 
@@ -26,11 +33,23 @@ $connectionParams = [
     "path" => "storage/database.sqlite",
 ];
 
-$connection = DriverManager::getConnection($connectionParams);
+$builder = new ContainerBuilder();
+$builder->addDefinitions(
+    [
+        Connection::class => DriverManager::getConnection($connectionParams),
+        CurrencyRepositoryInterface::class => new CoinMarketCapApiCurrencyRepository($_ENV["COIN_MARKET_CAP_API_KEY"]),
+        TransactionRepositoryInterface::class => create(DoctrineDbalTransactionRepository::class)->constructor(get(Connection::class)),
+        UserRepositoryInterface::class => create(DoctrineDbalUserRepository::class)->constructor(get(Connection::class)),
+        WalletRepositoryInterface::class => create(DoctrineDbalWalletRepository::class)->constructor(get(Connection::class)),
+    ]
+);
+$container = $builder->build();
 
-$userRepository = new UserRepository($connection);
 
-$databaseInitializer = new DatabaseInitializationService($connection);
+//$userRepository = new DoctrineDbalUserRepository($connection);
+$userRepository = $container->get(DoctrineDbalUserRepository::class);
+
+$databaseInitializer = $container->get(DatabaseInitializationService::class);
 $databaseInitializer->initializeUsersTable();
 $databaseInitializer->initializeTransactionsTable();
 $databaseInitializer->initializeWalletsTable($userRepository);
@@ -71,7 +90,7 @@ switch ($routeInfo[0]) {
         $handle = $routeInfo[1];
         $vars = $routeInfo[2];
         [$class, $method] = $handle;
-        $response = (new $class)->$method(...array_values($vars));
+        $response = $container->get($class)->$method(...array_values($vars));
         if ($response instanceof TemplateResponse) {
             echo $twig->render($response->template() . ".html.twig", $response->data());
         } elseif ($response instanceof RedirectResponse) {

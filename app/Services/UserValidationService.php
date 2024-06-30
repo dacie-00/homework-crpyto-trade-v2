@@ -4,13 +4,14 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\User;
-use App\Repositories\UserRepository;
+use App\Repositories\User\DoctrineDbalUserRepository;
+use App\Repositories\User\UserRepositoryInterface;
 
 class UserValidationService
 {
-    private UserRepository $userRepository;
+    private DoctrineDbalUserRepository $userRepository;
 
-    public function __construct(UserRepository $userRepository)
+    public function __construct(UserRepositoryInterface $userRepository)
     {
         $this->userRepository = $userRepository;
     }

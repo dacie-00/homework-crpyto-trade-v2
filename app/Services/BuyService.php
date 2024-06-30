@@ -8,8 +8,10 @@ use App\Models\Money;
 use App\Models\Transaction;
 use App\Repositories\Currency\CurrencyRepositoryInterface;
 use App\Repositories\Currency\Exceptions\CurrencyNotFoundException;
-use App\Repositories\TransactionRepository;
-use App\Repositories\Wallet\WalletRepository;
+use App\Repositories\Transaction\DoctrineDbalTransactionRepository;
+use App\Repositories\Transaction\TransactionRepositoryInterface;
+use App\Repositories\Wallet\DoctrineDbalWalletRepository;
+use App\Repositories\Wallet\WalletRepositoryInterface;
 use App\Services\Exceptions\InsufficientMoneyException;
 use App\Services\Exceptions\TransactionFailedException;
 use Doctrine\DBAL\Connection;
@@ -17,14 +19,14 @@ use Doctrine\DBAL\Connection;
 class BuyService
 {
     private Connection $connection;
-    private TransactionRepository $transactionRepository;
-    private WalletRepository $walletRepository;
+    private DoctrineDbalTransactionRepository $transactionRepository;
+    private DoctrineDbalWalletRepository $walletRepository;
     private CurrencyRepositoryInterface $currencyRepository;
 
     public function __construct(
         Connection $connection,
-        TransactionRepository $transactionRepository,
-        WalletRepository $walletRepository,
+        TransactionRepositoryInterface $transactionRepository,
+        WalletRepositoryInterface $walletRepository,
         CurrencyRepositoryInterface $currencyRepository
     ) {
         $this->connection = $connection;
