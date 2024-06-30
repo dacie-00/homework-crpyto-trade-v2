@@ -5,8 +5,10 @@ use App\Controllers\CurrencyController;
 use App\Controllers\ErrorController;
 use App\Controllers\TransactionController;
 use App\Controllers\WalletController;
+use App\RedirectResponse;
 use App\Repositories\UserRepository;
 use App\Services\DatabaseInitializationService;
+use App\TemplateResponse;
 use Doctrine\DBAL\DriverManager;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
@@ -70,6 +72,10 @@ switch ($routeInfo[0]) {
         $vars = $routeInfo[2];
         [$class, $method] = $handle;
         $response = (new $class)->$method(...array_values($vars));
-        echo $twig->render($response->template() . ".html.twig", $response->data());
+        if ($response instanceof TemplateResponse) {
+            echo $twig->render($response->template() . ".html.twig", $response->data());
+        } elseif ($response instanceof RedirectResponse) {
+            header("Location: {$response->url()}");
+        }
         break;
 }

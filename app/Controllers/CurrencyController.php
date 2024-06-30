@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\RedirectResponse;
 use App\Repositories\Currency\CoinMarketCapApiCurrencyRepository;
 use App\Repositories\Currency\Exceptions\CurrencyNotFoundException;
 use App\TemplateResponse;
@@ -37,11 +38,19 @@ class CurrencyController
         $codes = explode(",", $ticker);
         $codes = array_map(static fn($value) => trim($value), $codes);
         try {
-            $currencies = $this->currencyRepository->search($codes);
+            [$currency] = $this->currencyRepository->search($codes);
         } catch (CurrencyNotFoundException $e) {
-            return ["currencies/show", ["query" => $ticker]];
+            return new TemplateResponse("currencies/show", ["query" => $ticker]);
         }
 
-        return new TemplateResponse("currencies/show", ["query" => $ticker, "currency" => $currencies]);
+        return new TemplateResponse("currencies/show", ["query" => $ticker, "currency" => $currency]);
+    }
+
+    public function buy(string $ticker): RedirectResponse
+    {
+        $amount = $_POST["amount"];
+        // TODO: implement buy
+
+        return new RedirectResponse("/wallets/foobarWallet");
     }
 }
