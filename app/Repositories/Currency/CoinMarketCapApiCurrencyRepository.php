@@ -74,12 +74,12 @@ class CoinMarketCapApiCurrencyRepository implements CurrencyRepositoryInterface
     /**
      * @return Currency[]
      */
-    public function search(array $currencyCodes): array
+    public function search(array $tickers): array
     {
-        $currencyCodes = array_map(fn($code) => strtoupper($code), $currencyCodes);
+        $tickers = array_map(fn($code) => strtoupper($code), $tickers);
         $url = "cryptocurrency/quotes/latest";
         $parameters = [
-            "symbol" => implode(",", $currencyCodes),
+            "symbol" => implode(",", $tickers),
             "convert" => "EUR",
         ];
 
@@ -110,13 +110,13 @@ class CoinMarketCapApiCurrencyRepository implements CurrencyRepositoryInterface
             JSON_THROW_ON_ERROR
         );
         if (!get_object_vars($response->data)) {
-            $codes = implode(",", $currencyCodes);
+            $codes = implode(",", $tickers);
             throw new CurrencyNotFoundException("No data found for currency(-ies) $codes.\n");
         }
         $currencies = [];
-        foreach ($currencyCodes as $currencyCode) {
-            if (isset($response->data->$currencyCode)) {
-                $currency = $response->data->$currencyCode;
+        foreach ($tickers as $ticker) {
+            if (isset($response->data->$ticker)) {
+                $currency = $response->data->$ticker;
                 if (!$currency->is_active) {
                     continue;
                 }

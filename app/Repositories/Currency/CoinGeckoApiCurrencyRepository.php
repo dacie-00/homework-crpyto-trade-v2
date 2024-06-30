@@ -72,12 +72,12 @@ class CoinGeckoApiCurrencyRepository implements CurrencyRepositoryInterface
         return $currencies;
     }
 
-    private function getIdFromCurrencyCode(string $currencyCode): ?string
+    private function getIdFromticker(string $ticker): ?string
     {
         $url = "search";
 
         $parameters = [
-            "query" => $currencyCode,
+            "query" => $ticker,
             "vs_currency" => "eur",
         ];
 
@@ -116,13 +116,13 @@ class CoinGeckoApiCurrencyRepository implements CurrencyRepositoryInterface
     /**
      * @return Currency[]
      */
-    public function search(array $currencyCodes): array
+    public function search(array $tickers): array
     {
         $url = "coins/markets";
 
         $names = [];
-        foreach ($currencyCodes as $currencyCode) {
-            if ($name = $this->getIdFromCurrencyCode($currencyCode)) {
+        foreach ($tickers as $ticker) {
+            if ($name = $this->getIdFromticker($ticker)) {
                 $names[] = $name;
             }
         }
@@ -160,14 +160,14 @@ class CoinGeckoApiCurrencyRepository implements CurrencyRepositoryInterface
             JSON_THROW_ON_ERROR
         );
         if (empty($currencyResponse)) {
-            $codes = implode(",", $currencyCodes);
+            $codes = implode(",", $tickers);
             throw new CurrencyNotFoundException("No data found for currency(-ies) $codes.\n");
         }
 
         $currencies = [];
-        foreach ($currencyCodes as $currencyCode) {
+        foreach ($tickers as $ticker) {
             foreach ($currencyResponse as $currency) {
-                if (strtoupper($currency->symbol) === $currencyCode) {
+                if (strtoupper($currency->symbol) === $ticker) {
                     $currencies[] = new Currency(
                         strtoupper($currency->symbol),
                         $currency->current_price

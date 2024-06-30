@@ -14,9 +14,9 @@ interface CurrencyRepositoryInterface
     public function getTop(int $page, int $currenciesPerPage): array;
 
     /**
-     * @param string[] $currencyCodes
+     * @param string[] $tickers
      * @return Currency[]
      * @throws CurrencyNotFoundException
      */
-    public function search(array $currencyCodes): array;
+    public function search(array $tickers): array;
 }
