@@ -9,7 +9,7 @@ class ErrorController
 {
     public function index(): TemplateResponse
     {
-        return new TemplateResponse("404", []);
+        return new TemplateResponse("404");
     }
 
 }
