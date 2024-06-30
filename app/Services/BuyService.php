@@ -38,21 +38,20 @@ class BuyService
         Money $moneyToGet
     ): Transaction {
         try {
-            $newestCurrency = $this->currencyRepository->search([$moneyToGet->ticker()]);
+            [$newestCurrency] = $this->currencyRepository->search([$moneyToGet->ticker()]);
         } catch (CurrencyNotFoundException $e) {
             throw new TransactionFailedException("Unknown currency - {$moneyToGet->ticker()}");
         }
-        $newestCurrency = $newestCurrency[0]; // TODO: you can probably use array unpacking here instead
 
         $moneyToSpend = new Money(
             $moneyToGet->amount() * $newestCurrency->exchangeRate(),
             new Currency("EUR")
         );
 
-        $moneyInWallet = $this->walletRepository->getMoney($walletId, $moneyToGet);
-        if ($moneyToSpend->amount() < $moneyInWallet->amount()) {
+        $moneyInWallet = $this->walletRepository->getMoneyInWallet($walletId, $moneyToSpend->currency());
+        if ($moneyToSpend->amount() > $moneyInWallet->amount()) {
             throw new InsufficientMoneyException(
-                "Not enough EUR in wallet ({$moneyToSpend->amount()}/{$moneyInWallet->amount()})"
+                "Not enough EUR in wallet ({$moneyInWallet->amount()}/{$moneyToSpend->amount()})"
             );
         }
 

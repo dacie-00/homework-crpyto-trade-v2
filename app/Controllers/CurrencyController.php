@@ -3,17 +3,39 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Models\Currency;
+use App\Models\Money;
 use App\RedirectResponse;
 use App\Repositories\Currency\CoinMarketCapApiCurrencyRepository;
 use App\Repositories\Currency\Exceptions\CurrencyNotFoundException;
+use App\Repositories\TransactionRepository;
+use App\Repositories\UserRepository;
+use App\Repositories\Wallet\WalletRepository;
+use App\Services\BuyService;
+use App\Services\Exceptions\InsufficientMoneyException;
+use App\Services\Exceptions\TransactionFailedException;
+use App\Services\SellService;
 use App\TemplateResponse;
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\DriverManager;
 
 class CurrencyController
 {
     private CoinMarketCapApiCurrencyRepository $currencyRepository;
+    private Connection $connection;
+    private TransactionRepository $transactionRepository;
+    private WalletRepository $walletRepository;
 
     public function __construct()
     {
+        $connectionParams = [
+            "driver" => "pdo_sqlite",
+            "path" => "storage/database.sqlite",
+        ];
+        $this->connection = DriverManager::getConnection($connectionParams);
+
+        $this->transactionRepository = new TransactionRepository($this->connection);
+        $this->walletRepository = new walletRepository($this->connection);
         $this->currencyRepository = new CoinMarketCapApiCurrencyRepository($_ENV["COIN_MARKET_CAP_API_KEY"]);
     }
 
@@ -48,9 +70,48 @@ class CurrencyController
 
     public function buy(string $ticker): RedirectResponse
     {
-        $amount = $_POST["amount"];
-        // TODO: implement buy
+        $amount = (float)$_POST["amount"];
 
+        try {
+            (new BuyService(
+                $this->connection,
+                $this->transactionRepository,
+                $this->walletRepository,
+                (new CoinMarketCapApiCurrencyRepository($_ENV["COIN_MARKET_CAP_API_KEY"]))))
+                ->execute(
+                    "foobarWallet",
+                    new Money(
+                        $amount,
+                        new Currency($ticker)
+                    )
+                );
+        } catch (InsufficientMoneyException|TransactionFailedException $e) {
+            return new RedirectResponse("/wallets/foobarWallet"); // TODO: figure out how to display error
+        }
+        return new RedirectResponse("/wallets/foobarWallet");
+    }
+
+
+    public function sell(string $ticker): RedirectResponse
+    {
+        $amount = (float)$_POST["amount"];
+
+        try {
+            (new SellService(
+                $this->connection,
+                $this->transactionRepository,
+                $this->walletRepository,
+                (new CoinMarketCapApiCurrencyRepository($_ENV["COIN_MARKET_CAP_API_KEY"]))))
+                ->execute(
+                    "foobarWallet",
+                    new Money(
+                        $amount,
+                        new Currency($ticker)
+                    )
+                );
+        } catch (InsufficientMoneyException|TransactionFailedException $e) {
+            return new RedirectResponse("/wallets/foobarWallet"); // TODO: figure out how to display error
+        }
         return new RedirectResponse("/wallets/foobarWallet");
     }
 }

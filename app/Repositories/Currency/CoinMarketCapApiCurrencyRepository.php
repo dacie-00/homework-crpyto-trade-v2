@@ -65,7 +65,7 @@ class CoinMarketCapApiCurrencyRepository implements CurrencyRepositoryInterface
         foreach ($currencyResponse->data as $currency) {
             $currencies[] = new Currency(
                 $currency->symbol,
-                1 / $currency->quote->EUR->price
+                $currency->quote->EUR->price
             );
         }
         return $currencies;
@@ -122,7 +122,7 @@ class CoinMarketCapApiCurrencyRepository implements CurrencyRepositoryInterface
                 }
                 $currencies[] = new Currency(
                     $currency->symbol,
-                    1 / $currency->quote->EUR->price
+                    $currency->quote->EUR->price
                 );
             }
         }

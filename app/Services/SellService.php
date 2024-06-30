@@ -37,7 +37,7 @@ class SellService
         string $walletId,
         Money $moneyToSpend
     ): Transaction {
-        $moneyInWallet = $this->walletRepository->getMoney($walletId, $moneyToSpend);
+        $moneyInWallet = $this->walletRepository->getMoneyInWallet($walletId, $moneyToSpend->currency());
         if ($moneyInWallet->amount() < $moneyToSpend->amount()) {
             throw new InsufficientMoneyException(
                 "Not enough {$moneyToSpend->ticker()} in wallet ({$moneyInWallet->amount()}/{$moneyToSpend->amount()})"
@@ -45,11 +45,10 @@ class SellService
         }
 
         try {
-            $newestCurrency = $this->currencyRepository->search([$moneyToSpend->ticker()]);
-        } catch (CurrencyNotFoundException $e) {
+            [$newestCurrency] = $this->currencyRepository->search([$moneyToSpend->ticker()]);
+        } catch (CurrencyNotFoundException $e) { // TODO: maybe change this because CurrencyNotFound is more specific than TransactionFailed
             throw new TransactionFailedException("Unknown currency - {$moneyToSpend->ticker()}");
         }
-        $newestCurrency = $newestCurrency[0];
 
         $moneyToGet = new Money(
             $moneyToSpend->amount() * $newestCurrency->exchangeRate(),

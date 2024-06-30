@@ -112,7 +112,7 @@ class WalletRepository
         return new Wallet($userId, $walletId, $content);
     }
 
-    public function getMoney(string $walletId, Money $money): Money
+    public function getMoneyInWallet(string $walletId, Currency $currency): Money
     {
         $amount = $this->connection->createQueryBuilder()
             ->from("wallet")
@@ -121,16 +121,14 @@ class WalletRepository
             ->setParameters(
                 [
                     "wallet_id" => $walletId,
-                    "ticker" => $money->ticker(),
+                    "ticker" => $currency->ticker(),
                 ]
             )
             ->executeQuery()
             ->fetchOne();
         return new Money(
             (float)$amount ?: 0,
-            new Currency(
-                $money->ticker(),
-            )
+            $currency
         );
     }
 
@@ -165,10 +163,10 @@ class WalletRepository
             $this->insert($walletId, $this->getOwner($walletId), $money);
             return;
         }
-        $moneyInWallet = $this->getMoney($walletId, $money);
+        $moneyInWallet = $this->getMoneyInWallet($walletId, $money->currency());
 
-        $moneyInWallet->setAmount($money->amount() + $money->amount());
-        $this->update($walletId, $money);
+        $newMoney = new Money($moneyInWallet->amount() + $money->amount(), $money->currency());
+        $this->update($walletId, $newMoney);
     }
 
     public function subtractFromWallet(string $walletId, Money $money): void
@@ -176,13 +174,13 @@ class WalletRepository
         if (!$this->exists($walletId, $money)) {
             return;
         }
-        $moneyInWallet = $this->getMoney($walletId, $money);
+        $moneyInWallet = $this->getMoneyInWallet($walletId, $money->currency());
 
-        $moneyInWallet->setAmount($money->amount() - $money->amount());
-        if ($money->amount() <= 0) {
+        $newMoney = new Money($moneyInWallet->amount() - $money->amount(), $money->currency());
+        if ($newMoney->amount() <= 0) {
             $this->delete($walletId, $money);
             return;
         }
-        $this->update($walletId, $money);
+        $this->update($walletId, $newMoney);
     }
 }

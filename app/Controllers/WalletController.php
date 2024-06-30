@@ -71,7 +71,7 @@ class WalletController
             }
             $average = $this->transactionRepository->getAveragePrice($wallet->userId(), $money);
             $marketRate = $marketCurrencies[$money->ticker()]->exchangeRate();
-            $percentages[] = 100 * ($marketRate / $average - 1);
+            $percentages[] = 100 * ($marketRate / $average) - 100;
         }
 
         $walletData = []; // TODO: add percentages as a setter for money?

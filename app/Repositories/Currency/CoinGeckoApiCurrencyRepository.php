@@ -66,7 +66,7 @@ class CoinGeckoApiCurrencyRepository implements CurrencyRepositoryInterface
         foreach ($currencyResponse as $currency) {
             $currencies[] = new Currency(
                 $currency->symbol,
-                1 / $currency->current_price
+                $currency->current_price
             );
         }
         return $currencies;
@@ -170,7 +170,7 @@ class CoinGeckoApiCurrencyRepository implements CurrencyRepositoryInterface
                 if (strtoupper($currency->symbol) === $currencyCode) {
                     $currencies[] = new Currency(
                         strtoupper($currency->symbol),
-                        1 / $currency->current_price
+                        $currency->current_price
                     );
                 }
             }
