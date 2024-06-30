@@ -19,5 +19,11 @@
                 <td>{{ formatNumber(currency.exchangeRate) }}</td>
             </tr>
         </table>
+        <h2>Buy currency</h2>
+        <form action="{{ currency.ticker }}/buy" method="post">
+            <label for="amount">Amount</label>
+            <input type="number" id="amount" name="amount"><br>
+            <input type="submit" value="Submit">
+        </form>
     {% endif %}
 {% endblock %}

@@ -25,7 +25,7 @@
             </tr>
             {% for currency in currencies %}
                 <tr>
-                    <td>{{ currency.ticker }}</td>
+                    <td><a href="/currencies/{{ currency.ticker }}">{{ currency.ticker }}</a></td>
                     <td>{{ formatNumber(currency.exchangeRate) }}</td>
                 </tr>
             {% endfor %}

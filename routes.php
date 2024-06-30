@@ -11,6 +11,7 @@ return [
     ["GET", "/404", [ErrorController::class, "index"]],
     ["GET", "/currencies", [CurrencyController::class, "index"]],
     ["GET", "/currencies/{ticker}", [CurrencyController::class, "show"]],
+    ["POST", "/currencies/{ticker}/buy", [CurrencyController::class, "buy"]],
     ["GET", "/transactions", [TransactionController::class, "index"]],
     ["GET", "/wallets/{id}", [WalletController::class, "show"]],
     ["POST", "/wallets/{id}/transfer", [WalletController::class, "transfer"]],

@@ -1,6 +1,5 @@
-{{ include("head.html.twig") }}
-{{ include("_header.html.twig") }}
-<body>
-<p>404: Not found</p>
-<a href="/">Back to home</a>
-</body>
+{% extends "partials/_base.html.twig" %}
+{% block content %}
+    <p>404: Not found</p>
+    <a href="/">Back to home</a>
+{% endblock %}
