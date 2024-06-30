@@ -3,26 +3,11 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
-use App\Models\Currency;
-use App\Models\Money;
-use App\Repositories\Currency\CoinMarketCapApiCurrencyRepository;
 use App\Repositories\Currency\CurrencyRepositoryInterface;
-use App\Repositories\Transaction\DoctrineDbalTransactionRepository;
 use App\Repositories\Transaction\TransactionRepositoryInterface;
 use App\Repositories\Wallet\Exceptions\WalletNotFoundException;
-use App\Repositories\Wallet\DoctrineDbalWalletRepository;
 use App\Repositories\Wallet\WalletRepositoryInterface;
-use App\Services\BuyService;
-use App\Services\Exceptions\InsufficientMoneyException;
-use App\Services\Exceptions\TransactionFailedException;
-use App\Services\SellService;
-use App\Services\Transfers\Exceptions\InvalidTransferAmountException;
-use App\Services\Transfers\Exceptions\InvalidTransferCurrencyTickerException;
-use App\Services\Transfers\Exceptions\InvalidTransferTypeException;
-use App\Services\Transfers\TransferRequestValidationService;
 use App\TemplateResponse;
-use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\DriverManager;
 
 class WalletController
 {

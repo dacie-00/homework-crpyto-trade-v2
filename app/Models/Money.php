@@ -32,9 +32,4 @@ class Money
     {
         return $this->currency->exchangeRate();
     }
-
-    public function setAmount(float $amount)
-    {
-        $this->amount = $amount;
-    }
 }

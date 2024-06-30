@@ -3,12 +3,9 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
-use App\Repositories\Transaction\DoctrineDbalTransactionRepository;
 use App\Repositories\Transaction\TransactionRepositoryInterface;
-use App\Repositories\User\DoctrineDbalUserRepository;
 use App\Repositories\User\UserRepositoryInterface;
 use App\TemplateResponse;
-use Doctrine\DBAL\DriverManager;
 
 class TransactionController
 {

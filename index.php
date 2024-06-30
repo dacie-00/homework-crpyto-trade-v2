@@ -36,20 +36,24 @@ $connectionParams = [
 $builder = new ContainerBuilder();
 $builder->addDefinitions(
     [
-        Connection::class => DriverManager::getConnection($connectionParams),
-        CurrencyRepositoryInterface::class => new CoinMarketCapApiCurrencyRepository($_ENV["COIN_MARKET_CAP_API_KEY"]),
-        TransactionRepositoryInterface::class => create(DoctrineDbalTransactionRepository::class)->constructor(get(Connection::class)),
-        UserRepositoryInterface::class => create(DoctrineDbalUserRepository::class)->constructor(get(Connection::class)),
-        WalletRepositoryInterface::class => create(DoctrineDbalWalletRepository::class)->constructor(get(Connection::class)),
+        Connection::class =>
+            DriverManager::getConnection($connectionParams),
+        CurrencyRepositoryInterface::class =>
+            new CoinMarketCapApiCurrencyRepository($_ENV["COIN_MARKET_CAP_API_KEY"]),
+        TransactionRepositoryInterface::class =>
+            create(DoctrineDbalTransactionRepository::class)->constructor(get(Connection::class)),
+        UserRepositoryInterface::class =>
+            create(DoctrineDbalUserRepository::class)->constructor(get(Connection::class)),
+        WalletRepositoryInterface::class =>
+            create(DoctrineDbalWalletRepository::class)->constructor(get(Connection::class)),
     ]
 );
 $container = $builder->build();
 
 
-//$userRepository = new DoctrineDbalUserRepository($connection);
-$userRepository = $container->get(DoctrineDbalUserRepository::class);
+$userRepository = $container->get(UserRepositoryInterface::class);
 
-$databaseInitializer = $container->get(DatabaseInitializationService::class);
+$databaseInitializer = $container->get(DatabaseInitializationService::class); // TODO: this probably shouldn't be a service
 $databaseInitializer->initializeUsersTable();
 $databaseInitializer->initializeTransactionsTable();
 $databaseInitializer->initializeWalletsTable($userRepository);
