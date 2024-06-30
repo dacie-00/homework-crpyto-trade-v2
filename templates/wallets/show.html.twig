@@ -17,7 +17,7 @@
             </tr>
             {% for money in wallet %}
                 <tr>
-                    <td>{{ money.ticker }}</td>
+                    <td><a href="/currencies/{{ money.ticker }}">{{ money.ticker }}</a></td>
                     <td>{{ formatNumber(money.amount) }}</td>
                     <td>{{ formatNumber(money.profit, 4) }}</td>
                 </tr>

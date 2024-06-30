@@ -21,9 +21,13 @@
             {% for transaction in transactions %}
                 <tr>
                     <td>{{ formatNumber(transaction.sentMoney.amount) }}</td>
+                    <td><a href="/currencies/{{ transaction.sentMoney.ticker }}">{{ transaction.sentMoney.ticker }}</a>
+                    </td>
                     <td>{{ transaction.sentMoney.ticker }}</td>
                     <td>{{ transaction.type }}</td>
-                    <td>{{ formatNumber(transaction.receivedMoney.amount) }}</td>
+                    <td>
+                        <a href="/currencies/{{ transaction.receivedMoney.ticker }}">{{ transaction.receivedMoney.ticker }}</a>
+                    </td>
                     <td>{{ transaction.receivedMoney.ticker }}</td>
                     <td>{{ transaction.createdAt }} UTC</td>
                 </tr>
