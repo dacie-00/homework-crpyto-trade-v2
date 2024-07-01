@@ -3,35 +3,61 @@
 
 {% block title %} Transaction list {% endblock %}
 {% block content %}
-    <h1>
+    <h1 class="text-gray-200 py-4 text-2xl">
         Transaction list
     </h1>
     {% if not transactions %}
-        <p>No transactions found.</p>
+        <p class="text-gray-200 py-4">No transactions found.</p>
     {% else %}
-        <table>
-            <tr>
-                <th>Sent Amount</th>
-                <th>Sent Ticker</th>
-                <th>Type</th>
-                <th>Received Amount</th>
-                <th>Received Ticker</th>
-                <th>Date</th>
-            </tr>
-            {% for transaction in transactions %}
+        <div class="shadow-2xl relative overflow-x-auto max-w-5xl">
+            <table class="w-full text-sm text-left text-gray-400 shadow">
+                <thead class="text-xs uppercase bg-gray-700 text-gray-400">
                 <tr>
-                    <td>{{ formatNumber(transaction.sentMoney.amount) }}</td>
-                    <td><a href="/currencies/{{ transaction.sentMoney.ticker }}">{{ transaction.sentMoney.ticker }}</a>
-                    </td>
-                    <td>{{ transaction.sentMoney.ticker }}</td>
-                    <td>{{ transaction.type }}</td>
-                    <td>
-                        <a href="/currencies/{{ transaction.receivedMoney.ticker }}">{{ transaction.receivedMoney.ticker }}</a>
-                    </td>
-                    <td>{{ transaction.receivedMoney.ticker }}</td>
-                    <td>{{ transaction.createdAt }} UTC</td>
+                    <th scope="col" class="px-6 py-3">
+                        Sent Amount
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        Sent Ticker
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        Type
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        Received Amount
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        Received Ticker
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        Date
+                    </th>
                 </tr>
-            {% endfor %}
-        </table>
+                </thead>
+
+                <tbody>
+                {% for transaction in transactions %}
+                    <tr class="border-b bg-gray-800 border-gray-700 text-gray-400 even:brightness-105">
+                        <td class="px-6 py-4 hover:text-gray-200">
+                            {{ formatNumber(transaction.sentMoney.amount) }}
+                        </td>
+                        <td class="px-6 py-4 hover:text-gray-200">
+                            <a href="/currencies/{{ transaction.sentMoney.ticker }}">{{ transaction.sentMoney.ticker }}</a>
+                        </td>
+                        <td class="px-6 py-4">
+                            {{ transaction.type }}
+                        </td>
+                        <td class="px-6 py-4">
+                            <a href="/currencies/{{ transaction.receivedMoney.amount }}">{{ transaction.receivedMoney.amount }}</a>
+                        </td>
+                        <td class="px-6 py-4 hover:text-gray-200">
+                            <a href="/currencies/{{ transaction.receivedMoney.ticker }}">{{ transaction.receivedMoney.ticker }}</a>
+                        </td>
+                        <td class="px-6 py-4">
+                            {{ transaction.createdAt }} UTC
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
     {% endif %}
 {% endblock %}

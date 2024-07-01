@@ -5,12 +5,13 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="https://cdn.tailwindcss.com"></script>
     <title>{% block title %}Crypto Trade{% endblock %}</title>
 </head>
 <header>
     {% block header %}{{ include ("partials/_header.html.twig") }}{% endblock %}
 </header>
 <body>
-    {% block content %}{% endblock %}
+<div class="bg-gradient-to-b from-gray-900 to-slate-800 h-screen flex flex-col place-items-center justify-stretch">{% block content %}{% endblock %}</div>
 </body>
 </html>

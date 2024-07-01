@@ -3,25 +3,43 @@
 
 {% block title %} Wallet {% endblock %}
 {% block content %}
-    <h1>
+    <h1 class="text-gray-200 py-4 text-2xl">
         Wallet
     </h1>
     {% if not wallet %}
-        <p>Wallet not found.</p>
+        <p class="text-gray-200 py-4 text-1xl">Wallet not found.</p>
     {% else %}
-        <table>
-            <tr>
-                <th>Ticker</th>
-                <th>Amount</th>
-                <th>Profit %</th>
-            </tr>
-            {% for money in wallet %}
+        <div class="shadow-2xl relative overflow-x-auto max-w-5xl">
+            <table class="w-full text-sm text-left text-gray-400 shadow">
+                <thead class="text-xs uppercase bg-gray-700 text-gray-400">
                 <tr>
-                    <td><a href="/currencies/{{ money.ticker }}">{{ money.ticker }}</a></td>
-                    <td>{{ formatNumber(money.amount) }}</td>
-                    <td>{{ formatNumber(money.profit, 4) }}</td>
+                    <th scope="col" class="px-6 py-3">
+                        Ticker
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        Amount
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        Profit %
+                    </th>
                 </tr>
-            {% endfor %}
-        </table>
+                </thead>
+
+                <tbody>
+                {% for money in wallet %}
+                    <tr class="border-b bg-gray-800 border-gray-700 text-gray-400 even:brightness-105">
+                        <td class="px-6 py-4 hover:text-gray-200">
+                            <a href="/currencies/{{ money.ticker }}">{{ money.ticker }}</a>
+                        </td>
+                        <td class="px-6 py-4>">
+                            {{ formatNumber(money.amount) }}
+                        </td>
+                        <td class="px-6 py-4>">
+                            {{ formatNumber(money.profit, 4) }}%
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
     {% endif %}
 {% endblock %}
