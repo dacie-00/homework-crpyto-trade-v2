@@ -7,8 +7,8 @@
     <h1 class="text-gray-200 py-4 text-2xl">
         Currency - {{ query }}
     </h1>
-    {% if not query %}
-        <p class="text-gray-200 py-4 text-1xl">Currency {{ query }} not found.</p>
+    {% if not currency.ticker %}
+        <p class="text-gray-200 py-4 text-1xl">Couldn't fetch data for {{ query }}.</p>
     {% else %}
         <div class="pb-4 shadow-2xl relative overflow-x-auto max-w-5xl">
             <table class="w-full text-sm text-left text-gray-400 shadow">
