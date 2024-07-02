@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+require_once "vendor/autoload.php";
+
 use App\RedirectResponse;
 use App\Repositories\Currency\CoinMarketCapApiCurrencyRepository;
 use App\Repositories\Currency\CurrencyRepositoryInterface;
@@ -20,7 +22,6 @@ use Twig\Loader\FilesystemLoader;
 use function DI\create;
 use function DI\get;
 
-require_once "vendor/autoload.php";
 
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
 $dotenv->load();
@@ -53,7 +54,7 @@ $container = $builder->build();
 
 $userRepository = $container->get(UserRepositoryInterface::class);
 
-$databaseInitializer = $container->get(DatabaseInitializationService::class); // TODO: this probably shouldn't be a service
+$databaseInitializer = $container->get(DatabaseInitializationService::class);
 $databaseInitializer->initializeUsersTable();
 $databaseInitializer->initializeTransactionsTable();
 $databaseInitializer->initializeWalletsTable($userRepository);
