@@ -35,7 +35,7 @@
                             {{ formatNumber(money.amount) }}
                         </td>
                         <td class="px-6 py-4>">
-                            {{ formatNumber(money.profit, 4) }}%
+                            {{ formatNumber(percentages[loop.index0], 4) }}%
                         </td>
                     </tr>
                 {% endfor %}

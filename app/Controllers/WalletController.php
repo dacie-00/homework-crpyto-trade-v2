@@ -60,14 +60,8 @@ class WalletController
             $percentages[] = 100 * ($marketRate / $average) - 100;
         }
 
-        $walletData = []; // TODO: add percentages as a setter for money?
-        foreach ($wallet->contents() as $index => $money) {
-            $walletData[] = [
-                "ticker" => $money->ticker(),
-                "amount" => $money->amount(),
-                "profit" => $percentages[$index],
-            ];
-        }
-        return new TemplateResponse("wallets/show", ["wallet" => $walletData]);
+        return new TemplateResponse("wallets/show", [
+            "wallet" => $wallet->contents(), "percentages" => $percentages,
+        ]);
     }
 }
