@@ -20,9 +20,4 @@ interface TransactionRepositoryInterface
      * @return Transaction[]
      */
     public function getByUser(User $user): array;
-
-    /**
-     * @return Transaction[]
-     */
-    public function getAll(): array;
 }

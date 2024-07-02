@@ -7,6 +7,7 @@ use App\Models\Currency;
 use App\Models\Money;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Repositories\Transaction\Exceptions\CurrencyNotInTransactionsException;
 use DateTimeInterface;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver\PDO\Exception;
@@ -79,11 +80,11 @@ class DoctrineDbalTransactionRepository implements TransactionRepositoryInterfac
             $received += $amount["received_amount"];
             $spent += $amount["sent_amount"];
 
-            if ($received >= $money->amount()) { // TODO: account for floating point imprecision here
+            if ($received >= $money->amount()) { // TODO: maybe account for floating point imprecision here
                 return $spent / $received;
             }
         }
-        throw new Exception(""); // TODO: make exception here
+        return 0;
     }
 
     /**
@@ -97,22 +98,6 @@ class DoctrineDbalTransactionRepository implements TransactionRepositoryInterfac
             ->from("transactions")
             ->where("user_id = :user_id")
             ->setParameter("user_id", $user->id())
-            ->executeQuery();
-        foreach ($transactionData->fetchAllAssociative() as $transaction) {
-            $transactions[] = Transaction::fromArray($transaction);
-        }
-        return $transactions;
-    }
-
-    /**
-     * @return Transaction[]
-     */
-    public function getAll(): array // TODO: remove if unused
-    {
-        $transactions = [];
-        $transactionData = $this->connection->createQueryBuilder()
-            ->select("*")
-            ->from("transactions")
             ->executeQuery();
         foreach ($transactionData->fetchAllAssociative() as $transaction) {
             $transactions[] = Transaction::fromArray($transaction);
