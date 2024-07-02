@@ -35,7 +35,7 @@ class WalletController
             return new TemplateResponse("wallets/show", ["wallet" => []]);
         }
 
-        // This entire block until wallet data is for getting the percentage change in profit
+        // TODO: move this percentage calculation to new service?
         $tickers = [];
         foreach ($wallet->contents() as $money) {
             if ($money->ticker() !== "EUR") {
