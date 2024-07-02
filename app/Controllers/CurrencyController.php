@@ -61,7 +61,10 @@ class CurrencyController
 
     public function buy(string $ticker): RedirectResponse
     {
-        $amount = (float)$_POST["amount"]; // TODO: validate
+        $amount = (float)$_POST["amount"];
+        if ($amount <= 0) {
+            return new RedirectResponse("/wallets/foobarWallet");
+        }
 
         try {
             $this->buyService->execute(
@@ -72,7 +75,7 @@ class CurrencyController
                 )
             );
         } catch (InsufficientMoneyException|TransactionFailedException $e) {
-            return new RedirectResponse("/wallets/foobarWallet"); // TODO: figure out how to display error
+            return new RedirectResponse("/wallets/foobarWallet");
         }
         return new RedirectResponse("/wallets/foobarWallet");
     }
@@ -81,6 +84,9 @@ class CurrencyController
     public function sell(string $ticker): RedirectResponse
     {
         $amount = (float)$_POST["amount"];
+        if ($amount <= 0) {
+            return new RedirectResponse("/wallets/foobarWallet");
+        }
 
         try {
             $this->sellService->execute(
@@ -91,7 +97,7 @@ class CurrencyController
                 )
             );
         } catch (InsufficientMoneyException|TransactionFailedException $e) {
-            return new RedirectResponse("/wallets/foobarWallet"); // TODO: figure out how to display error
+            return new RedirectResponse("/wallets/foobarWallet");
         }
         return new RedirectResponse("/wallets/foobarWallet");
     }
